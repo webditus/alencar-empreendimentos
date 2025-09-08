@@ -3,6 +3,7 @@ import { useContract } from '../contexts/ContractContext';
 import { ContractTemplate } from '../types/contract';
 import { Trash2, Edit, Eye, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import ContractFormNew from './ContractFormNew';
+import { formatDate } from '../utils/formatters';
 
 const CONTRACT_TYPE_LABELS = {
   'compra-vista': 'Compra à Vista',
@@ -156,10 +157,10 @@ const ContractManagement: React.FC = () => {
                     </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(contract.createdAt).toLocaleDateString('pt-BR')}
+                    {formatDate(contract.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(contract.updatedAt).toLocaleDateString('pt-BR')}
+                    {formatDate(contract.updatedAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">

@@ -308,13 +308,6 @@ export class ContractSigningService {
 
   // Mappers
   private static mapContract(data: any): GeneratedContract {
-    console.log('🔍 Raw contract data from database:', {
-      id: data.id,
-      status: data.status,
-      created_at: data.created_at,
-      updated_at: data.updated_at
-    });
-    
     return {
       id: data.id,
       quoteId: data.quote_id,

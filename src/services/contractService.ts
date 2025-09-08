@@ -13,7 +13,15 @@ export class ContractService {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map(item => ({
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      content: item.content,
+      isActive: item.is_active,
+      createdAt: item.created_at || new Date().toISOString(),
+      updatedAt: item.updated_at || new Date().toISOString(),
+    }));
   }
 
   static async getTemplateById(id: string): Promise<ContractTemplate | null> {
@@ -28,7 +36,17 @@ export class ContractService {
       return null;
     }
 
-    return data;
+    if (!data) return null;
+
+    return {
+      id: data.id,
+      name: data.name,
+      type: data.type,
+      content: data.content,
+      isActive: data.is_active,
+      createdAt: data.created_at || new Date().toISOString(),
+      updatedAt: data.updated_at || new Date().toISOString(),
+    };
   }
 
   static async createTemplate(template: Omit<ContractTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContractTemplate> {
@@ -139,6 +157,14 @@ export class ContractService {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map(item => ({
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      content: item.content,
+      isActive: item.is_active,
+      createdAt: item.created_at || new Date().toISOString(),
+      updatedAt: item.updated_at || new Date().toISOString(),
+    }));
   }
 }
