@@ -6,6 +6,7 @@ export interface DatabaseCategory {
   id: string;
   name: string;
   operation_type: string;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -16,6 +17,7 @@ export interface DatabaseItem {
   price: number;
   category_id: string;
   operation_type: string;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -46,6 +48,7 @@ export class CategoryService {
         id: category.id,
         name: category.name,
         operationType: category.operation_type as OperationType,
+        isActive: category.is_active ?? true,
         items: itemsData
           .filter((item: DatabaseItem) => item.category_id === category.id)
           .map((item: DatabaseItem) => ({
@@ -54,6 +57,7 @@ export class CategoryService {
             price: item.price,
             category: category.name,
             operationType: item.operation_type as OperationType,
+            isActive: item.is_active ?? true,
           })),
       }));
 
@@ -79,6 +83,7 @@ export class CategoryService {
         id: data.id,
         name: data.name,
         operationType: data.operation_type as OperationType,
+        isActive: data.is_active ?? true,
         items: [],
       };
     } catch (error) {
@@ -116,6 +121,21 @@ export class CategoryService {
       throw error;
     }
   }
+
+  // Alternar status ativo/inativo da categoria
+  static async toggleCategoryStatus(id: string, isActive: boolean): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Erro ao alterar status da categoria:', error);
+      throw error;
+    }
+  }
 }
 
 // Serviços para Itens
@@ -147,6 +167,7 @@ export class ItemService {
         price: data.price,
         category: categoryData.name,
         operationType: data.operation_type as OperationType,
+        isActive: data.is_active ?? true,
       };
     } catch (error) {
       console.error('Erro ao criar item:', error);
@@ -184,6 +205,21 @@ export class ItemService {
     }
   }
 
+  // Alternar status ativo/inativo do item
+  static async toggleItemStatus(id: string, isActive: boolean): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('items')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Erro ao alterar status do item:', error);
+      throw error;
+    }
+  }
+
   // Buscar itens por categoria
   static async getItemsByCategory(categoryId: string): Promise<Item[]> {
     try {
@@ -207,6 +243,7 @@ export class ItemService {
         price: item.price,
         category: item.categories.name,
         operationType: item.operation_type as OperationType,
+        isActive: item.is_active ?? true,
       }));
     } catch (error) {
       console.error('Erro ao buscar itens por categoria:', error);

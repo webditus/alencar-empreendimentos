@@ -4,14 +4,17 @@ import { CategoryService, ItemService } from '../services/categoryService';
 import { useOperation } from './OperationContext';
 
 interface CategoryContextType {
-  categories: Category[];
+  categories: Category[]; // Para calculadora (só ativos)
   allCategories: Category[]; // Todas as categorias (para admin)
+  adminCategories: Category[]; // Categorias filtradas por operationType (para admin)
   addCategory: (name: string, operationType?: OperationType) => Promise<void>;
   updateCategory: (id: string, name: string) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
+  toggleCategoryStatus: (id: string, isActive: boolean) => Promise<void>;
   addItemToCategory: (categoryId: string, name: string, price: number) => Promise<void>;
   updateItem: (itemId: string, name: string, price: number) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
+  toggleItemStatus: (id: string, isActive: boolean) => Promise<void>;
   isLoading: boolean;
   error: string | null;
   refreshCategories: () => Promise<void>;
@@ -33,11 +36,31 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [error, setError] = useState<string | null>(null);
   const { operationType } = useOperation();
 
-  // Filtrar categorias baseado no tipo de operação
+  // Filtrar categorias baseado no tipo de operação e que estejam ativas (para calculadora)
   const categories = useMemo(() => {
+    const filtered = allCategories
+      .filter(category => 
+        category.operationType === operationType && 
+        category.isActive !== false
+      )
+      .map(category => ({
+        ...category,
+        // Filtrar apenas itens ativos
+        items: category.items.filter(item => item.isActive !== false)
+      }))
+      // Remover categorias que ficaram sem itens ativos
+      .filter(category => category.items.length > 0);
+    
+    console.log('🔍 CategoryContext - Filtrando para calculadora:', operationType, '→', filtered.length, 'categorias ativas');
+    
+    return filtered;
+  }, [allCategories, operationType]);
+
+  // Filtrar categorias baseado apenas no tipo de operação (para admin - mostra ativas e inativas)
+  const adminCategories = useMemo(() => {
     const filtered = allCategories.filter(category => category.operationType === operationType);
     
-    console.log('🔍 CategoryContext - Filtrando:', operationType, '→', filtered.length, 'categorias');
+    console.log('🔍 CategoryContext - Filtrando para admin:', operationType, '→', filtered.length, 'categorias (ativas + inativas)');
     
     return filtered;
   }, [allCategories, operationType]);
@@ -181,16 +204,54 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const toggleCategoryStatus = async (id: string, isActive: boolean): Promise<void> => {
+    try {
+      setError(null);
+      await CategoryService.toggleCategoryStatus(id, isActive);
+      setAllCategories(prev => prev.map(category => 
+        category.id === id 
+          ? { ...category, isActive }
+          : category
+      ));
+    } catch (err) {
+      console.error('Erro ao alterar status da categoria:', err);
+      setError('Erro ao alterar status da categoria');
+      throw err;
+    }
+  };
+
+  const toggleItemStatus = async (id: string, isActive: boolean): Promise<void> => {
+    try {
+      setError(null);
+      await ItemService.toggleItemStatus(id, isActive);
+      setAllCategories(prev => prev.map(category => ({
+        ...category,
+        items: category.items.map(item => 
+          item.id === id 
+            ? { ...item, isActive }
+            : item
+        )
+      })));
+    } catch (err) {
+      console.error('Erro ao alterar status do item:', err);
+      setError('Erro ao alterar status do item');
+      throw err;
+    }
+  };
+
   return (
     <CategoryContext.Provider value={{ 
       categories, 
       allCategories,
+      adminCategories,
       addCategory,
       updateCategory,
       deleteCategory,
+      toggleCategoryStatus,
       addItemToCategory,
       updateItem,
       deleteItem,
+      toggleItemStatus,
       isLoading,
       error,
       refreshCategories

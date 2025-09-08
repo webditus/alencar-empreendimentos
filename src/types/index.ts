@@ -9,6 +9,7 @@ export interface Item {
   price: number;
   category: string;
   operationType: OperationType;
+  isActive?: boolean;
 }
 
 export interface Category {
@@ -16,6 +17,7 @@ export interface Category {
   name: string;
   items: Item[];
   operationType: OperationType;
+  isActive?: boolean;
 }
 
 export interface Customer {

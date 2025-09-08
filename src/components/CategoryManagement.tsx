@@ -6,7 +6,9 @@ import {
   Save, 
   X, 
   Package, 
-  DollarSign
+  DollarSign,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
@@ -14,13 +16,15 @@ import { formatCurrency } from '../utils/formatters';
 
 export const CategoryManagement: React.FC = () => {
   const { 
-    categories, 
+    adminCategories: categories, 
     addCategory, 
     updateCategory, 
-    deleteCategory, 
+    deleteCategory,
+    toggleCategoryStatus,
     addItemToCategory, 
     updateItem, 
     deleteItem,
+    toggleItemStatus,
     // isLoading,
     // error,
     // refreshCategories
@@ -82,6 +86,22 @@ export const CategoryManagement: React.FC = () => {
       } catch (error) {
         console.error('Erro ao atualizar item:', error);
       }
+    }
+  };
+
+  const handleToggleCategoryStatus = async (categoryId: string, currentStatus: boolean) => {
+    try {
+      await toggleCategoryStatus(categoryId, !currentStatus);
+    } catch (error) {
+      console.error('Erro ao alterar status da categoria:', error);
+    }
+  };
+
+  const handleToggleItemStatus = async (itemId: string, currentStatus: boolean) => {
+    try {
+      await toggleItemStatus(itemId, !currentStatus);
+    } catch (error) {
+      console.error('Erro ao alterar status do item:', error);
     }
   };
 
@@ -181,13 +201,23 @@ export const CategoryManagement: React.FC = () => {
               ) : (
                 <>
                   <div className="flex items-center gap-3">
-                    <Package className="text-[#44A17C]" size={20} />
-                    <h3 className="text-xl font-bold text-[#3e514f]">{category.name}</h3>
-                    <span className="bg-[#44A17C]/10 text-[#44A17C] px-2 py-1 rounded-full text-sm">
+                    <Package className={category.isActive === false ? "text-gray-400" : "text-[#44A17C]"} size={20} />
+                    <h3 className={`text-xl font-bold ${category.isActive === false ? 'text-gray-400' : 'text-[#3e514f]'}`}>
+                      {category.name}
+                      {category.isActive === false && <span className="text-red-500 text-sm ml-2">(Inativo)</span>}
+                    </h3>
+                    <span className={`${category.isActive === false ? 'bg-gray-100 text-gray-500' : 'bg-[#44A17C]/10 text-[#44A17C]'} px-2 py-1 rounded-full text-sm`}>
                       {category.items.length} itens
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleCategoryStatus(category.id, category.isActive ?? true)}
+                      className={`p-1 ${category.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
+                      title={category.isActive === false ? "Ativar categoria" : "Desativar categoria"}
+                    >
+                      {category.isActive === false ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                     <button
                       onClick={() => setShowAddItem(category.id)}
                       className="text-[#44A17C] hover:text-[#3e514f] p-1"
@@ -300,12 +330,22 @@ export const CategoryManagement: React.FC = () => {
                   ) : (
                     <>
                       <div className="flex items-center gap-3">
-                        <span className="font-medium">{item.name}</span>
-                        <span className="text-[#44A17C] font-bold">
+                        <span className={`font-medium ${item.isActive === false ? 'text-gray-400' : ''}`}>
+                          {item.name}
+                          {item.isActive === false && <span className="text-red-500 text-sm ml-1">(Inativo)</span>}
+                        </span>
+                        <span className={`font-bold ${item.isActive === false ? 'text-gray-400' : 'text-[#44A17C]'}`}>
                           {formatCurrency(item.price)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleToggleItemStatus(item.id, item.isActive ?? true)}
+                          className={`p-1 ${item.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
+                          title={item.isActive === false ? "Ativar item" : "Desativar item"}
+                        >
+                          {item.isActive === false ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
                         <button
                           onClick={() => setEditingItem({ categoryId: category.id, itemId: item.id })}
                           className="text-blue-600 hover:text-blue-800 p-1"
