@@ -73,9 +73,9 @@ const ContractDetails: React.FC = () => {
     switch (status) {
       case 'pending': return 'text-yellow-600 bg-yellow-50';
       case 'signed': return 'text-green-600 bg-green-50';
-      case 'available_to_sign': return 'text-blue-600 bg-blue-50';
+      case 'available_to_sign': return 'text-alencar-green bg-alencar-bg';
       case 'completed': return 'text-green-600 bg-green-50';
-      case 'creator_signed': return 'text-blue-600 bg-blue-50';
+      case 'creator_signed': return 'text-alencar-green bg-alencar-bg';
       default: return 'text-gray-600 bg-gray-50';
     }
   };
@@ -134,7 +134,7 @@ const ContractDetails: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-alencar-green"></div>
       </div>
     );
   }
@@ -148,7 +148,7 @@ const ContractDetails: React.FC = () => {
           </h2>
           <button
             onClick={() => navigate('/admin')}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-alencar-green hover:text-gray-800"
           >
             Voltar aos Orçamentos
           </button>
@@ -160,7 +160,7 @@ const ContractDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
               <button
@@ -188,14 +188,14 @@ const ContractDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="page-container py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Informações do Orçamento */}
           {quote && (
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm border p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Users className="w-5 h-5 mr-2 text-blue-600" />
+                  <Users className="w-5 h-5 mr-2 text-alencar-green" />
                   Informações do Cliente
                 </h3>
                 
@@ -250,7 +250,7 @@ const ContractDetails: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <CheckCircle className="w-5 h-5 mr-2 text-blue-600" />
+                  <CheckCircle className="w-5 h-5 mr-2 text-alencar-green" />
                   Progresso das Assinaturas
                 </h3>
                 
@@ -265,7 +265,7 @@ const ContractDetails: React.FC = () => {
                   
                   <button
                     onClick={openPublicSigningPage}
-                    className="flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="btn-primary flex items-center px-3 py-1.5 text-sm rounded-md"
                   >
                     <Share2 className="w-4 h-4 mr-1" />
                     Ver Página Pública
@@ -279,10 +279,10 @@ const ContractDetails: React.FC = () => {
                   <div key={signatory.id} className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        signatory.status === 'signed' 
-                          ? 'bg-green-100 text-green-600' 
+                        signatory.status === 'signed'
+                          ? 'bg-green-100 text-green-600'
                           : signatory.status === 'available_to_sign'
-                          ? 'bg-blue-100 text-blue-600'
+                          ? 'bg-alencar-bg text-alencar-green'
                           : 'bg-gray-100 text-gray-600'
                       }`}>
                         {signatory.status === 'signed' ? (
@@ -299,7 +299,7 @@ const ContractDetails: React.FC = () => {
                           <p className="text-sm font-medium text-gray-900">
                             {signatory.name}
                             {signatory.isCreator && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-alencar-bg text-alencar-green">
                                 Criador
                               </span>
                             )}
@@ -337,7 +337,7 @@ const ContractDetails: React.FC = () => {
                   />
                   <button
                     onClick={copySigningLink}
-                    className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    className="btn-primary px-3 py-2 text-sm rounded"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -355,13 +355,13 @@ const ContractDetails: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Eye className="w-5 h-5 mr-2 text-blue-600" />
+                <Eye className="w-5 h-5 mr-2 text-alencar-green" />
                 Conteúdo do Contrato
               </h3>
               
-              <button 
+              <button
                 onClick={downloadPDF}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="btn-primary flex items-center px-4 py-2 rounded-md"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Baixar PDF
@@ -387,7 +387,7 @@ const ContractDetails: React.FC = () => {
                         <h5 className="font-medium text-gray-900 mb-3">
                           Assinatura {index + 1}
                           {signatory.isCreator && (
-                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-alencar-bg text-alencar-green">
                               Criador do Contrato
                             </span>
                           )}

@@ -197,7 +197,7 @@ const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     <div className={`signature-canvas-container ${className}`}>
       <div className="mb-4">
         <h3 className="text-lg font-medium text-gray-900 mb-2 flex items-center gap-2">
-          <Pen className="w-5 h-5 text-blue-600" />
+          <Pen className="w-5 h-5 text-alencar-green" />
           Assinatura Digital
         </h3>
         <p className="text-sm text-gray-600">
@@ -214,9 +214,9 @@ const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
           width={width}
           height={height}
           className={`border-2 border-gray-300 rounded-lg bg-white ${
-            disabled 
-              ? 'opacity-50 cursor-not-allowed' 
-              : 'cursor-crosshair hover:border-blue-400'
+            disabled
+              ? 'opacity-50 cursor-not-allowed'
+              : 'cursor-crosshair hover:border-alencar-green'
           } ${!canvasReady ? 'opacity-50' : ''}`}
           style={{ 
             touchAction: 'none',
@@ -248,7 +248,7 @@ const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
           type="button"
           onClick={downloadSignature}
           disabled={disabled || isEmpty || !canvasReady}
-          className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="btn-secondary flex items-center gap-2 px-3 py-2 text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Download className="w-4 h-4" />
           Baixar

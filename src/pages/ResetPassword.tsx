@@ -15,12 +15,10 @@ export const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verificar se há um token de redefinição na URL
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
-    
+
     if (accessToken && refreshToken) {
-      // Definir a sessão do usuário com os tokens da URL
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
@@ -37,7 +35,6 @@ export const ResetPassword: React.FC = () => {
     setError('');
     setIsLoading(true);
 
-    // Validações
     if (!validatePassword(password)) {
       setError('A senha deve ter pelo menos 6 caracteres');
       setIsLoading(false);
@@ -59,7 +56,6 @@ export const ResetPassword: React.FC = () => {
         setError(error.message);
       } else {
         setIsSuccess(true);
-        // Redirecionar para login após 3 segundos
         setTimeout(() => {
           navigate('/login');
         }, 3000);
@@ -91,8 +87,8 @@ export const ResetPassword: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#a2b2b0] to-[#44A17C] flex items-center justify-center px-4">
-        <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md text-center">
+      <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
+        <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="text-green-600" size={32} />
@@ -107,7 +103,7 @@ export const ResetPassword: React.FC = () => {
           </div>
           <button
             onClick={() => navigate('/login')}
-            className="text-[#44A17C] hover:text-[#3e514f] font-medium"
+            className="text-alencar-green hover:text-alencar-hover font-medium transition-colors"
           >
             Ir para Login agora
           </button>
@@ -117,20 +113,19 @@ export const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#a2b2b0] to-[#44A17C] flex items-center justify-center px-4">
-      <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
+      <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#44A17C] to-[#3e514f] rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-alencar-green rounded-full flex items-center justify-center">
               <Lock className="text-white" size={24} />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-[#3e514f] mb-2">Redefinir Senha</h1>
+          <h1 className="section-title mb-2">Redefinir Senha</h1>
           <p className="text-gray-600">Escolha uma nova senha segura para sua conta</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Nova Senha */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nova Senha
@@ -140,7 +135,7 @@ export const ResetPassword: React.FC = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                className="input-base pr-12"
                 placeholder="Digite sua nova senha"
                 required
               />
@@ -152,8 +147,7 @@ export const ResetPassword: React.FC = () => {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            
-            {/* Indicador de força da senha */}
+
             {password && (
               <div className="mt-2">
                 <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
@@ -168,7 +162,7 @@ export const ResetPassword: React.FC = () => {
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color}`}
                     style={{width: `${passwordStrength.percentage}%`}}
                   ></div>
@@ -177,7 +171,6 @@ export const ResetPassword: React.FC = () => {
             )}
           </div>
 
-          {/* Confirmar Senha */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Confirmar Nova Senha
@@ -187,7 +180,7 @@ export const ResetPassword: React.FC = () => {
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                className="input-base pr-12"
                 placeholder="Confirme sua nova senha"
                 required
               />
@@ -199,8 +192,7 @@ export const ResetPassword: React.FC = () => {
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            
-            {/* Indicador de correspondência */}
+
             {confirmPassword && (
               <div className={`mt-2 text-xs flex items-center gap-2 ${
                 password === confirmPassword ? 'text-green-600' : 'text-red-600'
@@ -220,17 +212,16 @@ export const ResetPassword: React.FC = () => {
             )}
           </div>
 
-          {/* Dicas de senha */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="text-blue-800 font-medium text-sm mb-2 flex items-center gap-2">
               <Lock size={16} />
               Dicas para uma senha segura:
             </h4>
             <ul className="text-blue-700 text-xs space-y-1">
-              <li>• Pelo menos 6 caracteres (recomendado: 8+)</li>
-              <li>• Combine letras maiúsculas e minúsculas</li>
-              <li>• Inclua números e símbolos</li>
-              <li>• Evite informações pessoais</li>
+              <li>Pelo menos 6 caracteres (recomendado: 8+)</li>
+              <li>Combine letras maiúsculas e minúsculas</li>
+              <li>Inclua números e símbolos</li>
+              <li>Evite informações pessoais</li>
             </ul>
           </div>
 
@@ -244,7 +235,7 @@ export const ResetPassword: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading || !password || !confirmPassword || password !== confirmPassword}
-            className="w-full bg-gradient-to-r from-[#44A17C] to-[#3e514f] text-white py-3 rounded-lg hover:from-[#3e514f] hover:to-[#44A17C] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full btn-primary-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>
@@ -263,7 +254,7 @@ export const ResetPassword: React.FC = () => {
         <div className="mt-6 text-center">
           <button
             onClick={() => navigate('/login')}
-            className="text-gray-600 hover:text-[#44A17C] font-medium flex items-center justify-center gap-2 mx-auto"
+            className="text-gray-600 hover:text-alencar-green font-medium flex items-center justify-center gap-2 mx-auto transition-colors"
           >
             <ArrowLeft size={16} />
             Voltar ao Login

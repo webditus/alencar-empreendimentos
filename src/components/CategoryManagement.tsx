@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  Save, 
-  X, 
-  Package, 
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Save,
+  X,
+  Package,
   DollarSign,
   Eye,
   EyeOff
@@ -15,30 +15,27 @@ import { useOperation } from '../contexts/OperationContext';
 import { formatCurrency } from '../utils/formatters';
 
 export const CategoryManagement: React.FC = () => {
-  const { 
-    adminCategories: categories, 
-    addCategory, 
-    updateCategory, 
+  const {
+    adminCategories: categories,
+    addCategory,
+    updateCategory,
     deleteCategory,
     toggleCategoryStatus,
-    addItemToCategory, 
-    updateItem, 
+    addItemToCategory,
+    updateItem,
     deleteItem,
     toggleItemStatus,
-    // isLoading,
-    // error,
-    // refreshCategories
   } = useCategories();
-  
+
   const { operationType, isVenda, isAluguel } = useOperation();
 
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<{ categoryId: string; itemId: string } | null>(null);
   const [newCategory, setNewCategory] = useState({ name: '' });
-  const [newItem, setNewItem] = useState<{ categoryId: string; name: string; price: string }>({ 
-    categoryId: '', 
-    name: '', 
-    price: '' 
+  const [newItem, setNewItem] = useState<{ categoryId: string; name: string; price: string }>({
+    categoryId: '',
+    name: '',
+    price: ''
   });
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddItem, setShowAddItem] = useState<string | null>(null);
@@ -107,10 +104,9 @@ export const CategoryManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-[#3e514f]">Gerenciar Categorias e Itens</h2>
+          <h2 className="text-2xl font-bold text-alencar-dark">Gerenciar Categorias e Itens</h2>
           <p className="text-gray-600">
             Modo: <span className={`font-semibold ${isVenda ? 'text-blue-600' : 'text-green-600'}`}>
               {isVenda ? 'Venda' : 'Aluguel'}
@@ -120,7 +116,7 @@ export const CategoryManagement: React.FC = () => {
         <div className="flex gap-3">
           <button
             onClick={() => setShowAddCategory(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#44A17C] text-white rounded-lg hover:bg-[#3e514f] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 btn-primary"
           >
             <Plus size={16} />
             Nova Categoria {isAluguel ? '(Aluguel)' : '(Venda)'}
@@ -128,7 +124,6 @@ export const CategoryManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Category Modal */}
       {showAddCategory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -138,12 +133,12 @@ export const CategoryManagement: React.FC = () => {
               value={newCategory.name}
               onChange={(e) => setNewCategory({ name: e.target.value })}
               placeholder="Nome da categoria"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C] mb-4"
+              className="w-full p-3 border border-gray-300 rounded-lg input-base mb-4"
             />
             <div className="flex gap-3">
               <button
                 onClick={handleAddCategory}
-                className="flex-1 bg-[#44A17C] text-white py-2 rounded-lg hover:bg-[#3e514f] transition-colors"
+                className="flex-1 btn-primary"
               >
                 Adicionar
               </button>
@@ -161,11 +156,9 @@ export const CategoryManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Categories List */}
       <div className="space-y-6">
         {categories.map((category) => (
           <div key={category.id} className="bg-white rounded-lg shadow-lg p-6">
-            {/* Category Header */}
             <div className="flex items-center justify-between mb-4">
               {editingCategory === category.id ? (
                 <div className="flex items-center gap-3 flex-1">
@@ -177,7 +170,7 @@ export const CategoryManagement: React.FC = () => {
                         handleUpdateCategory(category.id, e.currentTarget.value);
                       }
                     }}
-                    className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                    className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
                     autoFocus
                   />
                   <button
@@ -201,12 +194,12 @@ export const CategoryManagement: React.FC = () => {
               ) : (
                 <>
                   <div className="flex items-center gap-3">
-                    <Package className={category.isActive === false ? "text-gray-400" : "text-[#44A17C]"} size={20} />
-                    <h3 className={`text-xl font-bold ${category.isActive === false ? 'text-gray-400' : 'text-[#3e514f]'}`}>
+                    <Package className={category.isActive === false ? "text-gray-400" : "text-alencar-green"} size={20} />
+                    <h3 className={`text-xl font-bold ${category.isActive === false ? 'text-gray-400' : 'text-alencar-dark'}`}>
                       {category.name}
                       {category.isActive === false && <span className="text-red-500 text-sm ml-2">(Inativo)</span>}
                     </h3>
-                    <span className={`${category.isActive === false ? 'bg-gray-100 text-gray-500' : 'bg-[#44A17C]/10 text-[#44A17C]'} px-2 py-1 rounded-full text-sm`}>
+                    <span className={`${category.isActive === false ? 'bg-gray-100 text-gray-500' : 'bg-alencar-bg text-alencar-green'} px-2 py-1 rounded-full text-sm`}>
                       {category.items.length} itens
                     </span>
                   </div>
@@ -220,7 +213,7 @@ export const CategoryManagement: React.FC = () => {
                     </button>
                     <button
                       onClick={() => setShowAddItem(category.id)}
-                      className="text-[#44A17C] hover:text-[#3e514f] p-1"
+                      className="text-alencar-green hover:text-alencar-dark p-1"
                       title="Adicionar item"
                     >
                       <Plus size={16} />
@@ -244,7 +237,6 @@ export const CategoryManagement: React.FC = () => {
               )}
             </div>
 
-            {/* Add Item Form */}
             {showAddItem === category.id && (
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <h4 className="font-semibold mb-3">Adicionar Novo Item</h4>
@@ -254,20 +246,20 @@ export const CategoryManagement: React.FC = () => {
                     value={newItem.name}
                     onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Nome do item"
-                    className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                    className="p-2 border border-gray-300 rounded-lg input-base"
                   />
                   <input
                     type="number"
                     value={newItem.price}
                     onChange={(e) => setNewItem(prev => ({ ...prev, price: e.target.value }))}
                     placeholder="Preço (R$)"
-                    className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                    className="p-2 border border-gray-300 rounded-lg input-base"
                   />
                 </div>
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => handleAddItem(category.id)}
-                    className="bg-[#44A17C] text-white px-4 py-2 rounded-lg hover:bg-[#3e514f] transition-colors"
+                    className="btn-primary px-4 py-2"
                   >
                     Adicionar
                   </button>
@@ -284,7 +276,6 @@ export const CategoryManagement: React.FC = () => {
               </div>
             )}
 
-            {/* Items List */}
             <div className="space-y-2">
               {category.items.map((item) => (
                 <div
@@ -296,7 +287,7 @@ export const CategoryManagement: React.FC = () => {
                       <input
                         type="text"
                         defaultValue={item.name}
-                        className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                        className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
                         id={`item-name-${item.id}`}
                       />
                       <div className="flex items-center gap-1">
@@ -304,7 +295,7 @@ export const CategoryManagement: React.FC = () => {
                         <input
                           type="number"
                           defaultValue={item.price}
-                          className="w-24 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                          className="w-24 p-2 border border-gray-300 rounded-lg input-base"
                           id={`item-price-${item.id}`}
                         />
                       </div>
@@ -334,7 +325,7 @@ export const CategoryManagement: React.FC = () => {
                           {item.name}
                           {item.isActive === false && <span className="text-red-500 text-sm ml-1">(Inativo)</span>}
                         </span>
-                        <span className={`font-bold ${item.isActive === false ? 'text-gray-400' : 'text-[#44A17C]'}`}>
+                        <span className={`font-bold ${item.isActive === false ? 'text-gray-400' : 'text-alencar-green'}`}>
                           {formatCurrency(item.price)}
                         </span>
                       </div>

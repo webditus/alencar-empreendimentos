@@ -31,13 +31,13 @@ export const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#a2b2b0] to-[#44A17C] flex items-center justify-center px-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
+      <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Building2 className="text-[#44A17C]" size={48} />
+            <Building2 className="text-alencar-green" size={48} />
           </div>
-          <h1 className="text-2xl font-bold text-[#3e514f] mb-2">Área Administrativa</h1>
+          <h1 className="section-title mb-2">Área Administrativa</h1>
           <p className="text-gray-600">Alencar Empreendimentos</p>
         </div>
 
@@ -50,7 +50,7 @@ export const AdminLogin: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+              className="input-base"
               placeholder="seu@email.com"
               required
             />
@@ -64,7 +64,7 @@ export const AdminLogin: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+              className="input-base"
               placeholder="Digite sua senha"
               required
             />
@@ -79,7 +79,7 @@ export const AdminLogin: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#44A17C] to-[#3e514f] text-white py-3 rounded-lg hover:from-[#3e514f] hover:to-[#44A17C] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full btn-primary-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               'Entrando...'
@@ -92,11 +92,10 @@ export const AdminLogin: React.FC = () => {
           </button>
         </form>
 
-        {/* Link para esqueci minha senha */}
         <div className="mt-6 text-center">
           <button
             onClick={() => navigate('/forgot-password')}
-            className="text-[#44A17C] hover:text-[#3e514f] font-medium transition-colors flex items-center justify-center gap-2 mx-auto"
+            className="text-alencar-green hover:text-alencar-hover font-medium transition-colors flex items-center justify-center gap-2 mx-auto"
           >
             <Key size={16} />
             Esqueci minha senha

@@ -208,7 +208,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
               <div key={step.number} className="flex items-center">
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                   currentStep >= step.number
-                    ? 'bg-blue-600 border-blue-600 text-white'
+                    ? 'bg-alencar-green border-alencar-green text-white'
                     : 'border-gray-300 text-gray-300'
                 }`}>
                   {currentStep > step.number ? (
@@ -221,7 +221,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`h-0.5 w-16 ml-4 ${
-                    currentStep > step.number ? 'bg-blue-600' : 'bg-gray-300'
+                    currentStep > step.number ? 'bg-alencar-green' : 'bg-gray-300'
                   }`} />
                 )}
               </div>
@@ -251,7 +251,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                       key={template.id}
                       className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                         selectedTemplate?.id === template.id
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-alencar-green bg-alencar-bg'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => handleTemplateSelect(template)}
@@ -274,7 +274,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                     type="text"
                     value={contractTitle}
                     onChange={(e) => setContractTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="input-base w-full px-3 py-2 border border-gray-300 rounded-lg"
                     placeholder="Ex: Contrato de Locação - João Silva"
                   />
                 </div>
@@ -296,7 +296,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                       type={variable.type}
                       value={variables[variable.name] || ''}
                       onChange={(e) => handleVariableChange(variable.name, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input-base w-full px-3 py-2 border border-gray-300 rounded-lg"
                       placeholder={variable.placeholder}
                       required={variable.required}
                     />
@@ -313,7 +313,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                 <h3 className="text-lg font-medium text-gray-900">Definir Signatários</h3>
                 <button
                   onClick={handleAddSignatory}
-                  className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="btn-primary px-3 py-2 text-sm rounded-lg"
                 >
                   Adicionar Signatário
                 </button>
@@ -340,7 +340,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                         type="text"
                         value={signatory.name}
                         onChange={(e) => handleSignatoryChange(index, 'name', e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="input-base px-3 py-2 border border-gray-300 rounded-lg"
                         placeholder="Nome completo"
                         disabled={index === 0}
                       />
@@ -348,7 +348,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                         type="email"
                         value={signatory.email}
                         onChange={(e) => handleSignatoryChange(index, 'email', e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="input-base px-3 py-2 border border-gray-300 rounded-lg"
                         placeholder="E-mail"
                         disabled={index === 0}
                       />
@@ -398,7 +398,7 @@ const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({
                   (currentStep === 3 && !canProceedToStep4) ||
                   loading
                 }
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Próximo
               </button>

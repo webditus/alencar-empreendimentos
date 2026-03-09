@@ -158,7 +158,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
                   id="name"
                   value={formData.name || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="input-base"
                   required
                 />
               </div>
@@ -171,7 +171,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
                   id="type"
                   value={formData.type || 'compra-vista'}
                   onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as ContractType }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="input-base"
                   required
                 >
                   {CONTRACT_TYPE_OPTIONS.map(option => (
@@ -188,7 +188,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
                     type="checkbox"
                     checked={formData.isActive ?? true}
                     onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 text-alencar-green focus:ring-alencar-green"
                   />
                   <span className="text-sm font-medium text-gray-700">Contrato Ativo</span>
                 </label>
@@ -201,14 +201,14 @@ const ContractForm: React.FC<ContractFormProps> = ({
                   
                   {/* Dados do Cliente */}
                   <div>
-                    <h4 className="text-xs font-semibold text-blue-700 mb-1">DADOS DO CLIENTE</h4>
+                    <h4 className="text-xs font-semibold text-alencar-green mb-1">DADOS DO CLIENTE</h4>
                     <div className="grid grid-cols-1 gap-1">
                       {['CLIENTE_NOME', 'CLIENTE_NACIONALIDADE', 'CLIENTE_ESTADO_CIVIL', 'CLIENTE_PROFISSAO', 'CLIENTE_RG', 'CLIENTE_CPF', 'CLIENTE_ENDERECO', 'CLIENTE_ENDERECO_COMPLETO', 'CLIENTE_TELEFONE', 'CLIENTE_EMAIL'].map(variable => (
                         <button
                           key={variable}
                           type="button"
                           onClick={() => insertVariable(variable)}
-                          className="text-left px-2 py-1 text-xs bg-blue-50 hover:bg-blue-100 rounded border text-blue-700"
+                          className="text-left px-2 py-1 text-xs bg-alencar-bg hover:bg-alencar-bg/80 rounded border text-alencar-green"
                         >
                           {`{{${variable}}}`}
                         </button>
@@ -342,7 +342,7 @@ const ContractForm: React.FC<ContractFormProps> = ({
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            className="btn-primary"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

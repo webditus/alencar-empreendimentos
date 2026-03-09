@@ -5,81 +5,81 @@ import { formatCurrency, formatDate, formatPhone } from '../utils/formatters';
 import { User, Phone, Mail, DollarSign, Calendar, Eye, RefreshCw, MoreVertical, Clock } from 'lucide-react';
 
 const KANBAN_COLUMNS = [
-  { 
-    id: 'new', 
-    title: 'Novos', 
+  {
+    id: 'new',
+    title: 'Novos',
     gradient: 'from-blue-500 to-blue-600',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     textColor: 'text-blue-700',
     count: 0
   },
-  { 
-    id: 'analyzing', 
-    title: 'Analisando', 
+  {
+    id: 'analyzing',
+    title: 'Analisando',
     gradient: 'from-amber-500 to-yellow-500',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
     count: 0
   },
-  { 
-    id: 'negotiating', 
-    title: 'Negociando', 
+  {
+    id: 'negotiating',
+    title: 'Negociando',
     gradient: 'from-orange-500 to-red-500',
     bgColor: 'bg-orange-50',
     borderColor: 'border-orange-200',
     textColor: 'text-orange-700',
     count: 0
   },
-  { 
-    id: 'awaiting-signature', 
-    title: 'Aguardando Assinatura', 
-    gradient: 'from-purple-500 to-indigo-500',
-    bgColor: 'bg-purple-50',
-    borderColor: 'border-purple-200',
-    textColor: 'text-purple-700',
+  {
+    id: 'awaiting-signature',
+    title: 'Aguardando Assinatura',
+    gradient: 'from-cyan-500 to-teal-500',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-200',
+    textColor: 'text-cyan-700',
     count: 0
   },
-  { 
-    id: 'approved', 
-    title: 'Aprovado', 
+  {
+    id: 'approved',
+    title: 'Aprovado',
     gradient: 'from-green-500 to-emerald-500',
     bgColor: 'bg-green-50',
     borderColor: 'border-green-200',
     textColor: 'text-green-700',
     count: 0
   },
-  { 
-    id: 'awaiting-payment', 
-    title: 'Aguardando Pagamento', 
-    gradient: 'from-indigo-500 to-blue-500',
-    bgColor: 'bg-indigo-50',
-    borderColor: 'border-indigo-200',
-    textColor: 'text-indigo-700',
+  {
+    id: 'awaiting-payment',
+    title: 'Aguardando Pagamento',
+    gradient: 'from-sky-500 to-blue-500',
+    bgColor: 'bg-sky-50',
+    borderColor: 'border-sky-200',
+    textColor: 'text-sky-700',
     count: 0
   },
-  { 
-    id: 'paid', 
-    title: 'Pago', 
+  {
+    id: 'paid',
+    title: 'Pago',
     gradient: 'from-emerald-500 to-teal-500',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
     count: 0
   },
-  { 
-    id: 'rejected', 
-    title: 'Rejeitado', 
+  {
+    id: 'rejected',
+    title: 'Rejeitado',
     gradient: 'from-red-500 to-pink-500',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
     textColor: 'text-red-700',
     count: 0
   },
-  { 
-    id: 'completed', 
-    title: 'Concluído', 
+  {
+    id: 'completed',
+    title: 'Concluído',
     gradient: 'from-gray-500 to-slate-500',
     bgColor: 'bg-gray-50',
     borderColor: 'border-gray-200',
@@ -110,9 +110,8 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onViewDetails, onDragStart
     <div
       draggable
       onDragStart={(e) => onDragStart(e, quote)}
-      className="bg-white rounded-xl shadow-md p-4 mb-3 border-l-4 border-[#44A17C] cursor-move hover:shadow-lg transition-all duration-200 group relative overflow-hidden backdrop-blur-sm"
+      className="bg-white rounded-xl shadow-md p-4 mb-3 border-l-4 border-alencar-green cursor-move hover:shadow-lg transition-all duration-200 group relative overflow-hidden backdrop-blur-sm"
     >
-      {/* Urgency indicator */}
       {isUrgent && (
         <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
           <Clock className="w-3 h-3" />
@@ -120,10 +119,9 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onViewDetails, onDragStart
         </div>
       )}
 
-      {/* Customer Info */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center flex-1 min-w-0">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#44A17C] to-[#3e514f] rounded-full flex items-center justify-center shadow-sm mr-3">
+          <div className="w-8 h-8 bg-alencar-green rounded-full flex items-center justify-center shadow-sm mr-3">
             <User className="h-4 w-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -135,38 +133,36 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onViewDetails, onDragStart
         </div>
         <button
           onClick={() => onViewDetails(quote)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-[#44A17C] hover:text-[#3e514f] p-2 rounded-full hover:bg-gray-50"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-alencar-green hover:text-alencar-hover p-2 rounded-full hover:bg-gray-50"
           title="Ver detalhes"
         >
           <Eye className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Contact & Value Info */}
       <div className="space-y-2 mb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center text-xs text-gray-600">
             <Phone className="h-3 w-3 mr-2 text-gray-400" />
             <span className="truncate">{formatPhone(quote.customer.phone)}</span>
           </div>
-          <div className="flex items-center text-sm font-semibold text-[#44A17C]">
+          <div className="flex items-center text-sm font-semibold text-alencar-green">
             <DollarSign className="h-4 w-4 mr-1" />
             {formatCurrency(quote.totalPrice)}
           </div>
         </div>
-        
+
         <div className="flex items-center text-xs text-gray-600">
           <Mail className="h-3 w-3 mr-2 text-gray-400" />
           <span className="truncate">{quote.customer.email}</span>
         </div>
-        
+
         <div className="flex items-center text-xs text-gray-600">
           <Calendar className="h-3 w-3 mr-2 text-gray-400" />
           <span>{formatDate(quote.createdAt)}</span>
         </div>
       </div>
 
-      {/* Footer Info */}
       <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
         <div className="text-xs text-gray-500">
           {quote.selectedItems.length} itens
@@ -176,8 +172,7 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onViewDetails, onDragStart
         </div>
       </div>
 
-      {/* Hover effect overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#44A17C] opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none rounded-xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-alencar-green opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none rounded-xl"></div>
     </div>
   );
 };
@@ -206,14 +201,14 @@ export const KanbanBoard: React.FC = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-    const handleDrop = async (e: React.DragEvent, newStatus: string) => {
+  const handleDrop = async (e: React.DragEvent, newStatus: string) => {
     e.preventDefault();
     e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
-    
+
     if (draggedQuote && draggedQuote.status !== newStatus) {
       try {
-        await updateQuote(draggedQuote.id, { 
-          status: newStatus as Quote['status'] 
+        await updateQuote(draggedQuote.id, {
+          status: newStatus as Quote['status']
         });
       } catch (error) {
         console.error('Erro ao atualizar status do kanban:', error);
@@ -227,14 +222,14 @@ export const KanbanBoard: React.FC = () => {
     setShowModal(true);
   };
 
-    const getStatusColor = (status: Quote['status']) => {
+  const getStatusColor = (status: Quote['status']) => {
     const colors = {
       'new': 'bg-blue-100 text-blue-800',
       'analyzing': 'bg-yellow-100 text-yellow-800',
       'negotiating': 'bg-orange-100 text-orange-800',
-      'awaiting-signature': 'bg-purple-100 text-purple-800',
+      'awaiting-signature': 'bg-cyan-100 text-cyan-800',
       'approved': 'bg-green-100 text-green-800',
-      'awaiting-payment': 'bg-indigo-100 text-indigo-800',
+      'awaiting-payment': 'bg-sky-100 text-sky-800',
       'paid': 'bg-emerald-100 text-emerald-800',
       'rejected': 'bg-red-100 text-red-800',
       'completed': 'bg-gray-100 text-gray-800',
@@ -244,7 +239,6 @@ export const KanbanBoard: React.FC = () => {
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Kanban de Orçamentos</h2>
@@ -252,26 +246,24 @@ export const KanbanBoard: React.FC = () => {
         </div>
         <button
           onClick={refreshQuotes}
-          className="bg-gradient-to-r from-[#44A17C] to-[#3e514f] text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center gap-2 font-medium"
+          className="btn-primary px-6 py-3 rounded-xl flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
           Atualizar
         </button>
       </div>
 
-      {/* Modern horizontal scroll layout */}
       <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {KANBAN_COLUMNS.map((column) => {
           const columnQuotes = getQuotesByStatus(column.id);
-          
+
           return (
             <div key={column.id} className="min-w-[320px] flex-shrink-0">
-              <div 
+              <div
                 className={`${column.bgColor} ${column.borderColor} rounded-2xl border-2 p-5 min-h-[500px] backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200`}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, column.id)}
               >
-                {/* Column Header */}
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${column.gradient}`}></div>
@@ -289,7 +281,6 @@ export const KanbanBoard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Quote Cards */}
                 <div className="space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                   {columnQuotes.length === 0 ? (
                     <div className="text-center py-8">
@@ -317,10 +308,9 @@ export const KanbanBoard: React.FC = () => {
         })}
       </div>
 
-      {/* Modal de detalhes */}
       {showModal && selectedQuote && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-card shadow-modal max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900">
@@ -330,12 +320,11 @@ export const KanbanBoard: React.FC = () => {
                   onClick={() => setShowModal(false)}
                   className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
-                  ×
+                  x
                 </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Dados do Cliente */}
                 <div className="space-y-4">
                   <h4 className="font-semibold text-gray-900">Dados do Cliente</h4>
                   <div className="space-y-2 text-sm">
@@ -350,13 +339,12 @@ export const KanbanBoard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Dados do Orçamento */}
                 <div className="space-y-4">
                   <h4 className="font-semibold text-gray-900">Dados do Orçamento</h4>
                   <div className="space-y-2 text-sm">
                     <p><strong>Valor Base:</strong> {formatCurrency(selectedQuote.basePrice)}</p>
                     <p><strong>Valor Total:</strong> {formatCurrency(selectedQuote.totalPrice)}</p>
-                    <p><strong>Status:</strong> 
+                    <p><strong>Status:</strong>
                       <span className={`ml-2 px-2 py-1 rounded-full text-xs ${getStatusColor(selectedQuote.status)}`}>
                         {selectedQuote.status}
                       </span>
@@ -365,7 +353,6 @@ export const KanbanBoard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Itens Selecionados */}
                 <div className="md:col-span-2">
                   <h4 className="font-semibold text-gray-900 mb-3">Itens Selecionados</h4>
                   <div className="overflow-x-auto">
@@ -394,7 +381,7 @@ export const KanbanBoard: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-button hover:bg-gray-400 transition-colors"
                 >
                   Fechar
                 </button>

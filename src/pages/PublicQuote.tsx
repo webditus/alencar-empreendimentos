@@ -33,15 +33,13 @@ export const PublicQuote: React.FC = () => {
     setValue,
   } = useForm<Customer>();
 
-  // Limpar itens selecionados quando o tipo de operação mudar
   useEffect(() => {
     setSelectedItems([]);
-    setSelectedContainer(null); // Limpar container também
+    setSelectedContainer(null);
   }, [operationType]);
 
-  // Debug: verificar filtragem das categorias
   useEffect(() => {
-    console.log('🔍 PublicQuote - Modo:', operationType, '→', categories.length, 'categorias disponíveis');
+    console.log('PublicQuote - Modo:', operationType, '->', categories.length, 'categorias disponíveis');
   }, [operationType, categories]);
 
   const handleItemToggle = (item: Item) => {
@@ -66,7 +64,7 @@ export const PublicQuote: React.FC = () => {
     }
   };
 
-  const totalPrice = (selectedContainer ? (isVenda ? selectedContainer.vendaPrice : selectedContainer.aluguelPrice) : 0) + 
+  const totalPrice = (selectedContainer ? (isVenda ? selectedContainer.vendaPrice : selectedContainer.aluguelPrice) : 0) +
                     selectedItems.reduce((sum, item) => sum + item.price, 0);
 
   const basePrice = selectedContainer ? (isVenda ? selectedContainer.vendaPrice : selectedContainer.aluguelPrice) : 0;
@@ -92,7 +90,7 @@ export const PublicQuote: React.FC = () => {
       return savedQuote;
     } catch (error) {
       console.error('Erro ao salvar orçamento:', error);
-      return quote; // Retorna o quote mesmo se falhar ao salvar no banco
+      return quote;
     }
   };
 
@@ -101,7 +99,7 @@ export const PublicQuote: React.FC = () => {
       alert('Por favor, selecione um tamanho de container antes de gerar o orçamento.');
       return;
     }
-    
+
     const quote = await createQuote(data);
     if (quote) {
       setCurrentQuote(quote);
@@ -133,17 +131,16 @@ export const PublicQuote: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#a2b2b0] to-[#44A17C]">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+    <div className="min-h-screen bg-alencar-dark">
+      <div className="page-container">
         <div className="text-center mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-            <h1 className="text-4xl font-bold text-[#3e514f] mb-2">
+          <div className="bg-white rounded-card shadow-card p-8 mb-6">
+            <h1 className="text-4xl font-bold text-alencar-dark mb-2">
               Calculadora de Preços
             </h1>
-            <h2 className="text-2xl text-[#44A17C] mb-4">Alencar Empreendimentos</h2>
+            <h2 className="text-2xl text-alencar-green mb-4">Alencar Empreendimentos</h2>
             <div className="flex items-center justify-center gap-2 text-lg">
-              <Calculator className="text-[#44A17C]" size={24} />
+              <Calculator className="text-alencar-green" size={24} />
               <span className="text-gray-600">
                 {selectedContainer ? (
                   `Container ${selectedContainer.size}: ${formatCurrency(basePrice)}${isVenda ? '' : ' mensal'}`
@@ -154,26 +151,23 @@ export const PublicQuote: React.FC = () => {
             </div>
             <div className="mt-4">
               <span className="text-lg text-gray-600">
-                Modo atual: 
+                Modo atual:
                 <span className={`font-semibold ml-2 ${isVenda ? 'text-blue-500' : 'text-green-500'}`}>
                   {isVenda ? 'Compra' : 'Aluguel'}
                 </span>
               </span>
             </div>
           </div>
-          
-          {/* Operation Toggle */}
+
           <PublicOperationToggle />
-          
-          {/* Container Size Selector */}
-          <ContainerSizeSelector 
+
+          <ContainerSizeSelector
             selectedSize={selectedContainer}
             onSizeSelect={setSelectedContainer}
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Items Selection */}
           <div className="lg:col-span-2">
             <h3 className="text-2xl font-bold text-white mb-6">Selecione os itens desejados:</h3>
             {categories.map((category) => (
@@ -186,11 +180,9 @@ export const PublicQuote: React.FC = () => {
             ))}
           </div>
 
-          {/* Right Column - Form and Summary */}
           <div className="space-y-6">
-            {/* Price Summary - Sticky */}
-            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
-              <h3 className="text-xl font-bold text-[#3e514f] mb-4">Resumo do Orçamento</h3>
+            <div className="bg-white rounded-card shadow-card p-6 sticky top-4">
+              <h3 className="text-xl font-bold text-alencar-dark mb-4">Resumo do Orçamento</h3>
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
                   <span>Container base:</span>
@@ -206,15 +198,14 @@ export const PublicQuote: React.FC = () => {
                 ))}
               </div>
               <div className="border-t pt-3 mb-6">
-                <div className="flex justify-between text-xl font-bold text-[#44A17C]">
+                <div className="flex justify-between text-xl font-bold text-alencar-green">
                   <span>Total:</span>
                   <span>{formatCurrency(totalPrice)}</span>
                 </div>
               </div>
 
-              {/* Customer Form - Now inside the sticky container */}
               <div className="border-t pt-6">
-                <h3 className="text-xl font-bold text-[#3e514f] mb-4">Seus Dados</h3>
+                <h3 className="text-xl font-bold text-alencar-dark mb-4">Seus Dados</h3>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -223,7 +214,7 @@ export const PublicQuote: React.FC = () => {
                     <input
                       type="text"
                       {...register('name', { required: 'Nome é obrigatório' })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                      className="input-base"
                       placeholder="Digite seu nome completo"
                     />
                     {errors.name && (
@@ -243,7 +234,7 @@ export const PublicQuote: React.FC = () => {
                         e.target.value = maskedValue;
                         setValue('phone', removeMask(e.target.value));
                       }}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                      className="input-base"
                       placeholder="(11) 99999-9999"
                       maxLength={15}
                     />
@@ -258,14 +249,14 @@ export const PublicQuote: React.FC = () => {
                     </label>
                     <input
                       type="email"
-                      {...register('email', { 
+                      {...register('email', {
                         required: 'E-mail é obrigatório',
                         pattern: {
                           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                           message: 'E-mail inválido'
                         }
                       })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                      className="input-base"
                       placeholder="seu@email.com"
                     />
                     {errors.email && (
@@ -286,7 +277,7 @@ export const PublicQuote: React.FC = () => {
                         setValue('cep', maskedValue);
                         handleCEPChange(maskedValue);
                       }}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                      className="input-base"
                       placeholder="00000-000"
                       maxLength={9}
                     />
@@ -302,7 +293,7 @@ export const PublicQuote: React.FC = () => {
                     <input
                       type="text"
                       {...register('address', { required: 'Endereço é obrigatório' })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                      className="input-base"
                       placeholder="Endereço será preenchido automaticamente"
                       readOnly
                     />
@@ -319,7 +310,7 @@ export const PublicQuote: React.FC = () => {
                       type="date"
                       {...register('projectDate', { required: 'Data é obrigatória' })}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                      className="input-base"
                     />
                     {errors.projectDate && (
                       <p className="text-red-500 text-sm mt-1">{errors.projectDate.message}</p>
@@ -337,7 +328,7 @@ export const PublicQuote: React.FC = () => {
                             type="checkbox"
                             value={purpose}
                             {...register('purpose', { required: 'Selecione pelo menos uma finalidade' })}
-                            className="mr-2 w-4 h-4 text-[#44A17C] rounded focus:ring-[#44A17C]"
+                            className="mr-2 w-4 h-4 text-alencar-green rounded focus:ring-alencar-green"
                           />
                           <span className="text-sm text-gray-700">{purpose}</span>
                         </label>
@@ -351,9 +342,9 @@ export const PublicQuote: React.FC = () => {
                   <button
                     type="submit"
                     disabled={!selectedContainer}
-                    className={`w-full py-4 rounded-lg font-semibold text-lg shadow-lg transition-all ${
+                    className={`w-full py-4 rounded-button font-semibold text-lg shadow-lg transition-all ${
                       selectedContainer
-                        ? 'bg-gradient-to-r from-[#44A17C] to-[#3e514f] text-white hover:from-[#3e514f] hover:to-[#44A17C]'
+                        ? 'btn-primary-lg'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
@@ -362,35 +353,34 @@ export const PublicQuote: React.FC = () => {
                 </form>
               </div>
 
-              {/* Action Buttons - Also inside sticky container */}
               {currentQuote && (
                 <div className="border-t pt-6 mt-6">
-                  <h3 className="text-xl font-bold text-[#3e514f] mb-4">Orçamento Gerado!</h3>
+                  <h3 className="text-xl font-bold text-alencar-dark mb-4">Orçamento Gerado!</h3>
                   <div className="space-y-3">
                     <button
                       onClick={handleDownloadPDF}
-                      className="w-full flex items-center justify-center gap-2 bg-[#44A17C] text-white py-3 rounded-lg hover:bg-[#3e514f] transition-colors"
+                      className="w-full btn-primary flex items-center justify-center gap-2"
                     >
                       <Download size={20} />
                       Gerar PDF
                     </button>
                     <button
                       onClick={handleWhatsApp}
-                      className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-button hover:bg-green-700 transition-colors"
                     >
                       <MessageCircle size={20} />
                       Enviar via WhatsApp
                     </button>
                     <button
                       onClick={handleEmail}
-                      className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-button hover:bg-blue-700 transition-colors"
                     >
                       <Mail size={20} />
                       Enviar por E-mail
                     </button>
                     <button
                       onClick={handleViewDetails}
-                      className="w-full flex items-center justify-center gap-2 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 bg-gray-600 text-white py-3 rounded-button hover:bg-gray-700 transition-colors"
                     >
                       <Eye size={20} />
                       Ver Detalhes
@@ -403,7 +393,6 @@ export const PublicQuote: React.FC = () => {
         </div>
       </div>
 
-      {/* Quote Modal */}
       {currentQuote && (
         <QuoteModal
           quote={currentQuote}

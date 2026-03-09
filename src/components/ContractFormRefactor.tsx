@@ -195,7 +195,7 @@ const ContractFormRefactor: React.FC<ContractFormProps> = ({
                   id="contract-name"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="input-base"
                   required
                   disabled={loading}
                 />
@@ -210,7 +210,7 @@ const ContractFormRefactor: React.FC<ContractFormProps> = ({
                   id="contract-type"
                   value={formData.type}
                   onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as ContractType }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="input-base"
                   required
                   disabled={loading}
                 >
@@ -229,7 +229,7 @@ const ContractFormRefactor: React.FC<ContractFormProps> = ({
                   id="contract-active"
                   checked={formData.isActive}
                   onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-alencar-green focus:ring-alencar-green border-gray-300 rounded"
                   disabled={loading}
                 />
                 <label htmlFor="contract-active" className="ml-2 block text-sm text-gray-700">
@@ -276,8 +276,8 @@ const ContractFormRefactor: React.FC<ContractFormProps> = ({
                   type="button"
                   onClick={() => setShowPreview(false)}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    !showPreview 
-                      ? 'bg-blue-600 text-white' 
+                    !showPreview
+                      ? 'bg-alencar-green text-white'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                   disabled={loading}
@@ -289,8 +289,8 @@ const ContractFormRefactor: React.FC<ContractFormProps> = ({
                   type="button"
                   onClick={() => setShowPreview(true)}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    showPreview 
-                      ? 'bg-blue-600 text-white' 
+                    showPreview
+                      ? 'bg-alencar-green text-white'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                   disabled={loading}
@@ -336,7 +336,7 @@ const ContractFormRefactor: React.FC<ContractFormProps> = ({
           <button
             onClick={handleSubmit}
             disabled={loading || !formData.name.trim() || !formData.content.trim()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+            className="btn-primary"
           >
             {loading ? (
               <>

@@ -63,7 +63,7 @@ const ContractManagement: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-alencar-green"></div>
       </div>
     );
   }
@@ -77,7 +77,7 @@ const ContractManagement: React.FC = () => {
             setSelectedContract(null);
             setShowCreateModal(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          className="btn-primary"
         >
           <Plus className="w-5 h-5" />
           Novo Contrato
@@ -166,7 +166,7 @@ const ContractManagement: React.FC = () => {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleView(contract)}
-                        className="text-blue-600 hover:text-blue-900 p-1"
+                        className="text-alencar-green hover:text-alencar-hover p-1"
                         title="Visualizar"
                       >
                         <Eye className="w-4 h-4" />

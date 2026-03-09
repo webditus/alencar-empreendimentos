@@ -3,7 +3,6 @@ import { Quote } from '../types';
 import { useQuotes } from '../contexts/QuoteContext';
 import { formatCurrency, formatDate, formatPhone } from '../utils/formatters';
 import { Eye, Trash2, Search, Edit, FileText, CreditCard, CheckCircle, Copy, ExternalLink } from 'lucide-react';
-// Usando integração inteligente (real ou mock automaticamente)
 import { createPaymentLink, validateAsaasConfig, diagnoseAsaasConfig } from '../services/asaasIntegration';
 import ContractGenerationModal from './contracts/ContractGenerationModal';
 import { ContractSigningService } from '../services/contractSigningService';
@@ -41,9 +40,8 @@ export const QuoteManagement: React.FC = () => {
   }, []);
 
   const loadQuoteContracts = async () => {
-    // Carregar contratos existentes para todos os orçamentos
     const contractsMap = new Map<string, GeneratedContract>();
-    
+
     for (const quote of quotes) {
       try {
         const contract = await ContractSigningService.getContractByQuoteId(quote.id);
@@ -54,24 +52,20 @@ export const QuoteManagement: React.FC = () => {
         console.error(`Erro ao buscar contrato para quote ${quote.id}:`, error);
       }
     }
-    
+
     setQuoteContracts(contractsMap);
   };
 
-  // Navegação para detalhes do contrato
   const navigateToContractDetails = (contractId: string) => {
     navigate(`/contracts/${contractId}`);
   };
 
-  // Função para lidar com geração/visualização de contrato
   const handleContractAction = (quote: Quote) => {
     const existingContract = quoteContracts.get(quote.id);
-    
+
     if (existingContract && existingContract.signingLink) {
-      // Se já existe contrato, navegar para detalhes
       navigateToContractDetails(existingContract.signingLink);
     } else {
-      // Se não existe, abrir modal de geração
       setSelectedQuoteForContract(quote);
       setShowContractModal(true);
     }
@@ -79,11 +73,11 @@ export const QuoteManagement: React.FC = () => {
 
   const filteredQuotes = quotes.filter(quote => {
     const matchesStatus = statusFilter === 'all' || quote.status === statusFilter;
-    const matchesSearch = 
+    const matchesSearch =
       quote.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quote.customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quote.customer.phone.includes(searchTerm);
-    
+
     return matchesStatus && matchesSearch;
   });
 
@@ -148,7 +142,7 @@ export const QuoteManagement: React.FC = () => {
     if (!selectedQuote || isSaving) return;
 
     setIsSaving(true);
-    
+
     try {
       const updates = {
         assignedTo: editFormData.assignedTo,
@@ -159,22 +153,20 @@ export const QuoteManagement: React.FC = () => {
 
       await updateQuote(selectedQuote.id, updates);
       closeEditModal();
-      
-      // Mostrar mensagem de sucesso
+
       setShowSuccessMessage(true);
       setTimeout(() => {
         setShowSuccessMessage(false);
-      }, 3000); // Esconder após 3 segundos
+      }, 3000);
     } catch (error) {
       console.error('Erro ao salvar alterações:', error);
-      
-      // Mostrar mensagem de erro
+
       setErrorMessage('Erro ao salvar alterações. Tente novamente.');
       setShowErrorMessage(true);
       setTimeout(() => {
         setShowErrorMessage(false);
         setErrorMessage('');
-      }, 4000); // Esconder após 4 segundos
+      }, 4000);
     } finally {
       setIsSaving(false);
     }
@@ -189,25 +181,21 @@ export const QuoteManagement: React.FC = () => {
   };
 
   const handleContractGenerated = async (contract: GeneratedContract) => {
-    // Atualizar o mapa de contratos
     setQuoteContracts(prev => {
       const newMap = new Map(prev);
       newMap.set(contract.quoteId, contract);
       return newMap;
     });
-    
-    // Fechar modal
+
     setShowContractModal(false);
     setSelectedQuoteForContract(null);
-    
-    // Navegar para os detalhes do contrato recém-criado
+
     if (contract.signingLink) {
       navigateToContractDetails(contract.signingLink);
     }
   };
 
   const handleGeneratePaymentLink = async (quote: Quote) => {
-    // Validar configuração do Asaas
     const isConfigured = await validateAsaasConfig();
     if (!isConfigured) {
       const diagnosis = await diagnoseAsaasConfig();
@@ -220,7 +208,6 @@ export const QuoteManagement: React.FC = () => {
       return;
     }
 
-    // Validar se o orçamento tem valor final aprovado
     if (!quote.finalApprovedAmount || quote.finalApprovedAmount <= 0) {
       setErrorMessage('Defina o valor final aprovado antes de gerar o link de pagamento');
       setShowErrorMessage(true);
@@ -232,59 +219,52 @@ export const QuoteManagement: React.FC = () => {
     }
 
     setIsGeneratingPayment(true);
-    
+
     try {
       console.log('🚀 Gerando link de pagamento para orçamento:', quote.id);
       const paymentLink = await createPaymentLink(quote);
       console.log('💰 Link de pagamento criado:', paymentLink);
-      
-      // Atualizar o orçamento com o link de pagamento
+
       console.log('📝 Atualizando orçamento com link:', quote.id, paymentLink.url);
       await updateQuote(quote.id, {
         paymentLink: paymentLink.url
       });
 
-      // Mostrar mensagem de sucesso e abrir o link
       setShowSuccessMessage(true);
       setTimeout(() => {
         setShowSuccessMessage(false);
       }, 3000);
 
-      // Copiar link para a área de transferência
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(paymentLink.url);
       }
 
-      // Configurar dados da notificação
       setPaymentLinkData({
         amount: formatCurrency(quote.finalApprovedAmount),
         customerName: quote.customer.name,
         link: paymentLink.url
       });
 
-      // Mostrar notificação moderna
       setShowPaymentLinkNotification(true);
       setTimeout(() => {
         setShowPaymentLinkNotification(false);
       }, 6000);
 
-      // Abrir o link em nova aba após um pequeno delay
       setTimeout(() => {
         window.open(paymentLink.url, '_blank');
       }, 1000);
 
     } catch (error) {
       console.error('Erro ao gerar link de pagamento:', error);
-      
+
       let errorMsg = 'Erro ao gerar link de pagamento';
-      
-      // Tratamento específico para CORS
+
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         errorMsg = '⚠️ Erro de CORS detectado!\n\nPara resolver este problema:\n1. Configure um backend proxy\n2. Use variáveis de ambiente corretas\n3. Verifique as chaves da API\n\nConsulte a documentação para mais detalhes.';
       } else if (error instanceof Error) {
         errorMsg = error.message;
       }
-      
+
       setErrorMessage(errorMsg);
       setShowErrorMessage(true);
       setTimeout(() => {
@@ -331,7 +311,7 @@ export const QuoteManagement: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#44A17C]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-alencar-green"></div>
       </div>
     );
   }
@@ -340,13 +320,12 @@ export const QuoteManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <h2 className="text-2xl font-bold text-gray-900">Gerenciamento de Orçamentos</h2>
-        
+
         <div className="flex flex-col sm:flex-row gap-4">
-          {/* Filtro de Status */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as 'all' | Quote['status'])}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#44A17C]"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-alencar-green"
           >
             <option value="all">Todos os Status</option>
             <option value="new">Novo</option>
@@ -360,7 +339,6 @@ export const QuoteManagement: React.FC = () => {
             <option value="completed">Concluído</option>
           </select>
 
-          {/* Campo de Busca */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
@@ -368,13 +346,12 @@ export const QuoteManagement: React.FC = () => {
               placeholder="Buscar por nome, email ou telefone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#44A17C] w-full sm:w-64"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-alencar-green w-full sm:w-64"
             />
           </div>
         </div>
       </div>
 
-      {/* Lista de Orçamentos */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {filteredQuotes.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
@@ -417,7 +394,7 @@ export const QuoteManagement: React.FC = () => {
                       <select
                         value={quote.status}
                         onChange={(e) => handleStatusChange(quote.id, e.target.value as Quote['status'])}
-                        className={`px-2 py-1 rounded-full text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#44A17C] ${getStatusColor(quote.status)}`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-alencar-green ${getStatusColor(quote.status)}`}
                       >
                         <option value="new">Novo</option>
                         <option value="analyzing">Analisando</option>
@@ -452,7 +429,7 @@ export const QuoteManagement: React.FC = () => {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => openQuoteDetails(quote)}
-                          className="text-[#44A17C] hover:text-[#3a8f6c] flex items-center"
+                          className="text-alencar-green hover:text-alencar-hover flex items-center"
                           title="Ver detalhes"
                         >
                           <Eye className="h-4 w-4" />
@@ -490,8 +467,8 @@ export const QuoteManagement: React.FC = () => {
                           }}
                           disabled={isGeneratingPayment}
                           className={`flex items-center ${
-                            isGeneratingPayment 
-                              ? 'text-gray-400 cursor-not-allowed' 
+                            isGeneratingPayment
+                              ? 'text-gray-400 cursor-not-allowed'
                               : 'text-orange-600 hover:text-orange-900'
                           }`}
                           title={isGeneratingPayment ? "Gerando link de pagamento..." : "Gerar link de pagamento"}
@@ -522,7 +499,6 @@ export const QuoteManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Modal de Detalhes */}
       {showModal && selectedQuote && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
@@ -543,7 +519,6 @@ export const QuoteManagement: React.FC = () => {
               </div>
 
               <div className="space-y-6">
-                {/* Informações do Cliente */}
                 <div>
                   <h4 className="text-md font-medium text-gray-900 mb-3">Informações do Cliente</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -565,7 +540,6 @@ export const QuoteManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Status */}
                 <div>
                   <h4 className="text-md font-medium text-gray-900 mb-3">Status do Orçamento</h4>
                   <p><strong>Status:</strong>
@@ -575,7 +549,6 @@ export const QuoteManagement: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Itens Selecionados */}
                 <div>
                   <h4 className="text-md font-medium text-gray-900 mb-3">Itens Selecionados</h4>
                   <div className="max-h-60 overflow-y-auto">
@@ -600,7 +573,6 @@ export const QuoteManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Resumo Financeiro */}
                 <div>
                   <h4 className="text-md font-medium text-gray-900 mb-3">Resumo Financeiro</h4>
                   <div className="text-sm space-y-1">
@@ -615,7 +587,6 @@ export const QuoteManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Informações Adicionais */}
                 {(selectedQuote.assignedTo || selectedQuote.internalNotes || selectedQuote.contractLink || selectedQuote.paymentLink) && (
                   <div>
                     <h4 className="text-md font-medium text-gray-900 mb-3">Informações Adicionais</h4>
@@ -627,15 +598,15 @@ export const QuoteManagement: React.FC = () => {
                         <p><strong>Notas Internas:</strong> {selectedQuote.internalNotes}</p>
                       )}
                       {selectedQuote.contractLink && (
-                        <p><strong>Link do Contrato:</strong> 
-                          <a href={selectedQuote.contractLink} target="_blank" rel="noopener noreferrer" className="ml-1 text-[#44A17C] hover:underline">
+                        <p><strong>Link do Contrato:</strong>
+                          <a href={selectedQuote.contractLink} target="_blank" rel="noopener noreferrer" className="ml-1 text-alencar-green hover:underline">
                             Visualizar
                           </a>
                         </p>
                       )}
                       {selectedQuote.paymentLink && (
-                        <p><strong>Link de Pagamento:</strong> 
-                          <a href={selectedQuote.paymentLink} target="_blank" rel="noopener noreferrer" className="ml-1 text-[#44A17C] hover:underline">
+                        <p><strong>Link de Pagamento:</strong>
+                          <a href={selectedQuote.paymentLink} target="_blank" rel="noopener noreferrer" className="ml-1 text-alencar-green hover:underline">
                             Pagar
                           </a>
                         </p>
@@ -644,7 +615,6 @@ export const QuoteManagement: React.FC = () => {
                   </div>
                 )}
 
-                {/* Data de Criação */}
                 <div className="text-sm text-gray-500">
                   <p><strong>Criado em:</strong> {formatDate(selectedQuote.createdAt)}</p>
                 </div>
@@ -663,7 +633,6 @@ export const QuoteManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Edição */}
       {showEditModal && selectedQuote && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
@@ -684,7 +653,6 @@ export const QuoteManagement: React.FC = () => {
               </div>
 
               <div className="space-y-6">
-                {/* Informações do Cliente (readonly) */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="text-md font-medium text-gray-900 mb-2">Cliente</h4>
                   <p className="text-sm text-gray-700">
@@ -695,7 +663,6 @@ export const QuoteManagement: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Responsável pelo Atendimento */}
                 <div>
                   <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-2">
                     Responsável pelo Atendimento
@@ -706,11 +673,10 @@ export const QuoteManagement: React.FC = () => {
                     value={editFormData.assignedTo}
                     onChange={(e) => handleEditFormChange('assignedTo', e.target.value)}
                     placeholder="Digite o nome do responsável pelo atendimento"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-alencar-green focus:border-alencar-green"
                   />
                 </div>
 
-                {/* Observações Internas */}
                 <div>
                   <label htmlFor="internalNotes" className="block text-sm font-medium text-gray-700 mb-2">
                     Observações Internas
@@ -721,11 +687,10 @@ export const QuoteManagement: React.FC = () => {
                     value={editFormData.internalNotes}
                     onChange={(e) => handleEditFormChange('internalNotes', e.target.value)}
                     placeholder="Adicione observações internas sobre este orçamento..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-alencar-green focus:border-alencar-green"
                   />
                 </div>
 
-                {/* Orçamento Final Aprovado */}
                 <div>
                   <label htmlFor="finalApprovedAmount" className="block text-sm font-medium text-gray-700 mb-2">
                     Orçamento Final Aprovado
@@ -740,7 +705,7 @@ export const QuoteManagement: React.FC = () => {
                       value={editFormData.finalApprovedAmount}
                       onChange={(e) => handleEditFormChange('finalApprovedAmount', e.target.value)}
                       placeholder="0,00"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-alencar-green focus:border-alencar-green"
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
@@ -748,7 +713,6 @@ export const QuoteManagement: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Forma de Pagamento */}
                 <div>
                   <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700 mb-2">
                     Forma de Pagamento
@@ -757,7 +721,7 @@ export const QuoteManagement: React.FC = () => {
                     id="paymentMethod"
                     value={editFormData.paymentMethod}
                     onChange={(e) => handleEditFormChange('paymentMethod', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-alencar-green focus:border-alencar-green"
                   >
                     <option value="">Selecione a forma de pagamento</option>
                     <option value="À vista - PIX">À vista - PIX</option>
@@ -788,10 +752,10 @@ export const QuoteManagement: React.FC = () => {
                 <button
                   onClick={handleSaveEdit}
                   disabled={isSaving}
-                  className={`px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#44A17C] flex items-center ${
-                    isSaving 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-[#44A17C] hover:bg-[#3a8f6c]'
+                  className={`px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-alencar-green flex items-center ${
+                    isSaving
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'btn-primary'
                   }`}
                 >
                   {isSaving && (
@@ -808,7 +772,6 @@ export const QuoteManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Mensagem de Sucesso */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-fade-in">
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -818,7 +781,6 @@ export const QuoteManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Notificação de Link de Pagamento */}
       {showPaymentLinkNotification && (
         <div className="fixed top-4 right-4 max-w-md bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
           <div className="p-6">
@@ -857,7 +819,6 @@ export const QuoteManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Mensagem de Erro */}
       {showErrorMessage && (
         <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-fade-in">
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -867,7 +828,6 @@ export const QuoteManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Contract Generation Modal */}
       {selectedQuoteForContract && (
         <ContractGenerationModal
           isOpen={showContractModal}

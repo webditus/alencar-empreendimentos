@@ -18,7 +18,6 @@ export const UserManagement: React.FC = () => {
 
   const { createUser, getAllUsers, deleteUser, sendPasswordResetEmail } = useAuth();
 
-  // Carregar usuários ao montar o componente
   useEffect(() => {
     loadUsers();
   }, []);
@@ -46,16 +45,14 @@ export const UserManagement: React.FC = () => {
 
     try {
       const result = await createUser(email, password, name, role);
-      
+
       if (result.success) {
         setMessage({ type: 'success', text: 'Usuário criado com sucesso!' });
-        // Limpar formulário
         setEmail('');
         setPassword('');
         setName('');
         setRole('user');
         setShowCreateForm(false);
-        // Recarregar lista de usuários
         loadUsers();
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao criar usuário' });
@@ -105,12 +102,12 @@ export const UserManagement: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Users className="text-[#44A17C]" size={24} />
-          <h2 className="text-xl font-semibold text-[#3e514f]">Gerenciar Usuários</h2>
+          <Users className="text-alencar-green" size={24} />
+          <h2 className="text-xl font-semibold text-alencar-dark">Gerenciar Usuários</h2>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="flex items-center gap-2 bg-[#44A17C] text-white px-4 py-2 rounded-lg hover:bg-[#3a8d6a] transition-colors"
+          className="btn-primary flex items-center gap-2"
         >
           <UserPlus size={18} />
           Novo Usuário
@@ -119,8 +116,8 @@ export const UserManagement: React.FC = () => {
 
       {message && (
         <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${
-          message.type === 'success' 
-            ? 'bg-green-50 text-green-700 border border-green-200' 
+          message.type === 'success'
+            ? 'bg-green-50 text-green-700 border border-green-200'
             : 'bg-red-50 text-red-700 border border-red-200'
         }`}>
           {message.type === 'success' ? (
@@ -134,8 +131,8 @@ export const UserManagement: React.FC = () => {
 
       {showCreateForm && (
         <div className="border rounded-lg p-6 mb-6 bg-gray-50">
-          <h3 className="text-lg font-medium text-[#3e514f] mb-4">Criar Novo Usuário</h3>
-          
+          <h3 className="text-lg font-medium text-alencar-dark mb-4">Criar Novo Usuário</h3>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -146,7 +143,7 @@ export const UserManagement: React.FC = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-transparent"
+                  className="input-base"
                   required
                 />
               </div>
@@ -159,7 +156,7 @@ export const UserManagement: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-transparent"
+                  className="input-base"
                   required
                 />
               </div>
@@ -173,7 +170,7 @@ export const UserManagement: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-transparent"
+                    className="input-base pr-10"
                     minLength={6}
                     required
                   />
@@ -195,7 +192,7 @@ export const UserManagement: React.FC = () => {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as 'admin' | 'user')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#44A17C] focus:border-transparent"
+                  className="input-base"
                 >
                   <option value="user">Usuário</option>
                   <option value="admin">Administrador</option>
@@ -207,7 +204,7 @@ export const UserManagement: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex items-center gap-2 bg-[#44A17C] text-white px-6 py-2 rounded-lg hover:bg-[#3a8d6a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -221,7 +218,7 @@ export const UserManagement: React.FC = () => {
                   </>
                 )}
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => {
@@ -241,18 +238,17 @@ export const UserManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Lista de Usuários */}
       <div className="border rounded-lg overflow-hidden">
         <div className="bg-gray-50 px-6 py-4 border-b">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium text-[#3e514f] flex items-center gap-2">
+            <h3 className="text-lg font-medium text-alencar-dark flex items-center gap-2">
               <Users size={20} />
               Usuários Cadastrados ({users.length})
             </h3>
             <button
               onClick={loadUsers}
               disabled={isLoadingUsers}
-              className="flex items-center gap-2 text-[#44A17C] hover:text-[#3a8d6a] transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 text-alencar-green hover:text-alencar-hover transition-colors disabled:opacity-50"
             >
               <RotateCcw size={16} className={isLoadingUsers ? 'animate-spin' : ''} />
               Atualizar
@@ -262,7 +258,7 @@ export const UserManagement: React.FC = () => {
 
         {isLoadingUsers ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#44A17C] mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-alencar-green mx-auto mb-4"></div>
             <p className="text-gray-500">Carregando usuários...</p>
           </div>
         ) : users.length === 0 ? (
@@ -295,7 +291,7 @@ export const UserManagement: React.FC = () => {
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-br from-[#44A17C] to-[#3e514f] rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-alencar-green rounded-full flex items-center justify-center">
                           <UserIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="ml-4">
@@ -309,8 +305,8 @@ export const UserManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.role === 'admin' 
-                          ? 'bg-purple-100 text-purple-800' 
+                        user.role === 'admin'
+                          ? 'bg-purple-100 text-purple-800'
                           : 'bg-blue-100 text-blue-800'
                       }`}>
                         {user.role === 'admin' ? <Shield size={12} /> : <UserIcon size={12} />}
@@ -347,7 +343,6 @@ export const UserManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Modal de Confirmação de Exclusão */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
@@ -360,11 +355,11 @@ export const UserManagement: React.FC = () => {
                 <p className="text-sm text-gray-500">Esta ação não pode ser desfeita</p>
               </div>
             </div>
-            
+
             <p className="text-gray-700 mb-6">
               Tem certeza que deseja excluir este usuário? Todos os dados relacionados serão perdidos permanentemente.
             </p>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowDeleteConfirm(null)}

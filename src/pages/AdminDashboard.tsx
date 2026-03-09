@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  LogOut, 
+import {
+  LogOut,
   FileText,
   Package,
   Kanban,
@@ -35,21 +35,20 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-alencar-bg">
+      <header className="bg-alencar-dark shadow-sm">
+        <div className="page-container !py-0">
           <div className="flex justify-between items-center py-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
-              <p className="text-sm text-gray-600">Alencar Empreendimentos</p>
+              <h1 className="text-2xl font-bold text-white">Dashboard Admin</h1>
+              <p className="text-sm text-gray-400">Alencar Empreendimentos</p>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <OperationToggle />
               <button
                 onClick={handleLogout}
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               >
                 <LogOut className="mr-2" size={18} />
                 Sair
@@ -59,9 +58,8 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="bg-alencar-dark border-b border-white/10">
+        <div className="page-container !py-0">
           <div className="flex space-x-8">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -71,8 +69,8 @@ export const AdminDashboard: React.FC = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
-                      ? 'border-[#44A17C] text-[#44A17C]'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-alencar-green-light text-white'
+                      : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
                   }`}
                 >
                   <Icon className="mr-2" size={18} />
@@ -84,8 +82,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </nav>
 
-      {/* Content */}
-      <main className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="page-container">
         {activeTab === 'quotes' && <QuoteManagement />}
         {activeTab === 'kanban' && <KanbanBoard />}
         {activeTab === 'categories' && <CategoryManagement />}

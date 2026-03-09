@@ -20,7 +20,6 @@ const ContractManagementRefactor: React.FC = () => {
     toggleContractStatus
   } = useContract();
 
-  // Estados do modal
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     mode: 'create' | 'edit' | 'view';
@@ -30,10 +29,9 @@ const ContractManagementRefactor: React.FC = () => {
     mode: 'create',
     selectedContract: null
   });
-  
+
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // Ações
   const handleCreate = () => {
     setModalState({
       isOpen: true,
@@ -94,15 +92,14 @@ const ContractManagementRefactor: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-alencar-green"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      
-      {/* Header */}
+
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Gerenciamento de Contratos</h2>
@@ -112,14 +109,13 @@ const ContractManagementRefactor: React.FC = () => {
         </div>
         <button
           onClick={handleCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
+          className="btn-primary flex items-center gap-2 shadow-sm"
         >
           <Plus className="w-5 h-5" />
           Novo Contrato
         </button>
       </div>
 
-      {/* Error Alert */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           <div className="flex">
@@ -138,7 +134,6 @@ const ContractManagementRefactor: React.FC = () => {
         </div>
       )}
 
-      {/* Table */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
         {contracts.length === 0 ? (
           <div className="text-center py-12">
@@ -153,7 +148,7 @@ const ContractManagementRefactor: React.FC = () => {
             </p>
             <button
               onClick={handleCreate}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+              className="btn-primary inline-flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Criar Primeiro Contrato
@@ -200,8 +195,8 @@ const ContractManagementRefactor: React.FC = () => {
                     <button
                       onClick={() => handleToggleStatus(contract.id, contract.isActive)}
                       className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
-                        contract.isActive 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                        contract.isActive
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
                           : 'bg-red-100 text-red-800 hover:bg-red-200'
                       }`}
                     >
@@ -228,7 +223,7 @@ const ContractManagementRefactor: React.FC = () => {
                     <div className="flex items-center gap-2 justify-end">
                       <button
                         onClick={() => handleView(contract)}
-                        className="text-blue-600 hover:text-blue-900 transition-colors"
+                        className="text-alencar-green hover:text-alencar-hover transition-colors"
                         title="Visualizar"
                       >
                         <Eye className="w-4 h-4" />
@@ -256,7 +251,6 @@ const ContractManagementRefactor: React.FC = () => {
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
@@ -284,7 +278,6 @@ const ContractManagementRefactor: React.FC = () => {
         </div>
       )}
 
-      {/* Contract Form Modal */}
       {modalState.mode !== 'view' && (
         <ContractFormRefactor
           contract={modalState.selectedContract}
@@ -294,7 +287,6 @@ const ContractManagementRefactor: React.FC = () => {
         />
       )}
 
-      {/* View Modal */}
       {modalState.mode === 'view' && modalState.selectedContract && modalState.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
@@ -315,7 +307,7 @@ const ContractManagementRefactor: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 p-6 overflow-y-auto">
-              <div 
+              <div
                 className="prose max-w-none"
                 dangerouslySetInnerHTML={{ __html: modalState.selectedContract.content || '<p>Sem conteúdo</p>' }}
               />
@@ -323,7 +315,7 @@ const ContractManagementRefactor: React.FC = () => {
             <div className="p-6 border-t border-gray-200">
               <button
                 onClick={() => handleEdit(modalState.selectedContract!)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                className="btn-primary inline-flex items-center gap-2"
               >
                 <Edit className="w-4 h-4" />
                 Editar Contrato

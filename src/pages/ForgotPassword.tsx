@@ -21,7 +21,6 @@ export const ForgotPassword: React.FC = () => {
     setError('');
     setIsLoading(true);
 
-    // Validação do email
     if (!validateEmail(email)) {
       setError('Por favor, insira um endereço de email válido');
       setIsLoading(false);
@@ -30,7 +29,7 @@ export const ForgotPassword: React.FC = () => {
 
     try {
       const result = await sendPasswordResetEmail(email);
-      
+
       if (result.success) {
         setIsSuccess(true);
       } else {
@@ -45,20 +44,20 @@ export const ForgotPassword: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#a2b2b0] to-[#44A17C] flex items-center justify-center px-4">
-        <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md text-center">
+      <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
+        <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="text-green-600" size={32} />
             </div>
           </div>
-          
+
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Email Enviado!</h1>
           <p className="text-gray-600 mb-6">
-            Enviamos um link de redefinição de senha para <strong>{email}</strong>. 
+            Enviamos um link de redefinição de senha para <strong>{email}</strong>.
             Verifique sua caixa de entrada e spam.
           </p>
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
             <h4 className="text-blue-800 font-medium text-sm mb-2 flex items-center gap-2">
               <Mail size={16} />
@@ -71,23 +70,23 @@ export const ForgotPassword: React.FC = () => {
               <li>4. Faça login com a nova senha</li>
             </ul>
           </div>
-          
+
           <div className="space-y-3">
             <button
               onClick={() => navigate('/login')}
-              className="w-full bg-gradient-to-r from-[#44A17C] to-[#3e514f] text-white py-3 rounded-lg hover:from-[#3e514f] hover:to-[#44A17C] transition-all font-semibold flex items-center justify-center gap-2"
+              className="w-full btn-primary-lg flex items-center justify-center gap-2"
             >
               <ArrowLeft size={16} />
               Voltar ao Login
             </button>
-            
+
             <button
               onClick={() => {
                 setIsSuccess(false);
                 setEmail('');
                 setError('');
               }}
-              className="w-full text-[#44A17C] hover:text-[#3e514f] font-medium py-2"
+              className="w-full text-alencar-green hover:text-alencar-hover font-medium py-2 transition-colors"
             >
               Enviar para outro email
             </button>
@@ -98,15 +97,15 @@ export const ForgotPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#a2b2b0] to-[#44A17C] flex items-center justify-center px-4">
-      <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
+      <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#44A17C] to-[#3e514f] rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-alencar-green rounded-full flex items-center justify-center">
               <Mail className="text-white" size={24} />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-[#3e514f] mb-2">Esqueci minha Senha</h1>
+          <h1 className="section-title mb-2">Esqueci minha Senha</h1>
           <p className="text-gray-600">
             Digite seu email para receber um link de redefinição de senha
           </p>
@@ -122,7 +121,7 @@ export const ForgotPassword: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44A17C] focus:border-[#44A17C]"
+                className="input-base pl-12"
                 placeholder="seu@email.com"
                 required
               />
@@ -136,10 +135,10 @@ export const ForgotPassword: React.FC = () => {
               Como funciona:
             </h4>
             <ul className="text-amber-700 text-sm space-y-1">
-              <li>• Você receberá um email com link seguro</li>
-              <li>• O link expira em 1 hora por segurança</li>
-              <li>• Clique no link para criar nova senha</li>
-              <li>• Use a nova senha para fazer login</li>
+              <li>Você receberá um email com link seguro</li>
+              <li>O link expira em 1 hora por segurança</li>
+              <li>Clique no link para criar nova senha</li>
+              <li>Use a nova senha para fazer login</li>
             </ul>
           </div>
 
@@ -153,7 +152,7 @@ export const ForgotPassword: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading || !email}
-            className="w-full bg-gradient-to-r from-[#44A17C] to-[#3e514f] text-white py-3 rounded-lg hover:from-[#3e514f] hover:to-[#44A17C] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full btn-primary-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>
@@ -172,17 +171,17 @@ export const ForgotPassword: React.FC = () => {
         <div className="mt-6 text-center space-y-3">
           <button
             onClick={() => navigate('/login')}
-            className="text-gray-600 hover:text-[#44A17C] font-medium flex items-center justify-center gap-2 mx-auto"
+            className="text-gray-600 hover:text-alencar-green font-medium flex items-center justify-center gap-2 mx-auto transition-colors"
           >
             <ArrowLeft size={16} />
             Voltar ao Login
           </button>
-          
+
           <div className="text-xs text-gray-500">
-            Lembrou da sua senha? 
+            Lembrou da sua senha?
             <button
               onClick={() => navigate('/login')}
-              className="text-[#44A17C] hover:text-[#3e514f] font-medium ml-1"
+              className="text-alencar-green hover:text-alencar-hover font-medium ml-1 transition-colors"
             >
               Fazer login
             </button>
