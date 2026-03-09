@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Quote } from '../types';
 import { useQuotes } from '../contexts/QuoteContext';
 import { formatCurrency, formatDate, formatPhone } from '../utils/formatters';
-import { Eye, Trash2, Search, Edit, FileText, CreditCard, CheckCircle, Copy, ExternalLink } from 'lucide-react';
+import { Eye, Trash2, Search, CreditCard as Edit, FileText, CreditCard, CheckCircle, Copy, ExternalLink } from 'lucide-react';
 import { createPaymentLink, validateAsaasConfig, diagnoseAsaasConfig } from '../services/asaasIntegration';
 import ContractGenerationModal from './contracts/ContractGenerationModal';
 import { ContractSigningService } from '../services/contractSigningService';

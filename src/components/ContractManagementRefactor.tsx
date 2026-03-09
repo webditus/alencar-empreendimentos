@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useContract } from '../contexts/ContractContext';
 import { ContractTemplate } from '../types/contract';
-import { Trash2, Edit, Eye, Plus, ToggleLeft, ToggleRight, X } from 'lucide-react';
+import { Trash2, CreditCard as Edit, Eye, Plus, ToggleLeft, ToggleRight, X } from 'lucide-react';
 import ContractFormRefactor from './ContractFormRefactor';
 
 const CONTRACT_TYPE_LABELS = {

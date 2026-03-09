@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useContract } from '../contexts/ContractContext';
 import { ContractTemplate } from '../types/contract';
-import { Trash2, Edit, Eye, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Trash2, CreditCard as Edit, Eye, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import ContractFormNew from './ContractFormNew';
 import { formatDate } from '../utils/formatters';
 
