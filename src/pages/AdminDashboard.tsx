@@ -47,7 +47,7 @@ export const AdminDashboard: React.FC = () => {
   const sidebarWidth = sidebarCollapsed ? 72 : 260;
 
   return (
-    <div className="min-h-screen bg-alencar-bg flex">
+    <div className="min-h-screen bg-alencar-dark flex">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -55,11 +55,10 @@ export const AdminDashboard: React.FC = () => {
 
       <Header
         onLogout={handleLogout}
-        sidebarWidth={sidebarWidth}
       />
 
       <main
-        className="flex-1 transition-[margin-left] duration-300 ease-in-out pt-16"
+        className="flex-1 min-h-screen bg-alencar-bg transition-[margin-left] duration-300 ease-in-out pt-16"
         style={{ marginLeft: sidebarWidth }}
       >
         <div className="max-w-7xl mx-auto px-6 py-8">

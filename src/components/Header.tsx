@@ -5,16 +5,14 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   onLogout: () => void;
-  sidebarWidth: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onLogout, sidebarWidth }) => {
+export const Header: React.FC<HeaderProps> = ({ onLogout }) => {
   const { user } = useAuth();
 
   return (
     <header
-      className="fixed top-0 right-0 z-30 h-16 bg-alencar-dark border-b border-white/[0.06] transition-[left] duration-300 ease-in-out"
-      style={{ left: sidebarWidth }}
+      className="fixed top-0 left-0 right-0 w-full z-30 h-16 bg-alencar-dark border-b border-white/[0.06]"
     >
       <div className="flex items-center justify-between h-full px-6">
         <div />
