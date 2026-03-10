@@ -92,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogo
   return (
     <aside
       className={`
-        sidebar-root fixed top-0 left-0 h-screen z-40 flex flex-col
+        sidebar-root fixed top-0 left-0 h-screen z-40 flex flex-col overflow-x-hidden
         bg-alencar-dark border-r border-white/[0.06]
         transition-[width] duration-300 ease-in-out
         ${collapsed ? 'w-[72px]' : 'w-[260px]'}
@@ -110,13 +110,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogo
         )}
       </div>
 
-      {!collapsed && (
-        <div className="px-4 py-3 border-b border-white/[0.06]">
-          <OperationToggle />
-        </div>
-      )}
+      <div className={`border-b border-white/[0.06] w-full overflow-hidden ${collapsed ? 'px-3 py-3 flex items-center justify-center' : 'px-4 py-3'}`}>
+        <OperationToggle collapsed={collapsed} />
+      </div>
 
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6 sidebar-scrollbar">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6 sidebar-scrollbar">
         {sidebarSections.map((section) => {
           const sectionItems = visibleItems.filter((item) => item.section === section.key);
           if (sectionItems.length === 0) return null;
