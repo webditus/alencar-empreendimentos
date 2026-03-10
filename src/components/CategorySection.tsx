@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check } from 'lucide-react';
 import { Category, Item } from '../types';
 import { formatCurrency } from '../utils/formatters';
 import { ImageThumbnail } from './ImageThumbnail';
@@ -27,12 +28,17 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
           return (
             <label
               key={item.id}
-              className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01] ${
+              className={`relative flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01] ${
                 isSelected(item)
-                  ? 'border-alencar-green/60 bg-alencar-green/15'
+                  ? 'border-alencar-green bg-alencar-green/10 ring-1 ring-alencar-green/40'
                   : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
               }`}
             >
+              {isSelected(item) && (
+                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-alencar-green text-white flex items-center justify-center">
+                  <Check size={12} strokeWidth={3} />
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -40,7 +46,9 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                   onChange={() => onItemToggle(item)}
                   className="w-5 h-5 text-alencar-green rounded focus:ring-alencar-green focus:ring-2 accent-alencar-green"
                 />
-                <ImageThumbnail imageUrl={imageUrl} altText={item.name} />
+                <div className={`transition-all duration-200 ${isSelected(item) ? 'text-alencar-green' : 'text-gray-400'}`}>
+                  <ImageThumbnail imageUrl={imageUrl} altText={item.name} />
+                </div>
                 <span className="text-white font-medium">{item.name}</span>
               </div>
               <span className="text-alencar-green-light font-bold text-lg">
