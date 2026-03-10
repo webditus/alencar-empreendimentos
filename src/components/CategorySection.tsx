@@ -28,14 +28,14 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
           return (
             <label
               key={item.id}
-              className={`relative flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01] ${
+              className={`relative flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
                 isSelected(item)
-                  ? 'border-alencar-green bg-alencar-green/10 ring-1 ring-alencar-green/40'
-                  : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                  ? 'border-alencar-green bg-alencar-green/10 ring-2 ring-alencar-green/40 scale-[1.01]'
+                  : 'border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5'
               }`}
             >
               {isSelected(item) && (
-                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-alencar-green text-white flex items-center justify-center">
+                <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-alencar-green text-white flex items-center justify-center">
                   <Check size={12} strokeWidth={3} />
                 </div>
               )}
@@ -51,7 +51,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 </div>
                 <span className="text-white font-medium">{item.name}</span>
               </div>
-              <span className="text-alencar-green-light font-bold text-lg">
+              <span className={`transition-all duration-200 ${isSelected(item) ? 'text-white font-semibold text-lg' : 'text-gray-300 font-medium'}`}>
                 {formatCurrency(item.price)}
               </span>
             </label>

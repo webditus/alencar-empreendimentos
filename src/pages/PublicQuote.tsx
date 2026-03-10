@@ -258,9 +258,9 @@ export const PublicQuote: React.FC = () => {
                     ))}
                   </div>
                   <div className="border-t border-white/10 pt-3 mb-6">
-                    <div className="flex justify-between text-xl font-bold">
-                      <span className="text-white">Total:</span>
-                      <span className="text-alencar-green-light">{formatCurrency(totalPrice)}</span>
+                    <div className="flex justify-between items-end">
+                      <span className="text-xs uppercase tracking-wide text-gray-400">Total:</span>
+                      <span className="text-3xl font-bold text-white">{formatCurrency(totalPrice)}</span>
                     </div>
                   </div>
 
