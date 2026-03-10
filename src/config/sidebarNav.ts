@@ -1,11 +1,4 @@
-import {
-  FileText,
-  Kanban,
-  Package,
-  Users,
-  FileCheck,
-  LucideIcon,
-} from 'lucide-react';
+import { FileText, Kanban, Package, Users, FileCheck, Video as LucideIcon } from 'lucide-react';
 
 export type TabId = 'quotes' | 'kanban' | 'categories' | 'users' | 'contracts';
 
