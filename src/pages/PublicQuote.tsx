@@ -5,6 +5,7 @@ import { CategorySection } from '../components/CategorySection';
 import { QuoteModal } from '../components/QuoteModal';
 import { PublicOperationToggle } from '../components/PublicOperationToggle';
 import { ContainerSizeSelector, ContainerSize } from '../components/ContainerSizeSelector';
+import { Logo } from '../components/Logo';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
 import { Customer, Item, Quote } from '../types';
@@ -132,43 +133,46 @@ export const PublicQuote: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-alencar-dark">
-      <div className="page-container">
-        <div className="text-center mb-8">
-          <div className="bg-white rounded-card shadow-card p-8 mb-6">
-            <h1 className="text-4xl font-bold text-alencar-dark mb-2">
-              Calculadora de Preços
-            </h1>
-            <h2 className="text-2xl text-alencar-green mb-4">Alencar Empreendimentos</h2>
-            <div className="flex items-center justify-center gap-2 text-lg">
-              <Calculator className="text-alencar-green" size={24} />
-              <span className="text-gray-600">
-                {selectedContainer ? (
-                  `Container ${selectedContainer.size}: ${formatCurrency(basePrice)}${isVenda ? '' : ' mensal'}`
-                ) : (
-                  'Selecione um container para ver o preço'
-                )}
-              </span>
+      <div className="bg-alencar-gradient relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(36,82,71,0.3),transparent_60%)]" />
+        <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <Logo variant="horizontal" darkBackground={true} className="h-12 md:h-16" />
+
+            <div className="space-y-3">
+              <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                Calculadora de Precos
+              </h1>
+              <p className="text-alencar-green-light text-lg md:text-xl max-w-xl mx-auto">
+                Monte seu container personalizado com precos transparentes
+              </p>
             </div>
-            <div className="mt-4">
-              <span className="text-lg text-gray-600">
-                Modo atual:
-                <span className={`font-semibold ml-2 ${isVenda ? 'text-blue-500' : 'text-green-500'}`}>
-                  {isVenda ? 'Compra' : 'Aluguel'}
+
+            <PublicOperationToggle />
+
+            {selectedContainer && (
+              <div className="flex items-center gap-2 text-white/70 text-sm">
+                <Calculator className="text-alencar-green-light" size={18} />
+                <span>
+                  Container {selectedContainer.size}: {formatCurrency(basePrice)}
+                  {isVenda ? '' : ' mensal'}
                 </span>
-              </span>
-            </div>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
 
-          <PublicOperationToggle />
-
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="mb-10">
           <ContainerSizeSelector
             selectedSize={selectedContainer}
             onSizeSelect={setSelectedContainer}
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10">
+          <div>
             <h3 className="text-2xl font-bold text-white mb-6">Selecione os itens desejados:</h3>
             {categories.map((category) => (
               <CategorySection
@@ -181,11 +185,11 @@ export const PublicQuote: React.FC = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white rounded-card shadow-card p-6 sticky top-4">
-              <h3 className="text-xl font-bold text-alencar-dark mb-4">Resumo do Orçamento</h3>
+            <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-card shadow-xl p-6 sticky top-4 shadow-glow animate-fade-up">
+              <h3 className="text-xl font-bold text-alencar-dark mb-4">Resumo do Orcamento</h3>
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
-                  <span>Container base:</span>
+                  <span className="text-gray-600">Container base:</span>
                   <span className="font-semibold">
                     {selectedContainer ? formatCurrency(basePrice) : 'R$ 0,00'}
                   </span>
@@ -288,7 +292,7 @@ export const PublicQuote: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Endereço da instalação *
+                      Endereco da instalacao *
                     </label>
                     <input
                       type="text"
@@ -319,7 +323,7 @@ export const PublicQuote: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Finalidade de uso do container * (múltipla escolha)
+                      Finalidade de uso do container * (multipla escolha)
                     </label>
                     <div className="space-y-2">
                       {PURPOSE_OPTIONS.map((purpose) => (
@@ -328,7 +332,7 @@ export const PublicQuote: React.FC = () => {
                             type="checkbox"
                             value={purpose}
                             {...register('purpose', { required: 'Selecione pelo menos uma finalidade' })}
-                            className="mr-2 w-4 h-4 text-alencar-green rounded focus:ring-alencar-green"
+                            className="mr-2 w-4 h-4 text-alencar-green rounded focus:ring-alencar-green accent-alencar-green"
                           />
                           <span className="text-sm text-gray-700">{purpose}</span>
                         </label>
@@ -348,14 +352,14 @@ export const PublicQuote: React.FC = () => {
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    {selectedContainer ? 'Gerar Orçamento' : 'Selecione um Container'}
+                    {selectedContainer ? 'Gerar Orcamento' : 'Selecione um Container'}
                   </button>
                 </form>
               </div>
 
               {currentQuote && (
                 <div className="border-t pt-6 mt-6">
-                  <h3 className="text-xl font-bold text-alencar-dark mb-4">Orçamento Gerado!</h3>
+                  <h3 className="text-xl font-bold text-alencar-dark mb-4">Orcamento Gerado!</h3>
                   <div className="space-y-3">
                     <button
                       onClick={handleDownloadPDF}
@@ -366,21 +370,21 @@ export const PublicQuote: React.FC = () => {
                     </button>
                     <button
                       onClick={handleWhatsApp}
-                      className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-button hover:bg-green-700 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-button hover:bg-green-700 transition-all duration-200 hover:scale-[1.02]"
                     >
                       <MessageCircle size={20} />
                       Enviar via WhatsApp
                     </button>
                     <button
                       onClick={handleEmail}
-                      className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-button hover:bg-blue-700 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-button hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02]"
                     >
                       <Mail size={20} />
                       Enviar por E-mail
                     </button>
                     <button
                       onClick={handleViewDetails}
-                      className="w-full flex items-center justify-center gap-2 bg-gray-600 text-white py-3 rounded-button hover:bg-gray-700 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 bg-gray-600 text-white py-3 rounded-button hover:bg-gray-700 transition-all duration-200 hover:scale-[1.02]"
                     >
                       <Eye size={20} />
                       Ver Detalhes
@@ -390,6 +394,15 @@ export const PublicQuote: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="border-t border-white/10 mt-16">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <Logo variant="horizontal" darkBackground={true} className="h-8 opacity-60" />
+          <p className="text-white/40 text-sm">
+            Precisao, tecnologia e construcao inteligente.
+          </p>
         </div>
       </div>
 

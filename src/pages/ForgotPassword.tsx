@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle, XCircle, Building2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Logo } from '../components/Logo';
 
 export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -44,8 +45,8 @@ export const ForgotPassword: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
-        <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md text-center">
+      <div className="min-h-screen bg-alencar-gradient flex items-center justify-center px-4">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-card shadow-modal p-8 w-full max-w-md text-center animate-fade-up">
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="text-green-600" size={32} />
@@ -61,13 +62,13 @@ export const ForgotPassword: React.FC = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
             <h4 className="text-blue-800 font-medium text-sm mb-2 flex items-center gap-2">
               <Mail size={16} />
-              Próximos passos:
+              Proximos passos:
             </h4>
             <ul className="text-blue-700 text-sm space-y-1">
               <li>1. Verifique seu email (incluindo spam)</li>
               <li>2. Clique no link recebido</li>
               <li>3. Defina sua nova senha</li>
-              <li>4. Faça login com a nova senha</li>
+              <li>4. Faca login com a nova senha</li>
             </ul>
           </div>
 
@@ -97,24 +98,22 @@ export const ForgotPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
-      <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md">
+    <div className="min-h-screen bg-alencar-gradient flex items-center justify-center px-4">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-card shadow-modal p-8 w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-alencar-green rounded-full flex items-center justify-center">
-              <Mail className="text-white" size={24} />
-            </div>
+          <div className="flex items-center justify-center mb-6">
+            <Logo variant="vertical" darkBackground={false} className="h-28" />
           </div>
           <h1 className="section-title mb-2">Esqueci minha Senha</h1>
           <p className="text-gray-600">
-            Digite seu email para receber um link de redefinição de senha
+            Digite seu email para receber um link de redefinicao de senha
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Endereço de Email
+              Endereco de Email
             </label>
             <div className="relative">
               <input
@@ -135,8 +134,8 @@ export const ForgotPassword: React.FC = () => {
               Como funciona:
             </h4>
             <ul className="text-amber-700 text-sm space-y-1">
-              <li>Você receberá um email com link seguro</li>
-              <li>O link expira em 1 hora por segurança</li>
+              <li>Voce recebeera um email com link seguro</li>
+              <li>O link expira em 1 hora por seguranca</li>
               <li>Clique no link para criar nova senha</li>
               <li>Use a nova senha para fazer login</li>
             </ul>
@@ -162,7 +161,7 @@ export const ForgotPassword: React.FC = () => {
             ) : (
               <>
                 <Mail size={20} />
-                Enviar Link de Redefinição
+                Enviar Link de Redefinicao
               </>
             )}
           </button>

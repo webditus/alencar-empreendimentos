@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, Building2, Key } from 'lucide-react';
+import { LogIn, Key } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Logo } from '../components/Logo';
 
 export const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -31,14 +32,14 @@ export const AdminLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
-      <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md">
+    <div className="min-h-screen bg-alencar-gradient flex items-center justify-center px-4">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-card shadow-modal p-8 w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Building2 className="text-alencar-green" size={48} />
+          <div className="flex items-center justify-center mb-6">
+            <Logo variant="vertical" darkBackground={false} className="h-28" />
           </div>
-          <h1 className="section-title mb-2">Área Administrativa</h1>
-          <p className="text-gray-600">Alencar Empreendimentos</p>
+          <h1 className="section-title mb-2">Area Administrativa</h1>
+          <p className="text-gray-500 text-sm">Acesse o painel de controle</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

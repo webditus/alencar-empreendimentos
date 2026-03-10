@@ -37,11 +37,11 @@
   }
 
   .btn-primary {
-    @apply bg-alencar-green text-white hover:bg-alencar-hover rounded-button px-4 py-2 font-medium transition-colors;
+    @apply bg-gradient-to-r from-alencar-green to-alencar-hover text-white rounded-button px-4 py-2 font-medium shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200;
   }
 
   .btn-primary-lg {
-    @apply bg-alencar-green text-white hover:bg-alencar-hover rounded-button px-6 py-3 font-semibold text-lg transition-colors;
+    @apply bg-gradient-to-r from-alencar-green to-alencar-hover text-white rounded-button px-6 py-3 font-semibold text-lg shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200;
   }
 
   .btn-secondary {
@@ -66,6 +66,22 @@
 
   .badge-inactive {
     @apply bg-red-100 text-red-800 rounded-tag px-2 py-0.5 text-xs font-medium;
+  }
+
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/30 shadow-xl rounded-card;
+  }
+
+  .card-glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/30 shadow-xl rounded-card p-6 hover:shadow-2xl transition-all duration-300;
+  }
+
+  .header-glass {
+    @apply bg-alencar-dark/90 backdrop-blur-md border-b border-white/10;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center;
   }
 }
 

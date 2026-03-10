@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { Logo } from '../components/Logo';
 
 export const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -87,8 +88,8 @@ export const ResetPassword: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
-        <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md text-center">
+      <div className="min-h-screen bg-alencar-gradient flex items-center justify-center px-4">
+        <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-card shadow-modal p-8 w-full max-w-md text-center animate-fade-up">
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="text-green-600" size={32} />
@@ -113,13 +114,11 @@ export const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-alencar-dark flex items-center justify-center px-4">
-      <div className="bg-white rounded-card shadow-modal p-8 w-full max-w-md">
+    <div className="min-h-screen bg-alencar-gradient flex items-center justify-center px-4">
+      <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-card shadow-modal p-8 w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-alencar-green rounded-full flex items-center justify-center">
-              <Lock className="text-white" size={24} />
-            </div>
+          <div className="flex items-center justify-center mb-6">
+            <Logo variant="vertical" darkBackground={false} className="h-28" />
           </div>
           <h1 className="section-title mb-2">Redefinir Senha</h1>
           <p className="text-gray-600">Escolha uma nova senha segura para sua conta</p>

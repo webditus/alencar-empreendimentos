@@ -3,6 +3,7 @@ import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, E
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
 import { formatCurrency } from '../utils/formatters';
+import { ContainerImageManager } from './ContainerImageManager';
 
 export const CategoryManagement: React.FC = () => {
   const {
@@ -94,11 +95,15 @@ export const CategoryManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <div className="bg-white rounded-card shadow-card p-6">
+        <ContainerImageManager />
+      </div>
+
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-alencar-dark">Gerenciar Categorias e Itens</h2>
           <p className="text-gray-600">
-            Modo: <span className={`font-semibold ${isVenda ? 'text-blue-600' : 'text-green-600'}`}>
+            Modo: <span className={`font-semibold ${isVenda ? 'text-alencar-green' : 'text-alencar-green-light'}`}>
               {isVenda ? 'Venda' : 'Aluguel'}
             </span> - Configure os itens disponíveis
           </p>
@@ -115,8 +120,8 @@ export const CategoryManagement: React.FC = () => {
       </div>
 
       {showAddCategory && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-card shadow-modal p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Nova Categoria</h3>
             <input
               type="text"
@@ -148,7 +153,7 @@ export const CategoryManagement: React.FC = () => {
 
       <div className="space-y-6">
         {categories.map((category) => (
-          <div key={category.id} className="bg-white rounded-lg shadow-lg p-6">
+          <div key={category.id} className="bg-white rounded-card shadow-card p-6">
             <div className="flex items-center justify-between mb-4">
               {editingCategory === category.id ? (
                 <div className="flex items-center gap-3 flex-1">

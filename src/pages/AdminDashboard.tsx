@@ -15,6 +15,7 @@ import { KanbanBoard } from '../components/KanbanBoard';
 import { UserManagement } from '../components/UserManagement';
 import { QuoteManagement } from '../components/QuoteManagement';
 import ContractManagementRefactor from '../components/ContractManagementRefactor';
+import { Logo } from '../components/Logo';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -36,19 +37,16 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-alencar-bg">
-      <header className="bg-alencar-dark shadow-sm">
+      <header className="header-glass">
         <div className="page-container !py-0">
           <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Dashboard Admin</h1>
-              <p className="text-sm text-gray-400">Alencar Empreendimentos</p>
-            </div>
+            <Logo variant="horizontal" darkBackground={true} className="h-9" />
 
             <div className="flex items-center space-x-4">
               <OperationToggle />
               <button
                 onClick={handleLogout}
-                className="flex items-center px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
               >
                 <LogOut className="mr-2" size={18} />
                 Sair
@@ -58,7 +56,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </header>
 
-      <nav className="bg-alencar-dark border-b border-white/10">
+      <nav className="bg-alencar-dark/90 backdrop-blur-md border-b border-white/10">
         <div className="page-container !py-0">
           <div className="flex space-x-8">
             {tabs.map((tab) => {
@@ -67,7 +65,7 @@ export const AdminDashboard: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
                     activeTab === tab.id
                       ? 'border-alencar-green-light text-white'
                       : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'

@@ -252,7 +252,7 @@ const ContractManagementRefactor: React.FC = () => {
       </div>
 
       {deleteConfirmId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Confirmar Exclusão
@@ -288,7 +288,7 @@ const ContractManagementRefactor: React.FC = () => {
       )}
 
       {modalState.mode === 'view' && modalState.selectedContract && modalState.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <div>

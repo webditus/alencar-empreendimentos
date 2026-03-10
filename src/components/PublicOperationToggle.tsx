@@ -6,45 +6,30 @@ export const PublicOperationToggle: React.FC = () => {
   const { setOperationType, isVenda, isAluguel } = useOperation();
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">
-        Selecione o tipo de operação:
-      </h3>
-      
-      <div className="flex gap-4 justify-center">
-        <button
-          onClick={() => setOperationType('venda')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-            isVenda
-              ? 'bg-blue-500 text-white shadow-lg transform scale-105'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <ShoppingCart size={20} />
-          Compra
-        </button>
+    <div className="inline-flex items-center bg-white/10 rounded-full p-1 backdrop-blur-sm border border-white/10">
+      <button
+        onClick={() => setOperationType('venda')}
+        className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+          isVenda
+            ? 'bg-white text-alencar-dark shadow-md'
+            : 'text-white/70 hover:text-white'
+        }`}
+      >
+        <ShoppingCart size={18} />
+        Compra
+      </button>
 
-        <button
-          onClick={() => setOperationType('aluguel')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-            isAluguel
-              ? 'bg-green-500 text-white shadow-lg transform scale-105'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Home size={20} />
-          Aluguel
-        </button>
-      </div>
-
-      <div className="text-center mt-4">
-        <p className="text-sm text-gray-600">
-          Modo atual: 
-          <span className={`font-semibold ml-1 ${isVenda ? 'text-blue-500' : 'text-green-500'}`}>
-            {isVenda ? 'Compra' : 'Aluguel'}
-          </span>
-        </p>
-      </div>
+      <button
+        onClick={() => setOperationType('aluguel')}
+        className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
+          isAluguel
+            ? 'bg-white text-alencar-dark shadow-md'
+            : 'text-white/70 hover:text-white'
+        }`}
+      >
+        <Home size={18} />
+        Aluguel
+      </button>
     </div>
   );
 };

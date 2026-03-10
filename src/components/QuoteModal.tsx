@@ -3,6 +3,7 @@ import { X, Download, MessageCircle, Mail } from 'lucide-react';
 import { Quote } from '../types';
 import { formatCurrency, generateWhatsAppLink, generateEmailLink } from '../utils/formatters';
 import { generateQuotePDF } from '../services/pdfService';
+import { Logo } from './Logo';
 
 interface QuoteModalProps {
   quote: Quote;
@@ -26,21 +27,24 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-card shadow-modal max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="bg-alencar-dark text-white p-6 rounded-t-card">
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="glass-card shadow-modal max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4 animate-fade-up border border-white/20"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-alencar-gradient text-white p-6 rounded-t-card">
           <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold">Detalhes do Orçamento</h2>
-              <p className="text-white/90">Alencar Empreendimentos</p>
+            <div className="flex items-center gap-4">
+              <Logo variant="horizontal" darkBackground={true} className="h-8" />
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-white/80 transition-colors"
+              className="text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
             >
-              <X size={24} />
+              <X size={22} />
             </button>
           </div>
+          <h2 className="text-2xl font-bold mt-4">Detalhes do Orcamento</h2>
         </div>
 
         <div className="p-6">
@@ -65,7 +69,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
                   <p className="font-medium">{quote.customer.projectDate}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <span className="text-sm text-gray-600">Endereço:</span>
+                  <span className="text-sm text-gray-600">Endereco:</span>
                   <p className="font-medium">{quote.customer.address}</p>
                 </div>
                 <div>
@@ -92,7 +96,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
             </div>
           </div>
 
-          <div className="bg-alencar-green text-white p-4 rounded-card mb-6">
+          <div className="bg-gradient-to-r from-alencar-green to-alencar-hover text-white p-4 rounded-card mb-6">
             <div className="flex justify-between items-center">
               <span className="text-xl font-bold">Total</span>
               <span className="text-2xl font-bold">{formatCurrency(quote.totalPrice)}</span>
@@ -109,14 +113,14 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
             </button>
             <button
               onClick={handleWhatsApp}
-              className="flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 rounded-button hover:bg-green-700 transition-colors"
+              className="flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 rounded-button hover:bg-green-700 transition-all duration-200 hover:scale-[1.02]"
             >
               <MessageCircle size={20} />
               WhatsApp
             </button>
             <button
               onClick={handleEmail}
-              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-button hover:bg-blue-700 transition-colors"
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-button hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02]"
             >
               <Mail size={20} />
               E-mail

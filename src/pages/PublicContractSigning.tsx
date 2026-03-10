@@ -6,6 +6,7 @@ import { GeneratedContract, ContractSignatory } from '../types/contractSigning';
 import { formatDate } from '../utils/formatters';
 import { CheckCircle, AlertCircle, PenTool, Shield, Users, FileText, Download } from 'lucide-react';
 import SignatureCanvas from '../components/contracts/SignatureCanvas';
+import { Logo } from '../components/Logo';
 
 const PublicContractSigning: React.FC = () => {
   const { signingLink } = useParams<{ signingLink: string }>();
@@ -182,24 +183,25 @@ const PublicContractSigning: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-alencar-bg">
-      <div className="bg-alencar-dark border-b border-white/10 shadow-sm">
+      <div className="bg-alencar-gradient border-b border-white/10">
         <div className="max-w-4xl mx-auto px-6 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-alencar-green/20 p-2 rounded-lg">
-              <FileText className="w-6 h-6 text-alencar-green-light" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">{contract.title}</h1>
-              <p className="text-sm text-gray-400">
-                Assinatura Digital &bull; {formatDate(contract.createdAt)}
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Logo variant="horizontal" darkBackground={true} className="h-8" />
+              <div className="h-8 w-px bg-white/20" />
+              <div>
+                <h1 className="text-xl font-bold text-white">{contract.title}</h1>
+                <p className="text-sm text-gray-400">
+                  Assinatura Digital &bull; {formatDate(contract.createdAt)}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="card-base-no-accent mb-8">
+        <div className="bg-white rounded-card shadow-card p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
               <Users className="w-5 h-5 mr-2 text-alencar-green" />
@@ -257,7 +259,7 @@ const PublicContractSigning: React.FC = () => {
         </div>
 
         {!allSigned && !emailVerified && (
-          <div className="card-base-no-accent mb-8">
+          <div className="bg-white rounded-card shadow-card p-6 mb-8">
             <div className="text-center mb-6">
               <PenTool className="w-12 h-12 text-alencar-green mx-auto mb-3" />
               <h3 className="text-lg font-semibold text-gray-900">Acesso para Assinatura</h3>
@@ -303,7 +305,7 @@ const PublicContractSigning: React.FC = () => {
         )}
 
         {emailVerified && canCurrentUserSign() && !showSigningForm && (
-          <div className="card-base-no-accent mb-8 text-center">
+          <div className="bg-white rounded-card shadow-card p-6 mb-8 text-center">
             <div className="mb-4">
               <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
               <h3 className="text-lg font-semibold text-gray-900">Email Verificado</h3>
@@ -326,7 +328,7 @@ const PublicContractSigning: React.FC = () => {
         )}
 
         {showSigningForm && emailVerified && canCurrentUserSign() && (
-          <div className="card-base-no-accent mb-8">
+          <div className="bg-white rounded-card shadow-card p-6 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
               <PenTool className="w-5 h-5 mr-2 text-alencar-green" />
               Assinar Contrato
@@ -421,7 +423,7 @@ const PublicContractSigning: React.FC = () => {
           </div>
         )}
 
-        <div className="card-base-no-accent">
+        <div className="bg-white rounded-card shadow-card p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
               <FileText className="w-5 h-5 mr-2 text-alencar-green" />
