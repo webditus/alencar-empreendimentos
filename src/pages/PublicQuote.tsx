@@ -121,7 +121,7 @@ export const PublicQuote: React.FC = () => {
 
   const handleDownloadPDF = () => {
     if (currentQuote) {
-      generateQuotePDF(currentQuote);
+      generateQuotePDF({ quote: currentQuote, selectedContainer });
     }
   };
 
