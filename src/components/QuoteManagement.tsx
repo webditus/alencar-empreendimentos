@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Quote } from '../types';
 import { useQuotes } from '../contexts/QuoteContext';
 import { formatCurrency, formatDate, formatPhone } from '../utils/formatters';
-import { Eye, Trash2, Search, CreditCard as Edit, FileText, CreditCard, CheckCircle, Copy, ExternalLink } from 'lucide-react';
+import { Eye, Trash2, Search, Pencil, FileText, CreditCard, CheckCircle, Copy, ExternalLink } from 'lucide-react';
 import { createPaymentLink, validateAsaasConfig, diagnoseAsaasConfig } from '../services/asaasIntegration';
 import ContractGenerationModal from './contracts/ContractGenerationModal';
 import { ContractSigningService } from '../services/contractSigningService';
@@ -439,7 +439,7 @@ export const QuoteManagement: React.FC = () => {
                           className="text-blue-600 hover:text-blue-900 flex items-center"
                           title="Editar informações comerciais"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" />
                         </button>
                         {quoteContracts.has(quote.id) ? (
                           <button

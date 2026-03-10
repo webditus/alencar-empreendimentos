@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useContract } from '../contexts/ContractContext';
 import { ContractTemplate } from '../types/contract';
-import { Trash2, CreditCard as Edit, Eye, Plus, ToggleLeft, ToggleRight, X } from 'lucide-react';
+import { Trash2, Pencil, Eye, Plus, ToggleLeft, ToggleRight, X } from 'lucide-react';
 import ContractFormRefactor from './ContractFormRefactor';
 
 const CONTRACT_TYPE_LABELS = {
@@ -233,7 +233,7 @@ const ContractManagementRefactor: React.FC = () => {
                         className="text-green-600 hover:text-green-900 transition-colors"
                         title="Editar"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(contract.id)}
@@ -317,7 +317,7 @@ const ContractManagementRefactor: React.FC = () => {
                 onClick={() => handleEdit(modalState.selectedContract!)}
                 className="btn-primary inline-flex items-center gap-2"
               >
-                <Edit className="w-4 h-4" />
+                <Pencil className="w-4 h-4" />
                 Editar Contrato
               </button>
             </div>

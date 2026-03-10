@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useContract } from '../contexts/ContractContext';
 import { ContractTemplate } from '../types/contract';
-import { Trash2, CreditCard as Edit, Eye, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Trash2, Pencil, Eye, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import ContractFormNew from './ContractFormNew';
 import { formatDate } from '../utils/formatters';
 
@@ -176,7 +176,7 @@ const ContractManagement: React.FC = () => {
                         className="text-indigo-600 hover:text-indigo-900 p-1"
                         title="Editar"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(contract.id)}

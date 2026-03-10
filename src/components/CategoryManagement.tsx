@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, Image as ImageIcon, UploadCloud, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, Image as ImageIcon, UploadCloud, AlertCircle } from 'lucide-react';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
 import { formatCurrency } from '../utils/formatters';
@@ -357,7 +357,7 @@ export const CategoryManagement: React.FC = () => {
                       className="text-blue-600 hover:text-blue-800 p-1"
                       title="Editar categoria"
                     >
-                      <Edit2 size={16} />
+                      <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => deleteCategory(category.id)}
@@ -485,7 +485,7 @@ export const CategoryManagement: React.FC = () => {
                               className="text-blue-600 hover:text-blue-800 p-1"
                               title="Editar item"
                             >
-                              <Edit2 size={14} />
+                              <Pencil size={14} />
                             </button>
                             <button
                               onClick={() => deleteItem(item.id)}
