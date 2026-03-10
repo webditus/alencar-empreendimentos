@@ -44,23 +44,27 @@ export const CategoryManagement: React.FC = () => {
   const [showAddItem, setShowAddItem] = useState<string | null>(null);
   const [itemImageStates, setItemImageStates] = useState<Record<string, ItemImageState>>({});
   const itemInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const pendingFilesRef = useRef<Record<string, File | null>>({});
+  const pendingPreviewUrlsRef = useRef<Record<string, string | null>>({});
   const [itemDragOver, setItemDragOver] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     return () => {
-      Object.values(itemImageStates).forEach((s) => {
-        if (s.pendingPreviewUrl) URL.revokeObjectURL(s.pendingPreviewUrl);
+      Object.values(pendingPreviewUrlsRef.current).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
       });
     };
   }, []);
 
+  const defaultItemImageState: ItemImageState = { isUploading: false, progress: 0, error: null, showUpload: false, pendingFile: null, pendingPreviewUrl: null };
+
   const getItemImageState = (itemId: string): ItemImageState =>
-    itemImageStates[itemId] ?? { isUploading: false, progress: 0, error: null, showUpload: false, pendingFile: null, pendingPreviewUrl: null };
+    itemImageStates[itemId] ?? defaultItemImageState;
 
   const updateItemImageState = (itemId: string, patch: Partial<ItemImageState>) => {
     setItemImageStates((prev) => ({
       ...prev,
-      [itemId]: { ...getItemImageState(itemId), ...patch },
+      [itemId]: { ...(prev[itemId] ?? defaultItemImageState), ...patch },
     }));
   };
 
@@ -127,16 +131,21 @@ export const CategoryManagement: React.FC = () => {
   };
 
   const handleItemFileSelected = (file: File, itemId: string) => {
-    const state = getItemImageState(itemId);
-    if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+    if (pendingPreviewUrlsRef.current[itemId]) {
+      URL.revokeObjectURL(pendingPreviewUrlsRef.current[itemId]!);
+    }
 
     const validationError = validateImageFile(file);
     if (validationError) {
-      updateItemImageState(itemId, { error: validationError.message });
+      pendingFilesRef.current[itemId] = null;
+      pendingPreviewUrlsRef.current[itemId] = null;
+      updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null, error: validationError.message });
       return;
     }
 
     const previewUrl = URL.createObjectURL(file);
+    pendingFilesRef.current[itemId] = file;
+    pendingPreviewUrlsRef.current[itemId] = previewUrl;
     updateItemImageState(itemId, { pendingFile: file, pendingPreviewUrl: previewUrl, error: null });
   };
 
@@ -167,15 +176,19 @@ export const CategoryManagement: React.FC = () => {
   };
 
   const handleItemImageSave = async (itemId: string) => {
-    const state = getItemImageState(itemId);
-    if (!state.pendingFile) return;
+    const file = pendingFilesRef.current[itemId];
+    if (!file) return;
 
     updateItemImageState(itemId, { isUploading: true, progress: 0, error: null });
     try {
-      await itemImageService.upload(state.pendingFile, itemId, (percent) => {
+      await itemImageService.upload(file, itemId, (percent) => {
         updateItemImageState(itemId, { progress: percent });
       });
-      if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+      if (pendingPreviewUrlsRef.current[itemId]) {
+        URL.revokeObjectURL(pendingPreviewUrlsRef.current[itemId]!);
+      }
+      pendingFilesRef.current[itemId] = null;
+      pendingPreviewUrlsRef.current[itemId] = null;
       updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null });
       await refreshCategories();
     } catch (err: unknown) {
@@ -188,14 +201,20 @@ export const CategoryManagement: React.FC = () => {
   };
 
   const handleItemCancelPending = (itemId: string) => {
-    const state = getItemImageState(itemId);
-    if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+    if (pendingPreviewUrlsRef.current[itemId]) {
+      URL.revokeObjectURL(pendingPreviewUrlsRef.current[itemId]!);
+    }
+    pendingFilesRef.current[itemId] = null;
+    pendingPreviewUrlsRef.current[itemId] = null;
     updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null, error: null });
   };
 
   const handleItemImageRemove = async (itemId: string) => {
-    const state = getItemImageState(itemId);
-    if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+    if (pendingPreviewUrlsRef.current[itemId]) {
+      URL.revokeObjectURL(pendingPreviewUrlsRef.current[itemId]!);
+    }
+    pendingFilesRef.current[itemId] = null;
+    pendingPreviewUrlsRef.current[itemId] = null;
     updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null, error: null });
 
     try {
