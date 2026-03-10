@@ -10,6 +10,7 @@ export interface Item {
   category: string;
   operationType: OperationType;
   isActive?: boolean;
+  image_path?: string | null;
 }
 
 export interface Category {

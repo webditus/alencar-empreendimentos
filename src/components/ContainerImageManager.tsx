@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Upload, X, Image as ImageIcon, Trash2, RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, X, AlertCircle } from 'lucide-react';
 import { containerImageService, ContainerImage } from '../services/containerImageService';
+import { ImageUpload } from './ImageUpload';
 
 const CONTAINER_SIZES = [
   { id: '4m', label: '4 metros', description: 'Container compacto' },
@@ -8,21 +9,34 @@ const CONTAINER_SIZES = [
   { id: '12m', label: '12 metros', description: 'Container grande' },
 ];
 
+interface SizeState {
+  isUploading: boolean;
+  progress: number;
+  error: string | null;
+}
+
+const defaultSizeState = (): SizeState => ({
+  isUploading: false,
+  progress: 0,
+  error: null,
+});
+
 export const ContainerImageManager: React.FC = () => {
   const [images, setImages] = useState<ContainerImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [dragOverId, setDragOverId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [sizeStates, setSizeStates] = useState<Record<string, SizeState>>({
+    '4m': defaultSizeState(),
+    '6m': defaultSizeState(),
+    '12m': defaultSizeState(),
+  });
 
   const loadImages = useCallback(async () => {
     try {
       setLoading(true);
       const data = await containerImageService.getAll();
       setImages(data);
-    } catch (err) {
-      console.error('Error loading container images:', err);
+    } catch {
+      // silent
     } finally {
       setLoading(false);
     }
@@ -32,65 +46,42 @@ export const ContainerImageManager: React.FC = () => {
     loadImages();
   }, [loadImages]);
 
-  const getImageForSize = (sizeId: string): ContainerImage | undefined => {
-    return images.find((img) => img.container_size_id === sizeId);
+  const getImageForSize = (sizeId: string): ContainerImage | undefined =>
+    images.find((img) => img.container_size_id === sizeId);
+
+  const updateSizeState = (sizeId: string, patch: Partial<SizeState>) => {
+    setSizeStates((prev) => ({
+      ...prev,
+      [sizeId]: { ...prev[sizeId], ...patch },
+    }));
   };
 
-  const handleFile = async (file: File, sizeId: string) => {
-    if (!file.type.startsWith('image/')) return;
-
-    setError(null);
-
+  const handleFileSelected = async (file: File, sizeId: string) => {
+    updateSizeState(sizeId, { isUploading: true, progress: 0, error: null });
     try {
-      setUploadingId(sizeId);
-      setUploadProgress(0);
-
       await containerImageService.upload(file, sizeId, (percent) => {
-        setUploadProgress(percent);
+        updateSizeState(sizeId, { progress: percent });
       });
-
       await loadImages();
     } catch (err: unknown) {
-      console.error('Upload error:', err);
       const message =
-        err instanceof Error
-          ? err.message
-          : typeof err === 'object' && err !== null && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : 'Erro ao enviar imagem. Tente novamente.';
-      setError(message);
+        err instanceof Error ? err.message : 'Erro ao enviar imagem. Tente novamente.';
+      updateSizeState(sizeId, { error: message });
     } finally {
-      setUploadingId(null);
-      setUploadProgress(0);
+      updateSizeState(sizeId, { isUploading: false, progress: 0 });
     }
   };
 
-  const handleDrop = (e: React.DragEvent, sizeId: string) => {
-    e.preventDefault();
-    setDragOverId(null);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file, sizeId);
-  };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>, sizeId: string) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file, sizeId);
-    e.target.value = '';
-  };
-
-  const handleDelete = async (sizeId: string) => {
+  const handleRemove = async (sizeId: string) => {
     if (!window.confirm('Tem certeza que deseja remover esta imagem?')) return;
-
-    setError(null);
-
+    updateSizeState(sizeId, { error: null });
     try {
       await containerImageService.remove(sizeId);
       await loadImages();
     } catch (err: unknown) {
-      console.error('Delete error:', err);
       const message =
         err instanceof Error ? err.message : 'Erro ao remover imagem. Tente novamente.';
-      setError(message);
+      updateSizeState(sizeId, { error: message });
     }
   };
 
@@ -120,27 +111,10 @@ export const ContainerImageManager: React.FC = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-red-700">Falha no upload</p>
-            <p className="text-xs text-red-600 mt-0.5 break-words">{error}</p>
-          </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-red-400 hover:text-red-600 flex-shrink-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {CONTAINER_SIZES.map((size) => {
           const existing = getImageForSize(size.id);
-          const isUploading = uploadingId === size.id;
-          const isDragOver = dragOverId === size.id;
+          const state = sizeStates[size.id];
 
           return (
             <div
@@ -152,84 +126,29 @@ export const ContainerImageManager: React.FC = () => {
                 <p className="text-xs text-gray-500">{size.description}</p>
               </div>
 
-              {existing && !isUploading ? (
-                <div className="relative group">
-                  <img
-                    src={existing.image_url}
-                    alt={`Container ${size.label}`}
-                    className="w-full aspect-video object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                    <label className="cursor-pointer bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform">
-                      <Upload className="w-5 h-5 text-alencar-green" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleFileInput(e, size.id)}
-                      />
-                    </label>
+              <div className="p-4 bg-gray-950">
+                {state.error && (
+                  <div className="flex items-start gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2 mb-3">
+                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-300 flex-1">{state.error}</p>
                     <button
-                      onClick={() => handleDelete(size.id)}
-                      className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
+                      onClick={() => updateSizeState(size.id, { error: null })}
+                      className="text-red-400 hover:text-red-200 flex-shrink-0"
                     >
-                      <Trash2 className="w-5 h-5 text-red-500" />
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
-                </div>
-              ) : (
-                <label
-                  className={`block cursor-pointer aspect-video relative ${
-                    isDragOver
-                      ? 'bg-alencar-bg border-2 border-dashed border-alencar-green'
-                      : 'bg-gray-50 border-2 border-dashed border-gray-200 hover:border-alencar-green-light hover:bg-alencar-bg/50'
-                  } transition-all duration-200`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverId(size.id);
-                  }}
-                  onDragLeave={() => setDragOverId(null)}
-                  onDrop={(e) => handleDrop(e, size.id)}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleFileInput(e, size.id)}
-                    disabled={isUploading}
-                  />
-
-                  {isUploading ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                      <RefreshCw className="w-8 h-8 text-alencar-green animate-spin mb-3" />
-                      <div className="w-full max-w-[200px] bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-alencar-green to-alencar-green-light h-full rounded-full transition-all duration-300"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500 mt-2">{uploadProgress}%</span>
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                      {isDragOver ? (
-                        <>
-                          <X className="w-8 h-8 text-alencar-green mb-2" />
-                          <span className="text-sm text-alencar-green font-medium">Solte aqui</span>
-                        </>
-                      ) : (
-                        <>
-                          <ImageIcon className="w-8 h-8 text-gray-300 mb-2" />
-                          <span className="text-sm text-gray-400 text-center">
-                            Arraste uma imagem ou clique para enviar
-                          </span>
-                          <span className="text-xs text-gray-300 mt-1">JPG, PNG ou WebP</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </label>
-              )}
+                )}
+                <ImageUpload
+                  currentImageUrl={existing?.image_url ?? null}
+                  label="Arraste ou clique para enviar"
+                  isUploading={state.isUploading}
+                  uploadProgress={state.progress}
+                  onFileSelected={(file) => handleFileSelected(file, size.id)}
+                  onRemove={() => handleRemove(size.id)}
+                  disabled={state.isUploading}
+                />
+              </div>
             </div>
           );
         })}

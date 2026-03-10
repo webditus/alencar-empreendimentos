@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, EyeOff } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, ImageIcon } from 'lucide-react';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
 import { formatCurrency } from '../utils/formatters';
 import { ContainerImageManager } from './ContainerImageManager';
+import { ImageUpload } from './ImageUpload';
+import { itemImageService } from '../services/itemImageService';
+
+interface ItemImageState {
+  isUploading: boolean;
+  progress: number;
+  error: string | null;
+  showUpload: boolean;
+}
 
 export const CategoryManagement: React.FC = () => {
   const {
@@ -30,6 +39,17 @@ export const CategoryManagement: React.FC = () => {
   });
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddItem, setShowAddItem] = useState<string | null>(null);
+  const [itemImageStates, setItemImageStates] = useState<Record<string, ItemImageState>>({});
+
+  const getItemImageState = (itemId: string): ItemImageState =>
+    itemImageStates[itemId] ?? { isUploading: false, progress: 0, error: null, showUpload: false };
+
+  const updateItemImageState = (itemId: string, patch: Partial<ItemImageState>) => {
+    setItemImageStates((prev) => ({
+      ...prev,
+      [itemId]: { ...getItemImageState(itemId), ...patch },
+    }));
+  };
 
   const handleAddCategory = async () => {
     if (newCategory.name.trim()) {
@@ -91,6 +111,39 @@ export const CategoryManagement: React.FC = () => {
     } catch (error) {
       console.error('Erro ao alterar status do item:', error);
     }
+  };
+
+  const handleItemImageSelected = async (file: File, itemId: string) => {
+    updateItemImageState(itemId, { isUploading: true, progress: 0, error: null });
+    try {
+      await itemImageService.upload(file, itemId, (percent) => {
+        updateItemImageState(itemId, { progress: percent });
+      });
+      updateItemImageState(itemId, { showUpload: false });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Erro ao enviar imagem. Tente novamente.';
+      updateItemImageState(itemId, { error: message });
+    } finally {
+      updateItemImageState(itemId, { isUploading: false, progress: 0 });
+    }
+  };
+
+  const handleItemImageRemove = async (itemId: string) => {
+    updateItemImageState(itemId, { error: null });
+    try {
+      await itemImageService.remove(itemId);
+      updateItemImageState(itemId, { showUpload: false });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Erro ao remover imagem. Tente novamente.';
+      updateItemImageState(itemId, { error: message });
+    }
+  };
+
+  const getItemImageUrl = (imagePath: string | null | undefined): string | null => {
+    if (!imagePath) return null;
+    return itemImageService.getPublicUrl(imagePath);
   };
 
   return (
@@ -272,85 +325,113 @@ export const CategoryManagement: React.FC = () => {
             )}
 
             <div className="space-y-2">
-              {category.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  {editingItem?.categoryId === category.id && editingItem?.itemId === item.id ? (
-                    <div className="flex items-center gap-3 flex-1">
-                      <input
-                        type="text"
-                        defaultValue={item.name}
-                        className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
-                        id={`item-name-${item.id}`}
-                      />
-                      <div className="flex items-center gap-1">
-                        <DollarSign size={16} className="text-gray-500" />
-                        <input
-                          type="number"
-                          defaultValue={item.price}
-                          className="w-24 p-2 border border-gray-300 rounded-lg input-base"
-                          id={`item-price-${item.id}`}
-                        />
-                      </div>
-                      <button
-                        onClick={() => {
-                          const nameInput = document.getElementById(`item-name-${item.id}`) as HTMLInputElement;
-                          const priceInput = document.getElementById(`item-price-${item.id}`) as HTMLInputElement;
-                          if (nameInput && priceInput) {
-                            handleUpdateItem(item.id, nameInput.value, priceInput.value);
-                          }
-                        }}
-                        className="text-green-600 hover:text-green-800"
-                      >
-                        <Save size={16} />
-                      </button>
-                      <button
-                        onClick={() => setEditingItem(null)}
-                        className="text-gray-600 hover:text-gray-800"
-                      >
-                        <X size={16} />
-                      </button>
+              {category.items.map((item) => {
+                const imgState = getItemImageState(item.id);
+                const imageUrl = getItemImageUrl(item.image_path);
+
+                return (
+                  <div key={item.id} className="bg-gray-50 rounded-lg overflow-hidden">
+                    <div className="flex items-center justify-between p-3">
+                      {editingItem?.categoryId === category.id && editingItem?.itemId === item.id ? (
+                        <div className="flex items-center gap-3 flex-1">
+                          <input
+                            type="text"
+                            defaultValue={item.name}
+                            className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
+                            id={`item-name-${item.id}`}
+                          />
+                          <div className="flex items-center gap-1">
+                            <DollarSign size={16} className="text-gray-500" />
+                            <input
+                              type="number"
+                              defaultValue={item.price}
+                              className="w-24 p-2 border border-gray-300 rounded-lg input-base"
+                              id={`item-price-${item.id}`}
+                            />
+                          </div>
+                          <button
+                            onClick={() => {
+                              const nameInput = document.getElementById(`item-name-${item.id}`) as HTMLInputElement;
+                              const priceInput = document.getElementById(`item-price-${item.id}`) as HTMLInputElement;
+                              if (nameInput && priceInput) {
+                                handleUpdateItem(item.id, nameInput.value, priceInput.value);
+                              }
+                            }}
+                            className="text-green-600 hover:text-green-800"
+                          >
+                            <Save size={16} />
+                          </button>
+                          <button
+                            onClick={() => setEditingItem(null)}
+                            className="text-gray-600 hover:text-gray-800"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-3">
+                            <span className={`font-medium ${item.isActive === false ? 'text-gray-400' : ''}`}>
+                              {item.name}
+                              {item.isActive === false && <span className="text-red-500 text-sm ml-1">(Inativo)</span>}
+                            </span>
+                            <span className={`font-bold ${item.isActive === false ? 'text-gray-400' : 'text-alencar-green'}`}>
+                              {formatCurrency(item.price)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => updateItemImageState(item.id, { showUpload: !imgState.showUpload })}
+                              className={`p-1 transition-colors ${imageUrl ? 'text-alencar-green hover:text-alencar-dark' : 'text-gray-400 hover:text-gray-600'}`}
+                              title="Gerenciar imagem"
+                            >
+                              <ImageIcon size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleToggleItemStatus(item.id, item.isActive ?? true)}
+                              className={`p-1 ${item.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
+                              title={item.isActive === false ? "Ativar item" : "Desativar item"}
+                            >
+                              {item.isActive === false ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </button>
+                            <button
+                              onClick={() => setEditingItem({ categoryId: category.id, itemId: item.id })}
+                              className="text-blue-600 hover:text-blue-800 p-1"
+                              title="Editar item"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => deleteItem(item.id)}
+                              className="text-red-600 hover:text-red-800 p-1"
+                              title="Excluir item"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <span className={`font-medium ${item.isActive === false ? 'text-gray-400' : ''}`}>
-                          {item.name}
-                          {item.isActive === false && <span className="text-red-500 text-sm ml-1">(Inativo)</span>}
-                        </span>
-                        <span className={`font-bold ${item.isActive === false ? 'text-gray-400' : 'text-alencar-green'}`}>
-                          {formatCurrency(item.price)}
-                        </span>
+
+                    {imgState.showUpload && editingItem?.itemId !== item.id && (
+                      <div className="px-3 pb-3 bg-gray-900/5 border-t border-gray-200">
+                        <div className="pt-3 max-w-xs">
+                          <ImageUpload
+                            currentImageUrl={imageUrl}
+                            label="Arraste ou clique para enviar imagem"
+                            isUploading={imgState.isUploading}
+                            uploadProgress={imgState.progress}
+                            error={imgState.error}
+                            onFileSelected={(file) => handleItemImageSelected(file, item.id)}
+                            onRemove={() => handleItemImageRemove(item.id)}
+                            disabled={imgState.isUploading}
+                          />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleToggleItemStatus(item.id, item.isActive ?? true)}
-                          className={`p-1 ${item.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
-                          title={item.isActive === false ? "Ativar item" : "Desativar item"}
-                        >
-                          {item.isActive === false ? <EyeOff size={14} /> : <Eye size={14} />}
-                        </button>
-                        <button
-                          onClick={() => setEditingItem({ categoryId: category.id, itemId: item.id })}
-                          className="text-blue-600 hover:text-blue-800 p-1"
-                          title="Editar item"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          onClick={() => deleteItem(item.id)}
-                          className="text-red-600 hover:text-red-800 p-1"
-                          title="Excluir item"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                );
+              })}
               {category.items.length === 0 && (
                 <p className="text-gray-500 text-center py-4">Nenhum item nesta categoria</p>
               )}

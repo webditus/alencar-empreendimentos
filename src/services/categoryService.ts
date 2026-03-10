@@ -18,6 +18,7 @@ export interface DatabaseItem {
   category_id: string;
   operation_type: string;
   is_active?: boolean;
+  image_path?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -58,6 +59,7 @@ export class CategoryService {
             category: category.name,
             operationType: item.operation_type as OperationType,
             isActive: item.is_active ?? true,
+            image_path: item.image_path ?? null,
           })),
       }));
 
@@ -168,6 +170,7 @@ export class ItemService {
         category: categoryData.name,
         operationType: data.operation_type as OperationType,
         isActive: data.is_active ?? true,
+        image_path: data.image_path ?? null,
       };
     } catch (error) {
       console.error('Erro ao criar item:', error);
@@ -244,6 +247,7 @@ export class ItemService {
         category: item.categories.name,
         operationType: item.operation_type as OperationType,
         isActive: item.is_active ?? true,
+        image_path: item.image_path ?? null,
       }));
     } catch (error) {
       console.error('Erro ao buscar itens por categoria:', error);

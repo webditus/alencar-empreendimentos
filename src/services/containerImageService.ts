@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { convertToWebP, generateWebPFilename } from '../utils/imageUtils';
 
 export interface ContainerImage {
   id: string;
@@ -25,8 +26,13 @@ export const containerImageService = {
     containerSizeId: string,
     onProgress?: (percent: number) => void
   ): Promise<ContainerImage> {
-    const ext = file.name.split('.').pop() || 'webp';
-    const filePath = `${containerSizeId}-${Date.now()}.${ext}`;
+    if (onProgress) onProgress(5);
+
+    const webpBlob = await convertToWebP(file);
+    const filename = generateWebPFilename(`container-${containerSizeId}`);
+    const filePath = `${containerSizeId}/${filename}`;
+
+    if (onProgress) onProgress(15);
 
     const { data: existing } = await supabase
       .from('container_images')
@@ -40,15 +46,15 @@ export const containerImageService = {
         .remove([existing.file_path]);
     }
 
-    if (onProgress) onProgress(10);
+    if (onProgress) onProgress(25);
 
     const { error: uploadError } = await supabase.storage
       .from('container-images')
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, webpBlob, { upsert: true, contentType: 'image/webp' });
 
     if (uploadError) throw uploadError;
 
-    if (onProgress) onProgress(70);
+    if (onProgress) onProgress(75);
 
     const { data: urlData } = supabase.storage
       .from('container-images')
