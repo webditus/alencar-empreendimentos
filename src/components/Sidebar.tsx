@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Logo } from './Logo';
-import { OperationToggle } from './OperationToggle';
 import { useAuth } from '../contexts/AuthContext';
 import {
   TabId,
@@ -14,7 +13,6 @@ import {
 interface SidebarProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
-  onLogout: () => void;
 }
 
 function getStoredCollapsed(): boolean {
@@ -26,7 +24,7 @@ function getStoredCollapsed(): boolean {
   }
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(getStoredCollapsed);
 
@@ -110,10 +108,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogo
         )}
       </div>
 
-      <div className={`border-b border-white/[0.06] w-full overflow-hidden ${collapsed ? 'px-3 py-3 flex items-center justify-center' : 'px-4 py-3'}`}>
-        <OperationToggle collapsed={collapsed} />
-      </div>
-
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6 sidebar-scrollbar">
         {sidebarSections.map((section) => {
           const sectionItems = visibleItems.filter((item) => item.section === section.key);
@@ -137,31 +131,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogo
         })}
       </nav>
 
-      <div className={`border-t border-white/[0.06] ${collapsed ? 'px-3 py-3' : 'px-4 py-3'}`}>
-        {!collapsed && user && (
-          <div className="mb-3 px-2">
-            <p className="text-sm font-medium text-white truncate">{user.name}</p>
-            <p className="text-xs text-gray-500 truncate">{user.email}</p>
-          </div>
-        )}
-        <button
-          onClick={onLogout}
-          title={collapsed ? 'Sair' : undefined}
-          className={`
-            group flex items-center w-full rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200
-            ${collapsed ? 'justify-center px-3 py-3' : 'px-3 py-2.5'}
-          `}
-        >
-          <LogOut size={20} className="flex-shrink-0" />
-          {!collapsed && <span className="ml-3 text-sm font-medium">Sair</span>}
-          {collapsed && <span className="sidebar-tooltip">Sair</span>}
-        </button>
-      </div>
-
       <button
         onClick={toggleCollapsed}
         className={`
-          absolute top-[72px] -right-3 z-50
+          absolute top-6 -right-3 z-50
           w-6 h-6 rounded-full bg-alencar-dark border border-white/10
           flex items-center justify-center
           text-gray-400 hover:text-white hover:bg-alencar-green/40

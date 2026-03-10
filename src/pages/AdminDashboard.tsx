@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
+import { Header } from '../components/Header';
 import { CategoryManagement } from '../components/CategoryManagement';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { UserManagement } from '../components/UserManagement';
@@ -26,10 +27,6 @@ export const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const onStorage = () => setSidebarCollapsed(getStoredCollapsed());
 
-    const observer = new MutationObserver(() => {
-      setSidebarCollapsed(getStoredCollapsed());
-    });
-
     window.addEventListener('storage', onStorage);
 
     const interval = setInterval(() => {
@@ -38,7 +35,6 @@ export const AdminDashboard: React.FC = () => {
 
     return () => {
       window.removeEventListener('storage', onStorage);
-      observer.disconnect();
       clearInterval(interval);
     };
   }, []);
@@ -48,17 +44,23 @@ export const AdminDashboard: React.FC = () => {
     navigate('/login');
   };
 
+  const sidebarWidth = sidebarCollapsed ? 72 : 260;
+
   return (
     <div className="min-h-screen bg-alencar-bg flex">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
+      />
+
+      <Header
         onLogout={handleLogout}
+        sidebarWidth={sidebarWidth}
       />
 
       <main
-        className="flex-1 transition-[margin-left] duration-300 ease-in-out"
-        style={{ marginLeft: sidebarCollapsed ? 72 : 260 }}
+        className="flex-1 transition-[margin-left] duration-300 ease-in-out pt-16"
+        style={{ marginLeft: sidebarWidth }}
       >
         <div className="max-w-7xl mx-auto px-6 py-8">
           {activeTab === 'quotes' && <QuoteManagement />}
