@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { RefreshCw, X, AlertCircle, UploadCloud, ImageIcon } from 'lucide-react';
+import { RefreshCw, X, AlertCircle, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import { containerImageService, ContainerImage } from '../services/containerImageService';
 import { validateImageFile } from '../utils/imageUtils';
 
