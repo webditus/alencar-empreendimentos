@@ -52,7 +52,7 @@ export const generateQuotePDF = async (
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `Proposta_Alencar_${quote.customer.name.replace(/\s+/g, '_')}.pdf`;
+  link.download = `Proposta Comercial Alencar (${quote.customer.name}).pdf`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
