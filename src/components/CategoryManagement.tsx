@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, Image as ImageIcon, UploadCloud, AlertCircle } from 'lucide-react';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
 import { formatCurrency } from '../utils/formatters';
 import { ContainerImageManager } from './ContainerImageManager';
-import { ImageUpload } from './ImageUpload';
 import { itemImageService } from '../services/itemImageService';
+import { validateImageFile } from '../utils/imageUtils';
 
 interface ItemImageState {
   isUploading: boolean;
   progress: number;
   error: string | null;
   showUpload: boolean;
+  pendingFile: File | null;
+  pendingPreviewUrl: string | null;
 }
 
 export const CategoryManagement: React.FC = () => {
@@ -41,9 +43,19 @@ export const CategoryManagement: React.FC = () => {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddItem, setShowAddItem] = useState<string | null>(null);
   const [itemImageStates, setItemImageStates] = useState<Record<string, ItemImageState>>({});
+  const itemInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [itemDragOver, setItemDragOver] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(itemImageStates).forEach((s) => {
+        if (s.pendingPreviewUrl) URL.revokeObjectURL(s.pendingPreviewUrl);
+      });
+    };
+  }, []);
 
   const getItemImageState = (itemId: string): ItemImageState =>
-    itemImageStates[itemId] ?? { isUploading: false, progress: 0, error: null, showUpload: false };
+    itemImageStates[itemId] ?? { isUploading: false, progress: 0, error: null, showUpload: false, pendingFile: null, pendingPreviewUrl: null };
 
   const updateItemImageState = (itemId: string, patch: Partial<ItemImageState>) => {
     setItemImageStates((prev) => ({
@@ -114,14 +126,58 @@ export const CategoryManagement: React.FC = () => {
     }
   };
 
-  const handleItemImageSelected = async (file: File, itemId: string) => {
+  const handleItemFileSelected = (file: File, itemId: string) => {
+    const state = getItemImageState(itemId);
+    if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      updateItemImageState(itemId, { error: validationError.message });
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    updateItemImageState(itemId, { pendingFile: file, pendingPreviewUrl: previewUrl, error: null });
+  };
+
+  const handleItemInputChange = (e: React.ChangeEvent<HTMLInputElement>, itemId: string) => {
+    const file = e.target.files?.[0];
+    if (file) handleItemFileSelected(file, itemId);
+    e.target.value = '';
+  };
+
+  const handleItemDrop = (e: React.DragEvent<HTMLDivElement>, itemId: string) => {
+    e.preventDefault();
+    setItemDragOver((prev) => ({ ...prev, [itemId]: false }));
+    const file = e.dataTransfer.files[0];
+    if (file) handleItemFileSelected(file, itemId);
+  };
+
+  const handleItemDragOver = (e: React.DragEvent<HTMLDivElement>, itemId: string) => {
+    e.preventDefault();
+    setItemDragOver((prev) => ({ ...prev, [itemId]: true }));
+  };
+
+  const handleItemDragLeave = (itemId: string) => {
+    setItemDragOver((prev) => ({ ...prev, [itemId]: false }));
+  };
+
+  const openItemFilePicker = (itemId: string) => {
+    itemInputRefs.current[itemId]?.click();
+  };
+
+  const handleItemImageSave = async (itemId: string) => {
+    const state = getItemImageState(itemId);
+    if (!state.pendingFile) return;
+
     updateItemImageState(itemId, { isUploading: true, progress: 0, error: null });
     try {
-      await itemImageService.upload(file, itemId, (percent) => {
+      await itemImageService.upload(state.pendingFile, itemId, (percent) => {
         updateItemImageState(itemId, { progress: percent });
       });
+      if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+      updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null });
       await refreshCategories();
-      updateItemImageState(itemId, { showUpload: true });
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Erro ao enviar imagem. Tente novamente.';
@@ -131,12 +187,20 @@ export const CategoryManagement: React.FC = () => {
     }
   };
 
+  const handleItemCancelPending = (itemId: string) => {
+    const state = getItemImageState(itemId);
+    if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+    updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null, error: null });
+  };
+
   const handleItemImageRemove = async (itemId: string) => {
-    updateItemImageState(itemId, { error: null });
+    const state = getItemImageState(itemId);
+    if (state.pendingPreviewUrl) URL.revokeObjectURL(state.pendingPreviewUrl);
+    updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null, error: null });
+
     try {
       await itemImageService.remove(itemId);
       await refreshCategories();
-      updateItemImageState(itemId, { showUpload: true });
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Erro ao remover imagem. Tente novamente.';
@@ -418,16 +482,144 @@ export const CategoryManagement: React.FC = () => {
 
                     {imgState.showUpload && editingItem?.itemId !== item.id && (
                       <div className="px-3 pb-3 bg-gray-900/5 border-t border-gray-200">
-                        <div className="pt-3 max-w-xs">
-                          <ImageUpload
-                            currentImageUrl={imageUrl}
-                            label="Arraste ou clique para enviar imagem"
-                            isUploading={imgState.isUploading}
-                            uploadProgress={imgState.progress}
-                            error={imgState.error}
-                            onFileSelected={(file) => handleItemImageSelected(file, item.id)}
-                            onRemove={() => handleItemImageRemove(item.id)}
-                            disabled={imgState.isUploading}
+                        <div className="pt-3 max-w-xs space-y-3">
+                          {imgState.error && (
+                            <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-red-700 flex-1">{imgState.error}</p>
+                              <button
+                                onClick={() => updateItemImageState(item.id, { error: null })}
+                                className="text-red-400 hover:text-red-600 flex-shrink-0"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+
+                          {imgState.pendingPreviewUrl ? (
+                            <div className="space-y-3">
+                              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                                <img
+                                  src={imgState.pendingPreviewUrl}
+                                  alt="Pré-visualização"
+                                  className="w-full h-full object-cover"
+                                />
+                                {imgState.isUploading && (
+                                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
+                                    <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span className="text-white text-xs">Enviando...</span>
+                                  </div>
+                                )}
+                              </div>
+                              {imgState.isUploading && (
+                                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                  <div
+                                    className="bg-alencar-green h-1.5 rounded-full transition-all duration-200"
+                                    style={{ width: `${imgState.progress}%` }}
+                                  />
+                                </div>
+                              )}
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openItemFilePicker(item.id)}
+                                  disabled={imgState.isUploading}
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Alterar imagem
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleItemCancelPending(item.id)}
+                                  disabled={imgState.isUploading}
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Remover imagem
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleItemImageSave(item.id)}
+                                  disabled={imgState.isUploading}
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-alencar-green text-white text-xs font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Salvar imagem
+                                </button>
+                              </div>
+                            </div>
+                          ) : imageUrl ? (
+                            <div className="space-y-3">
+                              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                                <img
+                                  src={imageUrl}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openItemFilePicker(item.id)}
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 transition-colors"
+                                >
+                                  Alterar imagem
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleItemImageRemove(item.id)}
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors"
+                                >
+                                  Remover imagem
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <div
+                                onClick={() => openItemFilePicker(item.id)}
+                                onDrop={(e) => handleItemDrop(e, item.id)}
+                                onDragOver={(e) => handleItemDragOver(e, item.id)}
+                                onDragLeave={() => handleItemDragLeave(item.id)}
+                                className={`
+                                  w-full aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200
+                                  ${itemDragOver[item.id]
+                                    ? 'border-green-500 bg-green-50'
+                                    : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                                  }
+                                `}
+                              >
+                                {itemDragOver[item.id] ? (
+                                  <>
+                                    <UploadCloud size={28} className="text-green-600" />
+                                    <p className="text-sm font-medium text-green-700">Solte para adicionar</p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ImageIcon size={28} className="text-gray-400" />
+                                    <div className="text-center">
+                                      <p className="text-sm font-medium text-gray-700">Nenhuma imagem definida</p>
+                                      <p className="text-gray-500 text-xs mt-0.5">Arraste uma imagem aqui ou clique no botão abaixo</p>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => openItemFilePicker(item.id)}
+                                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                              >
+                                <UploadCloud size={16} />
+                                Adicionar imagem
+                              </button>
+                            </div>
+                          )}
+
+                          <input
+                            ref={(el) => { itemInputRefs.current[item.id] = el; }}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={(e) => handleItemInputChange(e, item.id)}
                           />
                         </div>
                       </div>
