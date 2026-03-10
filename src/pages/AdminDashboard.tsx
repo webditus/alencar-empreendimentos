@@ -61,13 +61,18 @@ export const AdminDashboard: React.FC = () => {
         className="flex-1 min-h-screen bg-alencar-bg transition-[margin-left] duration-300 ease-in-out pt-16"
         style={{ marginLeft: sidebarWidth }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          {activeTab === 'quotes' && <QuoteManagement />}
-          {activeTab === 'kanban' && <KanbanBoard />}
-          {activeTab === 'categories' && <CategoryManagement />}
-          {activeTab === 'users' && <UserManagement />}
-          {activeTab === 'contracts' && <ContractManagementRefactor />}
-        </div>
+        {activeTab === 'kanban' ? (
+          <div className="px-4 py-3">
+            <KanbanBoard />
+          </div>
+        ) : (
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {activeTab === 'quotes' && <QuoteManagement />}
+            {activeTab === 'categories' && <CategoryManagement />}
+            {activeTab === 'users' && <UserManagement />}
+            {activeTab === 'contracts' && <ContractManagementRefactor />}
+          </div>
+        )}
       </main>
     </div>
   );

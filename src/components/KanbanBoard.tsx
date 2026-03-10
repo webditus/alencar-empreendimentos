@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Quote } from '../types';
 import { useQuotes } from '../contexts/QuoteContext';
 import { formatCurrency, formatDate, formatPhone } from '../utils/formatters';
-import { User, Phone, Mail, DollarSign, Calendar, Eye, RefreshCw, MoreVertical, Clock } from 'lucide-react';
+import { Eye, RefreshCw, Clock } from 'lucide-react';
 
 const KANBAN_COLUMNS = [
   {
@@ -12,7 +12,6 @@ const KANBAN_COLUMNS = [
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     textColor: 'text-blue-700',
-    count: 0
   },
   {
     id: 'analyzing',
@@ -21,7 +20,6 @@ const KANBAN_COLUMNS = [
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
-    count: 0
   },
   {
     id: 'negotiating',
@@ -30,16 +28,14 @@ const KANBAN_COLUMNS = [
     bgColor: 'bg-orange-50',
     borderColor: 'border-orange-200',
     textColor: 'text-orange-700',
-    count: 0
   },
   {
     id: 'awaiting-signature',
-    title: 'Aguardando Assinatura',
+    title: 'Aguard. Assinatura',
     gradient: 'from-cyan-500 to-teal-500',
     bgColor: 'bg-cyan-50',
     borderColor: 'border-cyan-200',
     textColor: 'text-cyan-700',
-    count: 0
   },
   {
     id: 'approved',
@@ -48,16 +44,14 @@ const KANBAN_COLUMNS = [
     bgColor: 'bg-green-50',
     borderColor: 'border-green-200',
     textColor: 'text-green-700',
-    count: 0
   },
   {
     id: 'awaiting-payment',
-    title: 'Aguardando Pagamento',
+    title: 'Aguard. Pagamento',
     gradient: 'from-sky-500 to-blue-500',
     bgColor: 'bg-sky-50',
     borderColor: 'border-sky-200',
     textColor: 'text-sky-700',
-    count: 0
   },
   {
     id: 'paid',
@@ -66,7 +60,6 @@ const KANBAN_COLUMNS = [
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
-    count: 0
   },
   {
     id: 'rejected',
@@ -75,7 +68,6 @@ const KANBAN_COLUMNS = [
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
     textColor: 'text-red-700',
-    count: 0
   },
   {
     id: 'completed',
@@ -84,7 +76,6 @@ const KANBAN_COLUMNS = [
     bgColor: 'bg-gray-50',
     borderColor: 'border-gray-200',
     textColor: 'text-gray-700',
-    count: 0
   },
 ];
 
@@ -94,85 +85,53 @@ interface QuoteCardProps {
   onDragStart: (e: React.DragEvent, quote: Quote) => void;
 }
 
-const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onViewDetails, onDragStart }) => {
-  const getDaysSinceCreated = (date: string) => {
-    const created = new Date(date);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - created.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+const getDaysSinceCreated = (date: string) => {
+  const created = new Date(date);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - created.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
 
+const getAgeBadgeStyle = (days: number) => {
+  if (days > 14) return 'bg-red-100 text-red-600';
+  if (days > 7) return 'bg-amber-100 text-amber-600';
+  return 'bg-gray-100 text-gray-500';
+};
+
+const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onViewDetails, onDragStart }) => {
   const daysSince = getDaysSinceCreated(quote.createdAt);
-  const isUrgent = daysSince > 7;
 
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, quote)}
-      className="bg-white rounded-xl shadow-md p-4 mb-3 border-l-4 border-alencar-green cursor-move hover:shadow-lg transition-all duration-200 group relative overflow-hidden backdrop-blur-sm"
+      onClick={() => onViewDetails(quote)}
+      className="bg-white rounded-lg shadow-sm px-3 py-2 border-l-[3px] border-alencar-green cursor-move hover:shadow-md transition-all duration-150 group relative"
     >
-      {isUrgent && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
-          <Clock className="w-3 h-3" />
-          {daysSince}d
-        </div>
-      )}
-
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center flex-1 min-w-0">
-          <div className="w-8 h-8 bg-alencar-green rounded-full flex items-center justify-center shadow-sm mr-3">
-            <User className="h-4 w-4 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-sm truncate">
-              {quote.customer.name}
-            </h3>
-            <p className="text-xs text-gray-500">#{quote.id}</p>
-          </div>
-        </div>
-        <button
-          onClick={() => onViewDetails(quote)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-alencar-green hover:text-alencar-hover p-2 rounded-full hover:bg-gray-50"
-          title="Ver detalhes"
-        >
-          <Eye className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="space-y-2 mb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-xs text-gray-600">
-            <Phone className="h-3 w-3 mr-2 text-gray-400" />
-            <span className="truncate">{formatPhone(quote.customer.phone)}</span>
-          </div>
-          <div className="flex items-center text-sm font-semibold text-alencar-green">
-            <DollarSign className="h-4 w-4 mr-1" />
-            {formatCurrency(quote.totalPrice)}
-          </div>
-        </div>
-
-        <div className="flex items-center text-xs text-gray-600">
-          <Mail className="h-3 w-3 mr-2 text-gray-400" />
-          <span className="truncate">{quote.customer.email}</span>
-        </div>
-
-        <div className="flex items-center text-xs text-gray-600">
-          <Calendar className="h-3 w-3 mr-2 text-gray-400" />
-          <span>{formatDate(quote.createdAt)}</span>
+      <div className="flex items-start justify-between gap-1">
+        <h3 className="font-semibold text-gray-900 text-sm truncate flex-1">
+          {quote.customer.name}
+        </h3>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${getAgeBadgeStyle(daysSince)}`}>
+            <Clock className="w-2.5 h-2.5" />
+            {daysSince}d
+          </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); onViewDetails(quote); }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-alencar-green hover:text-alencar-hover p-0.5 rounded"
+            title="Ver detalhes"
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
-
-      <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-        <div className="text-xs text-gray-500">
-          {quote.selectedItems.length} itens
-        </div>
-        <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
-          {quote.customer.city}/{quote.customer.state}
-        </div>
-      </div>
-
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-alencar-green opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none rounded-xl"></div>
+      <p className="text-xs text-gray-500 mt-0.5">
+        {quote.customer.city}/{quote.customer.state}
+      </p>
+      <p className="text-sm font-semibold text-alencar-green mt-1">
+        {formatCurrency(quote.totalPrice)}
+      </p>
     </div>
   );
 };
@@ -203,8 +162,6 @@ export const KanbanBoard: React.FC = () => {
 
   const handleDrop = async (e: React.DragEvent, newStatus: string) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
-
     if (draggedQuote && draggedQuote.status !== newStatus) {
       try {
         await updateQuote(draggedQuote.id, {
@@ -238,58 +195,51 @@ export const KanbanBoard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-50 to-white min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Kanban de Orçamentos</h2>
-          <p className="text-gray-600">Acompanhe o status dos seus orçamentos em tempo real</p>
-        </div>
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-xl font-bold text-gray-900">Kanban de Orçamentos</h2>
         <button
           onClick={refreshQuotes}
-          className="btn-primary px-6 py-3 rounded-xl flex items-center gap-2"
+          className="btn-primary px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
         >
           <RefreshCw className="w-4 h-4" />
           Atualizar
         </button>
       </div>
 
-      <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div className="flex gap-3 overflow-x-auto overflow-y-hidden h-[calc(100vh-140px)] pb-2">
         {KANBAN_COLUMNS.map((column) => {
           const columnQuotes = getQuotesByStatus(column.id);
+          const columnTotal = columnQuotes.reduce((sum, q) => sum + q.totalPrice, 0);
 
           return (
-            <div key={column.id} className="min-w-[320px] flex-shrink-0">
+            <div
+              key={column.id}
+              className="w-[280px] min-w-[280px] flex-shrink-0 flex flex-col"
+            >
               <div
-                className={`${column.bgColor} ${column.borderColor} rounded-2xl border-2 p-5 min-h-[500px] backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200`}
+                className={`${column.bgColor} ${column.borderColor} rounded-xl border flex flex-col h-full`}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, column.id)}
               >
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${column.gradient}`}></div>
-                    <h3 className={`font-bold text-sm ${column.textColor}`}>
-                      {column.title}
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`${column.textColor} text-xs font-semibold px-3 py-1 rounded-full bg-white shadow-sm`}>
-                      {columnQuotes.length}
+                <div className={`sticky top-0 z-10 ${column.bgColor} rounded-t-xl px-3 py-2 border-b ${column.borderColor}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${column.gradient} flex-shrink-0`}></div>
+                      <h3 className={`font-semibold text-xs uppercase tracking-wide ${column.textColor} truncate`}>
+                        {column.title}
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-gray-500 font-medium whitespace-nowrap ml-2">
+                      {columnQuotes.length} &bull; {formatCurrency(columnTotal)}
                     </span>
-                    <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white rounded-full">
-                      <MoreVertical className="w-4 h-4 text-gray-400" />
-                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2">
                   {columnQuotes.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="text-gray-400 mb-2">
-                        <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </div>
-                      <p className="text-gray-500 text-sm">Nenhum orçamento</p>
+                    <div className="text-center py-6">
+                      <p className="text-gray-400 text-xs">Nenhum orçamento</p>
                     </div>
                   ) : (
                     columnQuotes.map((quote) => (
