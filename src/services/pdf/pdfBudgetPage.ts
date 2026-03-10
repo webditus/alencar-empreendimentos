@@ -28,7 +28,7 @@ interface CategoryGroup {
 const ITEM_ROW_H = 22;
 const CATEGORY_HEADER_H = 28;
 const SAFE_BOTTOM = MARGIN_BOTTOM + 10;
-const TOTAL_BLOCK_H = 130;
+const TOTAL_BLOCK_H = 100;
 
 function drawCategoryHeader(
   page: PDFPage,
@@ -166,33 +166,36 @@ function drawTotalBlock(
     color: COLORS.white,
   });
 
-  y -= 30;
+  y -= 20;
 
-  const totalBoxH = 50;
   page.drawRectangle({
     x: MARGIN_LEFT,
-    y: y - totalBoxH + 18,
+    y,
     width: CONTENT_WIDTH,
-    height: totalBoxH,
+    height: 1,
     color: COLORS.tealGreen,
+    opacity: 0.4,
   });
 
+  y -= 22;
+
   page.drawText('INVESTIMENTO TOTAL', {
-    x: MARGIN_LEFT + 16,
-    y: y + 4,
-    size: 8,
+    x: MARGIN_LEFT,
+    y,
+    size: 9.5,
     font: fontBold,
-    color: COLORS.mutedWhite,
-    opacity: 0.8,
+    color: COLORS.brightGreen,
   });
+
+  y -= 28;
 
   const suffix = isRental ? ' /m\u00eas' : '';
   const totalStr = formatBRL(grandTotal) + suffix;
-  const totalW = textWidth(fontBold, totalStr, 22);
+  const totalW = textWidth(fontBold, totalStr, 24);
   page.drawText(totalStr, {
-    x: CONTENT_RIGHT - totalW - 16,
-    y: y - 18,
-    size: 22,
+    x: CONTENT_RIGHT - totalW,
+    y,
+    size: 24,
     font: fontBold,
     color: COLORS.white,
   });
