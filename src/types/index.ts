@@ -48,6 +48,44 @@ export interface Quote {
   paymentMethod?: string;
   paymentLink?: string;
   operationType: OperationType;
+  containerType?: string;
+  deliveryCity?: string;
+  deliveryState?: string;
+  deliveryDeadline?: string;
+}
+
+export type ContainerStatus = 'available' | 'rented' | 'in_transport' | 'maintenance';
+
+export interface Container {
+  id: string;
+  containerType: string;
+  containerSize: '4m' | '6m' | '12m';
+  status: ContainerStatus;
+  locationCity?: string;
+  locationState?: string;
+  quoteId?: string;
+  clientName?: string;
+  deliveryDate?: string;
+  returnDate?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DeliveryStatus = 'scheduled' | 'in_transit' | 'delivered' | 'returned';
+
+export interface Delivery {
+  id: string;
+  quoteId?: string;
+  containerId: string;
+  clientName: string;
+  deliveryDate: string;
+  deliveryCity: string;
+  deliveryState: string;
+  status: DeliveryStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface User {

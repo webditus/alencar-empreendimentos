@@ -4,6 +4,8 @@ import { QuoteProvider } from './contexts/QuoteContext';
 import { CategoryProvider } from './contexts/CategoryContext';
 import { OperationProvider } from './contexts/OperationContext';
 import { ContractProvider } from './contexts/ContractContext';
+import { ContainerProvider } from './contexts/ContainerContext';
+import { DeliveryProvider } from './contexts/DeliveryContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicQuote } from './pages/PublicQuote';
 import { AdminLogin } from './pages/AdminLogin';
@@ -20,32 +22,36 @@ function App() {
         <CategoryProvider>
           <QuoteProvider>
             <ContractProvider>
-              <Router>
-              <Routes>
-                <Route path="/" element={<PublicQuote />} />
-                <Route path="/login" element={<AdminLogin />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/public/sign/:signingLink" element={<PublicContractSigning />} />
-                <Route 
-                  path="/admin" 
-                  element={
-                    <ProtectedRoute>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/contracts/:contractId" 
-                  element={
-                    <ProtectedRoute>
-                      <ContractDetails />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Router>
+              <ContainerProvider>
+                <DeliveryProvider>
+                  <Router>
+                    <Routes>
+                      <Route path="/" element={<PublicQuote />} />
+                      <Route path="/login" element={<AdminLogin />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/public/sign/:signingLink" element={<PublicContractSigning />} />
+                      <Route
+                        path="/admin"
+                        element={
+                          <ProtectedRoute>
+                            <AdminDashboard />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/contracts/:contractId"
+                        element={
+                          <ProtectedRoute>
+                            <ContractDetails />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Router>
+                </DeliveryProvider>
+              </ContainerProvider>
             </ContractProvider>
           </QuoteProvider>
         </CategoryProvider>

@@ -7,6 +7,9 @@ import { KanbanBoard } from '../components/KanbanBoard';
 import { UserManagement } from '../components/UserManagement';
 import { QuoteManagement } from '../components/QuoteManagement';
 import ContractManagementRefactor from '../components/ContractManagementRefactor';
+import { CRMDashboard } from '../components/CRMDashboard';
+import { ContainerInventory } from '../components/ContainerInventory';
+import { DeliverySchedule } from '../components/DeliverySchedule';
 import { useAuth } from '../contexts/AuthContext';
 import { TabId, SIDEBAR_STORAGE_KEY } from '../config/sidebarNav';
 
@@ -21,7 +24,7 @@ function getStoredCollapsed(): boolean {
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabId>('quotes');
+  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredCollapsed);
 
   useEffect(() => {
@@ -67,10 +70,13 @@ export const AdminDashboard: React.FC = () => {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto px-6 py-8">
+            {activeTab === 'dashboard' && <CRMDashboard />}
             {activeTab === 'quotes' && <QuoteManagement />}
             {activeTab === 'categories' && <CategoryManagement />}
             {activeTab === 'users' && <UserManagement />}
             {activeTab === 'contracts' && <ContractManagementRefactor />}
+            {activeTab === 'containers' && <ContainerInventory />}
+            {activeTab === 'deliveries' && <DeliverySchedule />}
           </div>
         )}
       </main>

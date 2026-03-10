@@ -25,6 +25,10 @@ export interface DatabaseQuote {
   contract_link: string | null;
   payment_method: string | null;
   payment_link: string | null;
+  container_type: string | null;
+  delivery_city: string | null;
+  delivery_state: string | null;
+  delivery_deadline: string | null;
 }
 
 // Converter Quote para formato do banco de dados
@@ -49,6 +53,10 @@ const quoteToDatabase = (quote: Quote): Omit<DatabaseQuote, 'id' | 'created_at'>
   contract_link: quote.contractLink || null,
   payment_method: quote.paymentMethod || null,
   payment_link: quote.paymentLink || null,
+  container_type: quote.containerType || null,
+  delivery_city: quote.deliveryCity || null,
+  delivery_state: quote.deliveryState || null,
+  delivery_deadline: quote.deliveryDeadline || null,
 });
 
 // Converter formato do banco de dados para Quote
@@ -77,6 +85,10 @@ export const databaseToQuote = (dbQuote: DatabaseQuote): Quote => ({
   contractLink: dbQuote.contract_link || undefined,
   paymentMethod: dbQuote.payment_method || undefined,
   paymentLink: dbQuote.payment_link || undefined,
+  containerType: dbQuote.container_type || undefined,
+  deliveryCity: dbQuote.delivery_city || undefined,
+  deliveryState: dbQuote.delivery_state || undefined,
+  deliveryDeadline: dbQuote.delivery_deadline || undefined,
 });
 
 // Criar um novo orçamento
@@ -155,6 +167,10 @@ export const updateQuote = async (id: string, updates: Partial<Quote>): Promise<
   if (updates.contractLink !== undefined) dbUpdates.contract_link = updates.contractLink;
   if (updates.paymentMethod !== undefined) dbUpdates.payment_method = updates.paymentMethod;
   if (updates.paymentLink !== undefined) dbUpdates.payment_link = updates.paymentLink;
+  if (updates.containerType !== undefined) dbUpdates.container_type = updates.containerType;
+  if (updates.deliveryCity !== undefined) dbUpdates.delivery_city = updates.deliveryCity;
+  if (updates.deliveryState !== undefined) dbUpdates.delivery_state = updates.deliveryState;
+  if (updates.deliveryDeadline !== undefined) dbUpdates.delivery_deadline = updates.deliveryDeadline;
 
   console.log('🔍 Atualizando orçamento:', { id, dbUpdates });
 
