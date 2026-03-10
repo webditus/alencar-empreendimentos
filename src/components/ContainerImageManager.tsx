@@ -126,14 +126,14 @@ export const ContainerImageManager: React.FC = () => {
                 <p className="text-xs text-gray-500">{size.description}</p>
               </div>
 
-              <div className="p-4 bg-gray-950">
+              <div className="p-4 bg-white">
                 {state.error && (
-                  <div className="flex items-start gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2 mb-3">
-                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-300 flex-1">{state.error}</p>
+                  <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">
+                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-700 flex-1">{state.error}</p>
                     <button
                       onClick={() => updateSizeState(size.id, { error: null })}
-                      className="text-red-400 hover:text-red-200 flex-shrink-0"
+                      className="text-red-400 hover:text-red-600 flex-shrink-0"
                     >
                       <X className="w-3 h-3" />
                     </button>

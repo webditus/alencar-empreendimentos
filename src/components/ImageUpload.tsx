@@ -111,8 +111,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         className={`
           w-full aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200
           ${isDragOver
-            ? 'border-alencar-green bg-alencar-green/10'
-            : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
+            ? 'border-green-500 bg-green-50'
+            : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -120,16 +120,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         {isUploading ? (
           <div className="flex flex-col items-center gap-2">
             <div className="w-8 h-8 border-2 border-alencar-green border-t-transparent rounded-full animate-spin" />
-            <span className="text-white/60 text-sm">Enviando...</span>
+            <span className="text-gray-600 text-sm">Enviando...</span>
           </div>
         ) : (
           <>
-            <UploadCloud size={28} className={isDragOver ? 'text-alencar-green' : 'text-white/40'} />
+            <UploadCloud size={28} className={isDragOver ? 'text-green-600' : 'text-gray-400'} />
             <div className="text-center">
-              <p className={`text-sm font-medium ${isDragOver ? 'text-alencar-green' : 'text-white/60'}`}>
+              <p className={`text-sm font-medium ${isDragOver ? 'text-green-700' : 'text-gray-700'}`}>
                 {label}
               </p>
-              <p className="text-white/30 text-xs mt-0.5">JPG, PNG ou WEBP · Máx. 10MB</p>
+              <p className="text-gray-500 text-xs mt-0.5">JPG, PNG ou WEBP · Máx. 10MB</p>
             </div>
           </>
         )}

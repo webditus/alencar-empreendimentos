@@ -25,6 +25,7 @@ export const CategoryManagement: React.FC = () => {
     updateItem,
     deleteItem,
     toggleItemStatus,
+    refreshCategories,
   } = useCategories();
 
   const { operationType, isVenda, isAluguel } = useOperation();
@@ -119,7 +120,8 @@ export const CategoryManagement: React.FC = () => {
       await itemImageService.upload(file, itemId, (percent) => {
         updateItemImageState(itemId, { progress: percent });
       });
-      updateItemImageState(itemId, { showUpload: false });
+      await refreshCategories();
+      updateItemImageState(itemId, { showUpload: true });
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Erro ao enviar imagem. Tente novamente.';
@@ -133,7 +135,8 @@ export const CategoryManagement: React.FC = () => {
     updateItemImageState(itemId, { error: null });
     try {
       await itemImageService.remove(itemId);
-      updateItemImageState(itemId, { showUpload: false });
+      await refreshCategories();
+      updateItemImageState(itemId, { showUpload: true });
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Erro ao remover imagem. Tente novamente.';
