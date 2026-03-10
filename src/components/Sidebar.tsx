@@ -88,61 +88,64 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   };
 
   return (
-    <aside
-      className={`
-        sidebar-root fixed top-0 left-0 h-screen z-40 flex flex-col overflow-x-hidden
-        bg-alencar-dark border-r border-white/[0.06]
-        transition-[width] duration-300 ease-in-out
-        ${collapsed ? 'w-[72px]' : 'w-[260px]'}
-      `}
-    >
-      <div className={`flex items-center h-16 border-b border-white/[0.06] ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
-        {collapsed ? (
-          <img
-            src="/logotipo-alencar-empreendimentos-icone-favicon.webp"
-            alt="Alencar"
-            className="h-8 w-8 object-contain"
-          />
-        ) : (
-          <Logo variant="horizontal" darkBackground={true} className="h-8" />
-        )}
-      </div>
+    <>
+      <aside
+        className={`
+          sidebar-root fixed top-0 left-0 h-screen z-40 flex flex-col overflow-x-hidden
+          bg-alencar-dark border-r border-white/[0.06]
+          transition-[width] duration-300 ease-in-out
+          ${collapsed ? 'w-[72px]' : 'w-[260px]'}
+        `}
+      >
+        <div className={`flex items-center h-16 border-b border-white/[0.06] ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
+          {collapsed ? (
+            <img
+              src="/logotipo-alencar-empreendimentos-icone-favicon.webp"
+              alt="Alencar"
+              className="h-8 w-8 object-contain"
+            />
+          ) : (
+            <Logo variant="horizontal" darkBackground={true} className="h-8" />
+          )}
+        </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6 sidebar-scrollbar">
-        {sidebarSections.map((section) => {
-          const sectionItems = visibleItems.filter((item) => item.section === section.key);
-          if (sectionItems.length === 0) return null;
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 space-y-6 sidebar-scrollbar">
+          {sidebarSections.map((section) => {
+            const sectionItems = visibleItems.filter((item) => item.section === section.key);
+            if (sectionItems.length === 0) return null;
 
-          return (
-            <div key={section.key}>
-              {!collapsed && (
-                <span className="block px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-                  {section.label}
-                </span>
-              )}
-              {collapsed && (
-                <div className="mx-auto mb-2 w-6 border-t border-white/10" />
-              )}
-              <div className="space-y-1">
-                {sectionItems.map(renderNavItem)}
+            return (
+              <div key={section.key}>
+                {!collapsed && (
+                  <span className="block px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                    {section.label}
+                  </span>
+                )}
+                {collapsed && (
+                  <div className="mx-auto mb-2 w-6 border-t border-white/10" />
+                )}
+                <div className="space-y-1">
+                  {sectionItems.map(renderNavItem)}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </nav>
+            );
+          })}
+        </nav>
+      </aside>
 
       <button
         onClick={toggleCollapsed}
+        style={{ left: collapsed ? 60 : 248 }}
         className={`
-          absolute top-6 -right-3 z-50
+          fixed top-6 z-50
           w-6 h-6 rounded-full bg-alencar-dark border border-white/10
           flex items-center justify-center
           text-gray-400 hover:text-white hover:bg-alencar-green/40
-          transition-all duration-200 shadow-md
+          transition-all duration-300 ease-in-out shadow-lg
         `}
       >
         {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
-    </aside>
+    </>
   );
 };
