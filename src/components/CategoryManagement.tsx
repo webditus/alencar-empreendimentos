@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, ImageIcon } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
 import { formatCurrency } from '../utils/formatters';
