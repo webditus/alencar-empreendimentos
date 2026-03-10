@@ -529,14 +529,35 @@ export const QuoteManagement: React.FC = () => {
                     </div>
                     <div>
                       <p><strong>Endereço:</strong> {selectedQuote.customer.address}</p>
+                      {selectedQuote.customer.propertyNumber && (
+                        <p><strong>Numero:</strong> {selectedQuote.customer.propertyNumber}</p>
+                      )}
+                      {selectedQuote.customer.addressComplement && (
+                        <p><strong>Complemento:</strong> {selectedQuote.customer.addressComplement}</p>
+                      )}
                       <p><strong>CEP:</strong> {selectedQuote.customer.cep}</p>
                       <p><strong>Cidade:</strong> {selectedQuote.customer.city}</p>
                       <p><strong>Estado:</strong> {selectedQuote.customer.state}</p>
                     </div>
                   </div>
                   <div className="mt-2 text-sm">
+                    {selectedQuote.customer.projectStartTimeline && (
+                      <p><strong>Prazo para inicio:</strong> {selectedQuote.customer.projectStartTimeline}</p>
+                    )}
                     <p><strong>Data do Projeto:</strong> {formatDate(selectedQuote.customer.projectDate)}</p>
-                    <p><strong>Finalidade:</strong> {selectedQuote.customer.purpose.join(', ')}</p>
+                    <p><strong>Finalidade:</strong> {selectedQuote.customer.purpose.map(p =>
+                      p === 'Outro' && selectedQuote.customer.purposeOther ? selectedQuote.customer.purposeOther : p
+                    ).join(', ')}</p>
+                    {selectedQuote.customer.installationLocation && (
+                      <p><strong>Local de instalacao:</strong> {
+                        selectedQuote.customer.installationLocation === 'Outro' && selectedQuote.customer.installationLocationOther
+                          ? selectedQuote.customer.installationLocationOther
+                          : selectedQuote.customer.installationLocation
+                      }</p>
+                    )}
+                    {selectedQuote.customer.generalNotes && (
+                      <p><strong>Observacoes:</strong> {selectedQuote.customer.generalNotes}</p>
+                    )}
                   </div>
                 </div>
 

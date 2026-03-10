@@ -72,10 +72,46 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
                   <span className="text-sm text-gray-600">Endereco:</span>
                   <p className="font-medium">{quote.customer.address}</p>
                 </div>
+                {quote.customer.propertyNumber && (
+                  <div>
+                    <span className="text-sm text-gray-600">Numero:</span>
+                    <p className="font-medium">{quote.customer.propertyNumber}</p>
+                  </div>
+                )}
+                {quote.customer.addressComplement && (
+                  <div>
+                    <span className="text-sm text-gray-600">Complemento:</span>
+                    <p className="font-medium">{quote.customer.addressComplement}</p>
+                  </div>
+                )}
                 <div>
                   <span className="text-sm text-gray-600">Finalidade:</span>
-                  <p className="font-medium">{quote.customer.purpose.join(', ')}</p>
+                  <p className="font-medium">{quote.customer.purpose.map(p =>
+                    p === 'Outro' && quote.customer.purposeOther ? quote.customer.purposeOther : p
+                  ).join(', ')}</p>
                 </div>
+                {quote.customer.installationLocation && (
+                  <div>
+                    <span className="text-sm text-gray-600">Local de instalacao:</span>
+                    <p className="font-medium">{
+                      quote.customer.installationLocation === 'Outro' && quote.customer.installationLocationOther
+                        ? quote.customer.installationLocationOther
+                        : quote.customer.installationLocation
+                    }</p>
+                  </div>
+                )}
+                {quote.customer.projectStartTimeline && (
+                  <div>
+                    <span className="text-sm text-gray-600">Prazo para inicio:</span>
+                    <p className="font-medium">{quote.customer.projectStartTimeline}</p>
+                  </div>
+                )}
+                {quote.customer.generalNotes && (
+                  <div className="md:col-span-2">
+                    <span className="text-sm text-gray-600">Observacoes:</span>
+                    <p className="font-medium">{quote.customer.generalNotes}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

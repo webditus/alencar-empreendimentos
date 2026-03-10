@@ -128,6 +128,20 @@ export function renderClientPage(
     .join(', ');
   drawValue(page, fullAddress, MARGIN_LEFT, y - 16, fontBold, CONTENT_WIDTH);
 
+  if (customer.propertyNumber || customer.addressComplement) {
+    y -= 46;
+    drawDividerLine(page, y + 8);
+
+    if (customer.propertyNumber) {
+      drawLabel(page, 'N\u00famero da propriedade', MARGIN_LEFT, y, fontBold);
+      drawValue(page, customer.propertyNumber, MARGIN_LEFT, y - 16, fontBold, 220);
+    }
+    if (customer.addressComplement) {
+      drawLabel(page, 'Complemento', COL2_X, y, fontBold);
+      drawValue(page, customer.addressComplement, COL2_X, y - 16, fontBold);
+    }
+  }
+
   y -= 46;
   drawDividerLine(page, y + 8);
 
@@ -135,10 +149,38 @@ export function renderClientPage(
   drawValue(page, formatDateBR(customer.projectDate), MARGIN_LEFT, y - 16, fontBold);
 
   drawLabel(page, 'Finalidade de uso', COL2_X, y, fontBold);
-  const purposeText = customer.purpose && customer.purpose.length > 0
-    ? customer.purpose.join(', ')
-    : '';
+  const purposeList = customer.purpose && customer.purpose.length > 0
+    ? customer.purpose.map(p =>
+        p === 'Outro' && customer.purposeOther ? customer.purposeOther : p
+      )
+    : [];
+  const purposeText = purposeList.join(', ');
   drawValue(page, purposeText, COL2_X, y - 16, fontBold);
+
+  if (customer.projectStartTimeline || customer.installationLocation) {
+    y -= 46;
+    drawDividerLine(page, y + 8);
+
+    if (customer.projectStartTimeline) {
+      drawLabel(page, 'Prazo para in\u00edcio', MARGIN_LEFT, y, fontBold);
+      drawValue(page, customer.projectStartTimeline, MARGIN_LEFT, y - 16, fontBold, 220);
+    }
+    if (customer.installationLocation) {
+      const locationDisplay = customer.installationLocation === 'Outro' && customer.installationLocationOther
+        ? customer.installationLocationOther
+        : customer.installationLocation;
+      drawLabel(page, 'Local de instala\u00e7\u00e3o', COL2_X, y, fontBold);
+      drawValue(page, locationDisplay, COL2_X, y - 16, fontBold);
+    }
+  }
+
+  if (customer.generalNotes) {
+    y -= 46;
+    drawDividerLine(page, y + 8);
+
+    drawLabel(page, 'Observa\u00e7\u00f5es', MARGIN_LEFT, y, fontBold);
+    drawValue(page, customer.generalNotes, MARGIN_LEFT, y - 16, fontBold, CONTENT_WIDTH);
+  }
 
   y -= 46;
   drawDividerLine(page, y + 8);

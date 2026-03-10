@@ -244,9 +244,30 @@ export const KanbanBoard: React.FC = () => {
                     <p><strong>E-mail:</strong> {selectedQuote.customer.email}</p>
                     <p><strong>CEP:</strong> {selectedQuote.customer.cep}</p>
                     <p><strong>Endereco:</strong> {selectedQuote.customer.address}</p>
+                    {selectedQuote.customer.propertyNumber && (
+                      <p><strong>Numero:</strong> {selectedQuote.customer.propertyNumber}</p>
+                    )}
+                    {selectedQuote.customer.addressComplement && (
+                      <p><strong>Complemento:</strong> {selectedQuote.customer.addressComplement}</p>
+                    )}
                     <p><strong>Cidade/Estado:</strong> {selectedQuote.customer.city}/{selectedQuote.customer.state}</p>
+                    {selectedQuote.customer.projectStartTimeline && (
+                      <p><strong>Prazo para inicio:</strong> {selectedQuote.customer.projectStartTimeline}</p>
+                    )}
                     <p><strong>Data do Projeto:</strong> {formatDate(selectedQuote.customer.projectDate)}</p>
-                    <p><strong>Finalidade:</strong> {selectedQuote.customer.purpose.join(', ')}</p>
+                    <p><strong>Finalidade:</strong> {selectedQuote.customer.purpose.map(p =>
+                      p === 'Outro' && selectedQuote.customer.purposeOther ? selectedQuote.customer.purposeOther : p
+                    ).join(', ')}</p>
+                    {selectedQuote.customer.installationLocation && (
+                      <p><strong>Local de instalacao:</strong> {
+                        selectedQuote.customer.installationLocation === 'Outro' && selectedQuote.customer.installationLocationOther
+                          ? selectedQuote.customer.installationLocationOther
+                          : selectedQuote.customer.installationLocation
+                      }</p>
+                    )}
+                    {selectedQuote.customer.generalNotes && (
+                      <p><strong>Observacoes:</strong> {selectedQuote.customer.generalNotes}</p>
+                    )}
                   </div>
                 </div>
 

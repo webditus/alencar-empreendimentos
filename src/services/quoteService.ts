@@ -29,6 +29,13 @@ export interface DatabaseQuote {
   delivery_city: string | null;
   delivery_state: string | null;
   delivery_deadline: string | null;
+  customer_property_number: string | null;
+  customer_address_complement: string | null;
+  customer_installation_location: string | null;
+  customer_installation_location_other: string | null;
+  customer_project_start_timeline: string | null;
+  customer_general_notes: string | null;
+  customer_purpose_other: string | null;
 }
 
 // Converter Quote para formato do banco de dados
@@ -57,6 +64,13 @@ const quoteToDatabase = (quote: Quote): Omit<DatabaseQuote, 'id' | 'created_at'>
   delivery_city: quote.deliveryCity || null,
   delivery_state: quote.deliveryState || null,
   delivery_deadline: quote.deliveryDeadline || null,
+  customer_property_number: quote.customer.propertyNumber || null,
+  customer_address_complement: quote.customer.addressComplement || null,
+  customer_installation_location: quote.customer.installationLocation || null,
+  customer_installation_location_other: quote.customer.installationLocationOther || null,
+  customer_project_start_timeline: quote.customer.projectStartTimeline || null,
+  customer_general_notes: quote.customer.generalNotes || null,
+  customer_purpose_other: quote.customer.purposeOther || null,
 });
 
 // Converter formato do banco de dados para Quote
@@ -72,6 +86,13 @@ export const databaseToQuote = (dbQuote: DatabaseQuote): Quote => ({
     state: dbQuote.customer_state,
     projectDate: dbQuote.customer_project_date,
     purpose: dbQuote.customer_purpose,
+    propertyNumber: dbQuote.customer_property_number || undefined,
+    addressComplement: dbQuote.customer_address_complement || undefined,
+    installationLocation: dbQuote.customer_installation_location || undefined,
+    installationLocationOther: dbQuote.customer_installation_location_other || undefined,
+    projectStartTimeline: dbQuote.customer_project_start_timeline || undefined,
+    generalNotes: dbQuote.customer_general_notes || undefined,
+    purposeOther: dbQuote.customer_purpose_other || undefined,
   },
   selectedItems: dbQuote.selected_items,
   basePrice: dbQuote.base_price,
@@ -155,6 +176,13 @@ export const updateQuote = async (id: string, updates: Partial<Quote>): Promise<
     if (updates.customer.state !== undefined) dbUpdates.customer_state = updates.customer.state;
     if (updates.customer.projectDate !== undefined) dbUpdates.customer_project_date = updates.customer.projectDate;
     if (updates.customer.purpose !== undefined) dbUpdates.customer_purpose = updates.customer.purpose;
+    if (updates.customer.propertyNumber !== undefined) dbUpdates.customer_property_number = updates.customer.propertyNumber;
+    if (updates.customer.addressComplement !== undefined) dbUpdates.customer_address_complement = updates.customer.addressComplement;
+    if (updates.customer.installationLocation !== undefined) dbUpdates.customer_installation_location = updates.customer.installationLocation;
+    if (updates.customer.installationLocationOther !== undefined) dbUpdates.customer_installation_location_other = updates.customer.installationLocationOther;
+    if (updates.customer.projectStartTimeline !== undefined) dbUpdates.customer_project_start_timeline = updates.customer.projectStartTimeline;
+    if (updates.customer.generalNotes !== undefined) dbUpdates.customer_general_notes = updates.customer.generalNotes;
+    if (updates.customer.purposeOther !== undefined) dbUpdates.customer_purpose_other = updates.customer.purposeOther;
   }
   
   if (updates.selectedItems !== undefined) dbUpdates.selected_items = updates.selectedItems;

@@ -31,6 +31,13 @@ export interface Customer {
   state: string;
   projectDate: string;
   purpose: string[];
+  propertyNumber?: string;
+  addressComplement?: string;
+  installationLocation?: string;
+  installationLocationOther?: string;
+  projectStartTimeline?: string;
+  generalNotes?: string;
+  purposeOther?: string;
 }
 
 export interface Quote {

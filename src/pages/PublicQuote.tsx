@@ -14,7 +14,22 @@ import { fetchCEP } from '../services/cepService';
 import { useQuotes } from '../contexts/QuoteContext';
 import { applyPhoneMask, applyCepMask, removeMask } from '../utils/maskUtils';
 
-const PURPOSE_OPTIONS = ['Pessoal', 'Comercial', 'Locacao para Airbnb'];
+const PURPOSE_OPTIONS = ['Pessoal', 'Comercial', 'Locacao para Airbnb', 'Outro'];
+
+const INSTALLATION_LOCATION_OPTIONS = [
+  'Terreno residencial',
+  'Terreno comercial',
+  'Area rural',
+  'Obra em andamento',
+  'Outro',
+];
+
+const TIMELINE_OPTIONS = [
+  'Imediato',
+  'Nos proximos 30 dias',
+  'Em ate 3 meses',
+  'Ainda estou planejando',
+];
 
 type Step = 'choose-operation' | 'configure';
 
@@ -28,13 +43,18 @@ export const PublicQuote: React.FC = () => {
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addressInfo, setAddressInfo] = useState({ city: '', state: '' });
+  const [noPropertyNumber, setNoPropertyNumber] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<Customer>();
+
+  const watchedPurpose = watch('purpose');
+  const watchedInstallationLocation = watch('installationLocation');
 
   useEffect(() => {
     setSelectedItems([]);
@@ -266,7 +286,9 @@ export const PublicQuote: React.FC = () => {
 
                   <div className="border-t border-white/10 pt-6">
                     <h3 className="text-xl font-bold text-white mb-4">Seus Dados</h3>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                      <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Informacoes pessoais</p>
+
                       <div>
                         <label className="block text-sm font-medium text-white/70 mb-1">
                           Nome completo *
@@ -324,6 +346,10 @@ export const PublicQuote: React.FC = () => {
                         )}
                       </div>
 
+                      <div className="border-t border-white/10 pt-5">
+                        <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-4">Localizacao do projeto</p>
+                      </div>
+
                       <div>
                         <label className="block text-sm font-medium text-white/70 mb-1">
                           CEP *
@@ -364,6 +390,91 @@ export const PublicQuote: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-white/70 mb-1">
+                          Numero da propriedade
+                        </label>
+                        <input
+                          type="text"
+                          {...register('propertyNumber')}
+                          disabled={noPropertyNumber}
+                          className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent disabled:opacity-40 disabled:cursor-not-allowed"
+                          placeholder="Casa 12 / Lote 8 / Unidade B"
+                        />
+                        <label className="flex items-center gap-2 mt-1.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={noPropertyNumber}
+                            onChange={(e) => {
+                              setNoPropertyNumber(e.target.checked);
+                              if (e.target.checked) {
+                                setValue('propertyNumber', 'Sem numero');
+                              } else {
+                                setValue('propertyNumber', '');
+                              }
+                            }}
+                            className="w-3.5 h-3.5 text-alencar-green rounded focus:ring-alencar-green accent-alencar-green"
+                          />
+                          <span className="text-xs text-white/50">Sem numero</span>
+                        </label>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">
+                          Complemento
+                        </label>
+                        <input
+                          type="text"
+                          {...register('addressComplement')}
+                          className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
+                          placeholder="Apartamento, Fundos, Portao lateral, Bloco B"
+                        />
+                      </div>
+
+                      <div className="border-t border-white/10 pt-5">
+                        <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-4">Contexto do projeto</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">
+                          Onde o container sera instalado?
+                        </label>
+                        <select
+                          {...register('installationLocation')}
+                          className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent [&>option]:bg-[#0d2b25] [&>option]:text-white"
+                        >
+                          <option value="">Selecione o local</option>
+                          {INSTALLATION_LOCATION_OPTIONS.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                        {watchedInstallationLocation === 'Outro' && (
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              {...register('installationLocationOther')}
+                              className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
+                              placeholder="Exemplo: estacionamento de evento, terreno industrial, apoio de obra."
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">
+                          Prazo para iniciar o projeto
+                        </label>
+                        <select
+                          {...register('projectStartTimeline')}
+                          className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent [&>option]:bg-[#0d2b25] [&>option]:text-white"
+                        >
+                          <option value="">Selecione o prazo</option>
+                          {TIMELINE_OPTIONS.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">
                           Data prevista para o projeto *
                         </label>
                         <input
@@ -394,9 +505,31 @@ export const PublicQuote: React.FC = () => {
                             </label>
                           ))}
                         </div>
+                        {Array.isArray(watchedPurpose) && watchedPurpose.includes('Outro') && (
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              {...register('purposeOther')}
+                              className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
+                              placeholder="Exemplo: estudio de gravacao, escritorio temporario, apoio de obra."
+                            />
+                          </div>
+                        )}
                         {errors.purpose && (
                           <p className="text-red-300 text-sm mt-1">{errors.purpose.message}</p>
                         )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-1">
+                          Observacoes gerais
+                        </label>
+                        <textarea
+                          {...register('generalNotes')}
+                          rows={3}
+                          className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent resize-none"
+                          placeholder="Informacoes adicionais que possam ajudar no entendimento do projeto."
+                        />
                       </div>
 
                       <button
