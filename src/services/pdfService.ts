@@ -1,17 +1,23 @@
-import jsPDF from 'jspdf';
-import { Quote, Item } from '../types';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { Quote } from '../types';
 import { ContainerSize } from '../components/ContainerSizeSelector';
-import { drawCoverPage } from './pdf/pdfCoverPage';
-import { drawCommercialValuePage, drawDifferentialsPage } from './pdf/pdfValuePages';
-import { drawBudgetPages } from './pdf/pdfBudgetPages';
-import { drawConditionsPage, drawClosingPage } from './pdf/pdfClosingPages';
+import { renderClientPage } from './pdf/pdfClientPage';
+import { renderBudgetPages } from './pdf/pdfBudgetPage';
 
 export interface GenerateQuotePDFOptions {
   quote: Quote;
   selectedContainer?: ContainerSize | null;
 }
 
-export const generateQuotePDF = (quoteOrOptions: Quote | GenerateQuotePDFOptions, legacyContainer?: ContainerSize | null): void => {
+const TEMPLATE_URL = '/proposta-template.pdf';
+
+const CLIENT_PAGE_INDEX = 1;
+const BUDGET_PAGE_INDEX = 4;
+
+export const generateQuotePDF = async (
+  quoteOrOptions: Quote | GenerateQuotePDFOptions,
+  legacyContainer?: ContainerSize | null
+): Promise<void> => {
   let quote: Quote;
   let selectedContainer: ContainerSize | null | undefined;
 
@@ -23,53 +29,32 @@ export const generateQuotePDF = (quoteOrOptions: Quote | GenerateQuotePDFOptions
     selectedContainer = legacyContainer;
   }
 
-  const itemsByCategory: Record<string, Item[]> = {};
-  quote.selectedItems.forEach(item => {
-    const cat = item.category || 'Outros';
-    if (!itemsByCategory[cat]) itemsByCategory[cat] = [];
-    itemsByCategory[cat].push(item);
-  });
-  const categoryNames = Object.keys(itemsByCategory);
-  const totalItemLines = quote.selectedItems.length + categoryNames.length * 2;
-  const budgetExtraPages = Math.max(0, Math.ceil((totalItemLines - 12) / 16));
-
-  const TOTAL_PAGES = 6 + budgetExtraPages;
-
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-  drawCoverPage(doc, {
-    operationType: quote.operationType,
-    customerName: quote.customer.name,
-    city: quote.customer.city
-      ? `${quote.customer.city}/${quote.customer.state}`
-      : '',
-    proposalNumber: `#${quote.id.slice(-6).toUpperCase()}`,
-    emissionDate: new Date().toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    }),
+  const templateBytes = await fetch(TEMPLATE_URL).then(res => {
+    if (!res.ok) throw new Error(`Falha ao carregar template PDF: ${res.status}`);
+    return res.arrayBuffer();
   });
 
-  doc.addPage();
-  drawCommercialValuePage(doc, 2, TOTAL_PAGES);
+  const pdfDoc = await PDFDocument.load(templateBytes);
 
-  doc.addPage();
-  drawDifferentialsPage(doc, 3, TOTAL_PAGES);
+  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  doc.addPage();
-  const lastBudgetPage = drawBudgetPages(
-    doc,
-    { quote, selectedContainer },
-    4,
-    TOTAL_PAGES
-  );
+  const pages = pdfDoc.getPages();
 
-  doc.addPage();
-  drawConditionsPage(doc, lastBudgetPage + 1, TOTAL_PAGES);
+  const clientPage = pages[CLIENT_PAGE_INDEX];
+  renderClientPage(clientPage, { quote, selectedContainer }, fontRegular, fontBold);
 
-  doc.addPage();
-  drawClosingPage(doc, lastBudgetPage + 2, TOTAL_PAGES);
+  renderBudgetPages(pdfDoc, BUDGET_PAGE_INDEX, { quote, selectedContainer }, fontRegular, fontBold);
 
-  doc.save(`Proposta_Alencar_${quote.customer.name.replace(/\s+/g, '_')}.pdf`);
+  const pdfBytes = await pdfDoc.save();
+
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `Proposta_Alencar_${quote.customer.name.replace(/\s+/g, '_')}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
