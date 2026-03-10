@@ -21,10 +21,14 @@ function getStoredCollapsed(): boolean {
   }
 }
 
-export const AdminDashboard: React.FC = () => {
+interface AdminDashboardProps {
+  initialTab?: TabId;
+}
+
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'dashboard' }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredCollapsed);
 
   useEffect(() => {

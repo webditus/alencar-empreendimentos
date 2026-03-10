@@ -14,6 +14,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import ContractDetails from './components/contracts/ContractDetails';
 import PublicContractSigning from './pages/PublicContractSigning';
+import ContainerCreate from './pages/ContainerCreate';
 
 function App() {
   return (
@@ -36,6 +37,22 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <AdminDashboard />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/admin/containers"
+                        element={
+                          <ProtectedRoute>
+                            <AdminDashboard initialTab="containers" />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/admin/containers/new"
+                        element={
+                          <ProtectedRoute>
+                            <ContainerCreate />
                           </ProtectedRoute>
                         }
                       />

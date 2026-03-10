@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Plus, Pencil, Trash2, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Container, ContainerStatus } from '../types';
 import { useContainers } from '../contexts/ContainerContext';
@@ -28,10 +29,11 @@ const STATUS_LABEL: Record<ContainerStatus, string> = {
 };
 
 export const ContainerInventory: React.FC = () => {
+  const navigate = useNavigate();
   const { containers, loading, error, refreshContainers, removeContainer, editContainer } = useContainers();
   const [filter, setFilter] = useState<ContainerStatus | 'all'>('all');
-  const [formOpen, setFormOpen] = useState(false);
   const [editingContainer, setEditingContainer] = useState<Container | null>(null);
+  const [editFormOpen, setEditFormOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [statusDropdown, setStatusDropdown] = useState<string | null>(null);
 
@@ -77,7 +79,7 @@ export const ContainerInventory: React.FC = () => {
             <RefreshCw className="w-4 h-4" />
           </button>
           <button
-            onClick={() => { setEditingContainer(null); setFormOpen(true); }}
+            onClick={() => navigate('/admin/containers/new')}
             className="btn-primary px-4 py-2.5 rounded-lg flex items-center gap-2 text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
@@ -115,7 +117,7 @@ export const ContainerInventory: React.FC = () => {
           <p className="text-gray-500 font-medium">Nenhum container encontrado</p>
           <p className="text-gray-400 text-sm mt-1">Adicione containers ao inventario para comecar.</p>
           <button
-            onClick={() => { setEditingContainer(null); setFormOpen(true); }}
+            onClick={() => navigate('/admin/containers/new')}
             className="btn-primary px-4 py-2 rounded-lg text-sm mt-4 inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -181,7 +183,7 @@ export const ContainerInventory: React.FC = () => {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => { setEditingContainer(container); setFormOpen(true); }}
+                          onClick={() => { setEditingContainer(container); setEditFormOpen(true); }}
                           className="p-1.5 text-gray-400 hover:text-alencar-green hover:bg-alencar-green/5 rounded-lg transition-colors"
                           title="Editar"
                         >
@@ -209,10 +211,10 @@ export const ContainerInventory: React.FC = () => {
         </div>
       )}
 
-      {formOpen && (
+      {editFormOpen && editingContainer && (
         <ContainerFormModal
           container={editingContainer}
-          onClose={() => { setFormOpen(false); setEditingContainer(null); }}
+          onClose={() => { setEditFormOpen(false); setEditingContainer(null); }}
         />
       )}
     </div>
