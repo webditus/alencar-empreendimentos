@@ -30,9 +30,10 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
               key={item.id}
               className={`relative flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
                 isSelected(item)
-                  ? 'border-alencar-green bg-alencar-green/10 ring-2 ring-alencar-green/40 scale-[1.01]'
+                  ? 'border-alencar-green ring-1 ring-alencar-green/40'
                   : 'border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5'
               }`}
+              style={isSelected(item) ? { background: 'linear-gradient(135deg, #060A13 0%, #0B1322 100%)' } : undefined}
             >
               {isSelected(item) && (
                 <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-alencar-green text-white flex items-center justify-center">
@@ -46,12 +47,12 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                   onChange={() => onItemToggle(item)}
                   className="w-5 h-5 text-alencar-green rounded focus:ring-alencar-green focus:ring-2 accent-alencar-green"
                 />
-                <div className={`transition-all duration-200 ${isSelected(item) ? 'text-alencar-green' : 'text-gray-400'}`}>
+                <div className={`transition-all duration-200 ${isSelected(item) ? 'text-alencar-green' : 'text-gray-500'}`}>
                   <ImageThumbnail imageUrl={imageUrl} altText={item.name} />
                 </div>
                 <span className="text-white font-medium">{item.name}</span>
               </div>
-              <span className={`transition-all duration-200 ${isSelected(item) ? 'text-white font-semibold text-lg' : 'text-gray-300 font-medium'}`}>
+              <span className={`transition-all duration-200 ${isSelected(item) ? 'text-white font-semibold text-lg' : 'text-gray-400 font-medium'}`}>
                 {formatCurrency(item.price)}
               </span>
             </label>

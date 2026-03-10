@@ -260,7 +260,7 @@ export const PublicQuote: React.FC = () => {
                   <div className="border-t border-white/10 pt-3 mb-6">
                     <div className="flex justify-between items-end">
                       <span className="text-xs uppercase tracking-wide text-gray-400">Total:</span>
-                      <span className="text-3xl font-bold text-white">{formatCurrency(totalPrice)}</span>
+                      <span className="text-xl font-bold text-white">{formatCurrency(totalPrice)}</span>
                     </div>
                   </div>
 
