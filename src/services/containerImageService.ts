@@ -58,25 +58,46 @@ export const containerImageService = {
 
     if (onProgress) onProgress(90);
 
-    const { data, error } = await supabase
-      .from('container_images')
-      .upsert(
-        {
-          container_size_id: containerSizeId,
+    let result: ContainerImage;
+
+    if (existing) {
+      const { data, error } = await supabase
+        .from('container_images')
+        .update({
           image_url: imageUrl,
           file_path: filePath,
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'container_size_id' }
-      )
-      .select()
-      .single();
+        })
+        .eq('container_size_id', containerSizeId)
+        .select()
+        .single();
 
-    if (error) throw error;
+      if (error) {
+        await supabase.storage.from('container-images').remove([filePath]);
+        throw error;
+      }
+      result = data;
+    } else {
+      const { data, error } = await supabase
+        .from('container_images')
+        .insert({
+          container_size_id: containerSizeId,
+          image_url: imageUrl,
+          file_path: filePath,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        await supabase.storage.from('container-images').remove([filePath]);
+        throw error;
+      }
+      result = data;
+    }
 
     if (onProgress) onProgress(100);
 
-    return data;
+    return result;
   },
 
   async remove(containerSizeId: string): Promise<void> {

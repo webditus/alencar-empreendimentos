@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Upload, X, Image as ImageIcon, Trash2, RefreshCw } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Trash2, RefreshCw, AlertCircle } from 'lucide-react';
 import { containerImageService, ContainerImage } from '../services/containerImageService';
 
 const CONTAINER_SIZES = [
@@ -14,6 +14,7 @@ export const ContainerImageManager: React.FC = () => {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadImages = useCallback(async () => {
     try {
@@ -38,6 +39,8 @@ export const ContainerImageManager: React.FC = () => {
   const handleFile = async (file: File, sizeId: string) => {
     if (!file.type.startsWith('image/')) return;
 
+    setError(null);
+
     try {
       setUploadingId(sizeId);
       setUploadProgress(0);
@@ -47,8 +50,15 @@ export const ContainerImageManager: React.FC = () => {
       });
 
       await loadImages();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Upload error:', err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : 'Erro ao enviar imagem. Tente novamente.';
+      setError(message);
     } finally {
       setUploadingId(null);
       setUploadProgress(0);
@@ -71,11 +81,16 @@ export const ContainerImageManager: React.FC = () => {
   const handleDelete = async (sizeId: string) => {
     if (!window.confirm('Tem certeza que deseja remover esta imagem?')) return;
 
+    setError(null);
+
     try {
       await containerImageService.remove(sizeId);
       await loadImages();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Delete error:', err);
+      const message =
+        err instanceof Error ? err.message : 'Erro ao remover imagem. Tente novamente.';
+      setError(message);
     }
   };
 
@@ -104,6 +119,22 @@ export const ContainerImageManager: React.FC = () => {
           <RefreshCw className="w-5 h-5" />
         </button>
       </div>
+
+      {error && (
+        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-red-700">Falha no upload</p>
+            <p className="text-xs text-red-600 mt-0.5 break-words">{error}</p>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className="text-red-400 hover:text-red-600 flex-shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {CONTAINER_SIZES.map((size) => {
