@@ -317,7 +317,7 @@ export const QuoteManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 min-w-0 w-full">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <h2 className="text-2xl font-bold text-gray-900">Gerenciamento de Orçamentos</h2>
 
@@ -352,32 +352,32 @@ export const QuoteManagement: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         {filteredQuotes.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             {quotes.length === 0 ? 'Nenhum orçamento encontrado.' : 'Nenhum orçamento corresponde aos filtros selecionados.'}
           </div>
         ) : (
-          <div>
-            <table className="table-auto w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Cliente
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Valor Total
                   </th>
-                  <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Orçamento Final Aprovado
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Data de Criação
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -385,12 +385,12 @@ export const QuoteManagement: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredQuotes.map((quote) => (
                   <tr key={quote.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{quote.customer.name}</div>
                       <div className="text-sm text-gray-500">{quote.customer.email}</div>
                       <div className="text-sm text-gray-500">{formatPhone(quote.customer.phone)}</div>
                     </td>
-                    <td className="px-3 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <select
                         value={quote.status}
                         onChange={(e) => handleStatusChange(quote.id, e.target.value as Quote['status'])}
@@ -407,13 +407,13 @@ export const QuoteManagement: React.FC = () => {
                         <option value="completed">Concluído</option>
                       </select>
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-900 text-right whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatCurrency(quote.totalPrice)}
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-900 text-right whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {quote.finalApprovedAmount ? (
-                        <div className="flex items-center justify-end">
-                          <CheckCircle className="h-4 w-4 text-green-500 mr-1.5 flex-shrink-0" />
+                        <div className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                           <span className="text-green-600 font-semibold">
                             {formatCurrency(quote.finalApprovedAmount)}
                           </span>
@@ -422,46 +422,51 @@ export const QuoteManagement: React.FC = () => {
                         <span className="text-gray-400 italic">Não definido</span>
                       )}
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(quote.createdAt)}
                     </td>
-                    <td className="px-2 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-1">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
                         <button
                           onClick={() => openQuoteDetails(quote)}
-                          className="text-alencar-green hover:text-alencar-hover p-1 rounded transition-colors"
+                          className="text-alencar-green hover:text-alencar-hover flex items-center"
                           title="Ver detalhes"
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => openEditModal(quote)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded transition-colors"
+                          className="text-blue-600 hover:text-blue-900 flex items-center"
                           title="Editar informações comerciais"
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Pencil className="h-4 w-4" />
                         </button>
                         {quoteContracts.has(quote.id) ? (
                           <button
                             onClick={() => handleGoToContract(quote)}
-                            className="text-purple-600 hover:text-purple-900 p-1 rounded transition-colors"
+                            className="text-purple-600 hover:text-purple-900 flex items-center"
                             title="Ir ao contrato"
                           >
-                            <ExternalLink className="h-3.5 w-3.5" />
+                            <ExternalLink className="h-4 w-4" />
                           </button>
                         ) : (
                           <button
                             onClick={() => handleGenerateContract(quote)}
-                            className="text-purple-600 hover:text-purple-900 p-1 rounded transition-colors"
+                            className="text-purple-600 hover:text-purple-900 flex items-center"
                             title="Gerar contrato"
                           >
-                            <FileText className="h-3.5 w-3.5" />
+                            <FileText className="h-4 w-4" />
                           </button>
                         )}
                         <button
-                          onClick={() => handleGeneratePaymentLink(quote)}
+                          onClick={() => {
+                            console.log('🔍 Quote clicado:', quote);
+                            console.log('🆔 ID do quote:', quote.id);
+                            console.log('📊 Tipo do ID:', typeof quote.id);
+                            handleGeneratePaymentLink(quote);
+                          }}
                           disabled={isGeneratingPayment}
-                          className={`p-1 rounded transition-colors ${
+                          className={`flex items-center ${
                             isGeneratingPayment
                               ? 'text-gray-400 cursor-not-allowed'
                               : 'text-orange-600 hover:text-orange-900'
@@ -469,20 +474,20 @@ export const QuoteManagement: React.FC = () => {
                           title={isGeneratingPayment ? "Gerando link de pagamento..." : "Gerar link de pagamento"}
                         >
                           {isGeneratingPayment ? (
-                            <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                           ) : (
-                            <CreditCard className="h-3.5 w-3.5" />
+                            <CreditCard className="h-4 w-4" />
                           )}
                         </button>
                         <button
                           onClick={() => handleDeleteQuote(quote.id)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
+                          className="text-red-600 hover:text-red-900 flex items-center"
                           title="Excluir orçamento (exclusão lógica)"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </td>

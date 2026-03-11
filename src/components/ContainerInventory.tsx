@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Plus, Pencil, Trash2, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
-import { ContainerStatus } from '../types';
+import { Container, ContainerStatus } from '../types';
 import { useContainers } from '../contexts/ContainerContext';
 import { formatDate } from '../utils/formatters';
+import { ContainerFormModal } from './ContainerFormModal';
 
 const STATUS_TABS: { label: string; value: ContainerStatus | 'all' }[] = [
   { label: 'Todos', value: 'all' },
@@ -31,6 +32,8 @@ export const ContainerInventory: React.FC = () => {
   const navigate = useNavigate();
   const { containers, loading, error, refreshContainers, removeContainer, editContainer } = useContainers();
   const [filter, setFilter] = useState<ContainerStatus | 'all'>('all');
+  const [editingContainer, setEditingContainer] = useState<Container | null>(null);
+  const [editFormOpen, setEditFormOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [statusDropdown, setStatusDropdown] = useState<string | null>(null);
 
@@ -122,9 +125,9 @@ export const ContainerInventory: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200">
-          <div>
-            <table className="table-auto w-full">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipo</th>
@@ -143,7 +146,7 @@ export const ContainerInventory: React.FC = () => {
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{container.containerType}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{container.containerSize}</td>
                     <td className="px-4 py-3">
-                      <div className="relative inline-block">
+                      <div className="relative">
                         <button
                           onClick={() => setStatusDropdown(statusDropdown === container.id ? null : container.id)}
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_BADGE[container.status]} cursor-pointer hover:opacity-80 transition-opacity`}
@@ -151,7 +154,7 @@ export const ContainerInventory: React.FC = () => {
                           {STATUS_LABEL[container.status]}
                         </button>
                         {statusDropdown === container.id && (
-                          <div className="absolute left-0 z-50 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[140px]">
+                          <div className="absolute z-20 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[140px]">
                             {(Object.keys(STATUS_LABEL) as ContainerStatus[]).map((s) => (
                               <button
                                 key={s}
@@ -180,7 +183,7 @@ export const ContainerInventory: React.FC = () => {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => navigate(`/admin/containers/${container.id}`)}
+                          onClick={() => { setEditingContainer(container); setEditFormOpen(true); }}
                           className="p-1.5 text-gray-400 hover:text-alencar-green hover:bg-alencar-green/5 rounded-lg transition-colors"
                           title="Editar"
                         >
@@ -208,6 +211,12 @@ export const ContainerInventory: React.FC = () => {
         </div>
       )}
 
+      {editFormOpen && editingContainer && (
+        <ContainerFormModal
+          container={editingContainer}
+          onClose={() => { setEditFormOpen(false); setEditingContainer(null); }}
+        />
+      )}
     </div>
   );
 };
