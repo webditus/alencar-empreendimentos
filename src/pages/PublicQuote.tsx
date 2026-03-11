@@ -434,7 +434,7 @@ const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => v
             </div>
             <div>
               <span className="text-sm text-white/60">Simular a</span>
-              <h2 className="text-xl font-semibold text-white">Compra</h2>
+              <h2 className="text-3xl font-bold text-white">Compra</h2>
               <p className="text-white/50 text-sm mt-2 mb-3">Para quem deseja adquirir o container definitivamente.</p>
               <ul className="text-sm text-white/70 space-y-1">
                 <li>• Investimento único</li>
@@ -461,7 +461,7 @@ const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => v
             </div>
             <div>
               <span className="text-sm text-white/60">Simular o</span>
-              <h2 className="text-xl font-semibold text-white">Aluguel</h2>
+              <h2 className="text-3xl font-bold text-white">Aluguel</h2>
               <p className="text-white/50 text-sm mt-2 mb-3">Para quem precisa de uma solução flexível.</p>
               <ul className="text-sm text-white/70 space-y-1">
                 <li>• Pagamento mensal</li>
