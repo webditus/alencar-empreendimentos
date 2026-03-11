@@ -92,7 +92,7 @@ export const CRMDashboard: React.FC = () => {
           accent="bg-green-50"
         />
         <MetricCard
-          title="Containers Alugados"
+          title="Containers Locados"
           value={String(stats.rented)}
           icon={<Box className="w-5 h-5 text-blue-600" />}
           accent="bg-blue-50"

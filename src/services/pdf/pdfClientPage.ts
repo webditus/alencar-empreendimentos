@@ -186,7 +186,7 @@ export function renderClientPage(
   drawDividerLine(page, y + 8);
 
   drawLabel(page, 'Tipo de opera\u00e7\u00e3o', MARGIN_LEFT, y, fontBold);
-  const opLabel = quote.operationType === 'aluguel' ? 'Loca\u00e7\u00e3o' : 'Venda';
+  const opLabel = quote.operationType === 'locacao' ? 'Loca\u00e7\u00e3o' : 'Venda';
   drawBadge(page, opLabel, MARGIN_LEFT, y - 20, fontBold);
 
   drawLabel(page, 'Container escolhido', COL2_X, y, fontBold);

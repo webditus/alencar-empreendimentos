@@ -3,7 +3,7 @@ import { ShoppingCart, Home } from 'lucide-react';
 import { useOperation } from '../contexts/OperationContext';
 
 export const PublicOperationToggle: React.FC = () => {
-  const { setOperationType, isVenda, isAluguel } = useOperation();
+  const { setOperationType, isVenda, isLocacao } = useOperation();
 
   return (
     <div className="inline-flex items-center bg-white/10 rounded-full p-1 backdrop-blur-sm border border-white/10">
@@ -20,15 +20,15 @@ export const PublicOperationToggle: React.FC = () => {
       </button>
 
       <button
-        onClick={() => setOperationType('aluguel')}
+        onClick={() => setOperationType('locacao')}
         className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold transition-all duration-200 ${
-          isAluguel
+          isLocacao
             ? 'bg-white text-alencar-dark shadow-md'
             : 'text-white/70 hover:text-white'
         }`}
       >
         <Home size={18} />
-        Aluguel
+        Locação
       </button>
     </div>
   );

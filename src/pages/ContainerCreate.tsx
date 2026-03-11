@@ -11,7 +11,7 @@ import { TabId, SIDEBAR_STORAGE_KEY } from '../config/sidebarNav';
 const CONTAINER_SIZES = ['4m', '6m', '12m'] as const;
 const STATUSES: { value: ContainerStatus; label: string }[] = [
   { value: 'available', label: 'Disponivel' },
-  { value: 'rented', label: 'Alugado' },
+  { value: 'rented', label: 'Locado' },
   { value: 'in_transport', label: 'Em Transporte' },
   { value: 'maintenance', label: 'Manutencao' },
 ];

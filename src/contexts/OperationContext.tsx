@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type OperationType = 'venda' | 'aluguel' | 'locacao';
+export type OperationType = 'venda' | 'locacao';
 
 interface OperationContextType {
   operationType: OperationType;
   setOperationType: (type: OperationType) => void;
   isVenda: boolean;
-  isAluguel: boolean;
+  isLocacao: boolean;
 }
 
 const OperationContext = createContext<OperationContextType | undefined>(undefined);
@@ -14,14 +14,9 @@ const OperationContext = createContext<OperationContextType | undefined>(undefin
 export function OperationProvider({ children }: { children: React.ReactNode }) {
   const [operationType, setOperationType] = useState<OperationType>(() => {
     const saved = localStorage.getItem('operation-type');
-    if (saved === 'aluguel') {
-      localStorage.setItem('operation-type', 'locacao');
-      return 'locacao';
-    }
-    return (saved as OperationType) || 'venda';
+    return (saved === 'venda' || saved === 'locacao') ? saved : 'venda';
   });
 
-  // Salvar no localStorage quando mudar
   useEffect(() => {
     localStorage.setItem('operation-type', operationType);
   }, [operationType]);
@@ -30,7 +25,7 @@ export function OperationProvider({ children }: { children: React.ReactNode }) {
     operationType,
     setOperationType,
     isVenda: operationType === 'venda',
-    isAluguel: operationType === 'aluguel' || operationType === 'locacao'
+    isLocacao: operationType === 'locacao'
   };
 
   return (

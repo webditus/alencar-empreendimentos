@@ -30,7 +30,7 @@ export const CategoryManagement: React.FC = () => {
     refreshCategories,
   } = useCategories();
 
-  const { operationType, isVenda, isAluguel } = useOperation();
+  const { operationType, isVenda, isLocacao } = useOperation();
 
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<{ categoryId: string; itemId: string } | null>(null);
@@ -243,7 +243,7 @@ export const CategoryManagement: React.FC = () => {
           <h2 className="text-2xl font-bold text-alencar-dark">Gerenciar Categorias e Itens</h2>
           <p className="text-gray-600">
             Modo: <span className={`font-semibold ${isVenda ? 'text-alencar-green' : 'text-alencar-green-light'}`}>
-              {isVenda ? 'Venda' : 'Aluguel'}
+              {isVenda ? 'Venda' : 'Locação'}
             </span> - Configure os itens disponíveis
           </p>
         </div>
@@ -253,7 +253,7 @@ export const CategoryManagement: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 btn-primary"
           >
             <Plus size={16} />
-            Nova Categoria {isAluguel ? '(Aluguel)' : '(Venda)'}
+            Nova Categoria {isLocacao ? '(Locação)' : '(Venda)'}
           </button>
         </div>
       </div>

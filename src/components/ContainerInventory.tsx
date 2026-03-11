@@ -9,7 +9,7 @@ import { ContainerFormModal } from './ContainerFormModal';
 const STATUS_TABS: { label: string; value: ContainerStatus | 'all' }[] = [
   { label: 'Todos', value: 'all' },
   { label: 'Disponivel', value: 'available' },
-  { label: 'Alugado', value: 'rented' },
+  { label: 'Locado', value: 'rented' },
   { label: 'Em Transporte', value: 'in_transport' },
   { label: 'Manutencao', value: 'maintenance' },
 ];
@@ -23,7 +23,7 @@ const STATUS_BADGE: Record<ContainerStatus, string> = {
 
 const STATUS_LABEL: Record<ContainerStatus, string> = {
   available: 'Disponivel',
-  rented: 'Alugado',
+  rented: 'Locado',
   in_transport: 'Em Transporte',
   maintenance: 'Manutencao',
 };

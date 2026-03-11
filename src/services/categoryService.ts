@@ -1,9 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Category, Item, OperationType } from '../types';
 
-const normalizeOperationType = (value: string): OperationType =>
-  value === 'aluguel' ? 'locacao' : value as OperationType;
-
 // Tipos para o banco de dados
 export interface DatabaseCategory {
   id: string;
@@ -51,7 +48,7 @@ export class CategoryService {
       const categories: Category[] = categoriesData.map((category: DatabaseCategory) => ({
         id: category.id,
         name: category.name,
-        operationType: normalizeOperationType(category.operation_type),
+        operationType: category.operation_type as OperationType,
         isActive: category.is_active ?? true,
         items: itemsData
           .filter((item: DatabaseItem) => item.category_id === category.id)
@@ -60,7 +57,7 @@ export class CategoryService {
             name: item.name,
             price: item.price,
             category: category.name,
-            operationType: normalizeOperationType(item.operation_type),
+            operationType: item.operation_type as OperationType,
             isActive: item.is_active ?? true,
             image_path: item.image_path ?? null,
           })),
@@ -78,7 +75,7 @@ export class CategoryService {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .insert([{ name, operation_type: normalizeOperationType(operationType) }])
+        .insert([{ name, operation_type: operationType }])
         .select()
         .single();
 
@@ -87,7 +84,7 @@ export class CategoryService {
       return {
         id: data.id,
         name: data.name,
-        operationType: normalizeOperationType(data.operation_type),
+        operationType: data.operation_type as OperationType,
         isActive: data.is_active ?? true,
         items: [],
       };
@@ -160,7 +157,7 @@ export class ItemService {
       // Criar item
       const { data, error } = await supabase
         .from('items')
-        .insert([{ name, price, category_id: categoryId, operation_type: normalizeOperationType(operationType) }])
+        .insert([{ name, price, category_id: categoryId, operation_type: operationType }])
         .select()
         .single();
 
@@ -171,7 +168,7 @@ export class ItemService {
         name: data.name,
         price: data.price,
         category: categoryData.name,
-        operationType: normalizeOperationType(data.operation_type),
+        operationType: data.operation_type as OperationType,
         isActive: data.is_active ?? true,
         image_path: data.image_path ?? null,
       };
@@ -248,7 +245,7 @@ export class ItemService {
         name: item.name,
         price: item.price,
         category: item.categories.name,
-        operationType: normalizeOperationType(item.operation_type),
+        operationType: item.operation_type as OperationType,
         isActive: item.is_active ?? true,
         image_path: item.image_path ?? null,
       }));

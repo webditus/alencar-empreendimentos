@@ -209,7 +209,7 @@ export function renderBudgetPages(
   fontBold: PDFFont
 ): number {
   const { quote, selectedContainer } = params;
-  const isRental = quote.operationType === 'aluguel';
+  const isRental = quote.operationType === 'locacao';
 
   const itemsByCategory: Record<string, Item[]> = {};
   quote.selectedItems.forEach(item => {
@@ -222,7 +222,7 @@ export function renderBudgetPages(
   );
 
   const basePrice = selectedContainer
-    ? (isRental ? selectedContainer.aluguelPrice : selectedContainer.vendaPrice)
+    ? (isRental ? selectedContainer.locacaoPrice : selectedContainer.vendaPrice)
     : quote.basePrice;
 
   const itemsTotal = quote.selectedItems.reduce((sum, item) => sum + item.price, 0);

@@ -2,7 +2,7 @@ import { useOperation } from '../contexts/OperationContext';
 import { ShoppingCart, Home } from 'lucide-react';
 
 export function OperationToggle() {
-  const { setOperationType, isVenda, isAluguel } = useOperation();
+  const { setOperationType, isVenda, isLocacao } = useOperation();
 
   return (
     <div className="flex items-center bg-white/10 rounded-full p-1 border border-white/10">
@@ -19,15 +19,15 @@ export function OperationToggle() {
       </button>
 
       <button
-        onClick={() => setOperationType('aluguel')}
+        onClick={() => setOperationType('locacao')}
         className={`flex items-center justify-center rounded-full transition-all duration-200 text-sm font-medium px-4 py-2 ${
-          isAluguel
+          isLocacao
             ? 'bg-alencar-green-light text-white shadow-md'
             : 'text-gray-300 hover:text-white'
         }`}
       >
         <Home className="w-4 h-4 flex-shrink-0 mr-2" />
-        Aluguel
+        Locação
       </button>
     </div>
   );

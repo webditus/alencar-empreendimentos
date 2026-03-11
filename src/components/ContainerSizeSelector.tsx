@@ -8,7 +8,7 @@ export interface ContainerSize {
   size: string;
   description: string;
   vendaPrice: number;
-  aluguelPrice: number;
+  locacaoPrice: number;
   image: string;
 }
 
@@ -23,7 +23,7 @@ const containerSizes: ContainerSize[] = [
     size: '4 metros',
     description: 'Container compacto',
     vendaPrice: 45000,
-    aluguelPrice: 750,
+    locacaoPrice: 750,
     image: ''
   },
   {
@@ -31,7 +31,7 @@ const containerSizes: ContainerSize[] = [
     size: '6 metros',
     description: 'Container medio',
     vendaPrice: 60000,
-    aluguelPrice: 1000,
+    locacaoPrice: 1000,
     image: ''
   },
   {
@@ -39,7 +39,7 @@ const containerSizes: ContainerSize[] = [
     size: '12 metros',
     description: 'Container grande',
     vendaPrice: 120000,
-    aluguelPrice: 2500,
+    locacaoPrice: 2500,
     image: ''
   }
 ];
@@ -62,7 +62,7 @@ export const ContainerSizeSelector: React.FC<ContainerSizeSelectorProps> = ({
   selectedSize,
   onSizeSelect
 }) => {
-  const { isVenda, isAluguel } = useOperation();
+  const { isVenda, isLocacao } = useOperation();
   const [imageMap, setImageMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -84,8 +84,8 @@ export const ContainerSizeSelector: React.FC<ContainerSizeSelectorProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {containerSizes.map((container) => {
           const isSelected = selectedSize?.id === container.id;
-          const currentPrice = isVenda ? container.vendaPrice : container.aluguelPrice;
-          const priceLabel = isAluguel ? 'mensal' : '';
+          const currentPrice = isVenda ? container.vendaPrice : container.locacaoPrice;
+          const priceLabel = isLocacao ? 'mensal' : '';
           const imgUrl = imageMap[container.id];
 
           return (
@@ -141,8 +141,8 @@ export const ContainerSizeSelector: React.FC<ContainerSizeSelectorProps> = ({
             Container selecionado: <strong className="text-white">{selectedSize.size}</strong>
           </p>
           <p className="text-alencar-green-light font-bold text-lg">
-            Valor base: {formatCurrency(isVenda ? selectedSize.vendaPrice : selectedSize.aluguelPrice)}
-            {isAluguel && ' mensal'}
+            Valor base: {formatCurrency(isVenda ? selectedSize.vendaPrice : selectedSize.locacaoPrice)}
+            {isLocacao && ' mensal'}
           </p>
         </div>
       )}
