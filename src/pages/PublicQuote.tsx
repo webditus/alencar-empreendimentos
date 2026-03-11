@@ -12,7 +12,7 @@ import { QuoteActions } from '../components/QuoteActions';
 import { Logo } from '../components/Logo';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
-import { Customer, Item, Quote } from '../types';
+import { Customer, Item, QuoteItemSnapshot, Quote } from '../types';
 import { generateWhatsAppLink, generateEmailLink } from '../utils/formatters';
 import { generateQuotePDF } from '../services/pdfService';
 import { useQuotes } from '../contexts/QuoteContext';
@@ -113,13 +113,24 @@ export const PublicQuote: React.FC = () => {
     });
   };
 
+  const resolvePrice = (item: Item): number =>
+    isVenda ? (item.vendaPrice ?? 0) : (item.locacaoPrice ?? 0);
+
   const totalPrice =
     (selectedContainer ? (isVenda ? selectedContainer.vendaPrice : selectedContainer.locacaoPrice) : 0) +
-    selectedItems.reduce((sum, item) => sum + item.price, 0);
+    selectedItems.reduce((sum, item) => sum + resolvePrice(item), 0);
 
   const basePrice = selectedContainer ? (isVenda ? selectedContainer.vendaPrice : selectedContainer.locacaoPrice) : 0;
 
   const createQuote = async (customerData: Customer): Promise<Quote | null> => {
+    const itemSnapshots: QuoteItemSnapshot[] = selectedItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      price: resolvePrice(item),
+      category: item.category,
+      image_path: item.image_path,
+    }));
+
     const quote: Quote = {
       id: Date.now().toString(),
       customer: {
@@ -127,7 +138,7 @@ export const PublicQuote: React.FC = () => {
         city: addressInfo.city,
         state: addressInfo.state,
       },
-      selectedItems,
+      selectedItems: itemSnapshots,
       basePrice,
       totalPrice,
       operationType,

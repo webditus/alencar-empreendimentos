@@ -3,12 +3,23 @@ export type OperationType = 'venda' | 'locacao';
 // Contract types
 export * from './contract';
 
-export interface Item {
+export interface QuoteItemSnapshot {
   id: string;
   name: string;
   price: number;
   category: string;
-  operationType: OperationType;
+  image_path?: string | null;
+}
+
+export interface Item {
+  id: string;
+  name: string;
+  vendaPrice: number | null;
+  locacaoPrice: number | null;
+  showVenda: boolean;
+  showLocacao: boolean;
+  displayOrder: number;
+  category: string;
   isActive?: boolean;
   image_path?: string | null;
 }
@@ -17,7 +28,7 @@ export interface Category {
   id: string;
   name: string;
   items: Item[];
-  operationType: OperationType;
+  displayOrder: number;
   isActive?: boolean;
 }
 
@@ -43,7 +54,7 @@ export interface Customer {
 export interface Quote {
   id: string;
   customer: Customer;
-  selectedItems: Item[];
+  selectedItems: QuoteItemSnapshot[];
   basePrice: number;
   totalPrice: number;
   createdAt: string;

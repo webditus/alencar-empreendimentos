@@ -1,11 +1,10 @@
 import { supabase } from '../lib/supabase';
-import { Category, Item, OperationType } from '../types';
+import { Category, Item } from '../types';
 
-// Tipos para o banco de dados
 export interface DatabaseCategory {
   id: string;
   name: string;
-  operation_type: string;
+  display_order: number;
   is_active?: boolean;
   created_at: string;
   updated_at: string;
@@ -14,50 +13,52 @@ export interface DatabaseCategory {
 export interface DatabaseItem {
   id: string;
   name: string;
-  price: number;
+  venda_price: number | null;
+  locacao_price: number | null;
+  show_venda: boolean;
+  show_locacao: boolean;
+  display_order: number;
   category_id: string;
-  operation_type: string;
   is_active?: boolean;
   image_path?: string | null;
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// Serviços para Categorias
 export class CategoryService {
-  // Buscar todas as categorias com seus itens
   static async getAllCategories(): Promise<Category[]> {
     try {
-      // Buscar categorias
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
-        .order('name');
+        .order('display_order');
 
       if (categoriesError) throw categoriesError;
 
-      // Buscar todos os itens
       const { data: itemsData, error: itemsError } = await supabase
         .from('items')
         .select('*')
-        .order('name');
+        .order('display_order');
 
       if (itemsError) throw itemsError;
 
-      // Agrupar itens por categoria
       const categories: Category[] = categoriesData.map((category: DatabaseCategory) => ({
         id: category.id,
         name: category.name,
-        operationType: category.operation_type as OperationType,
+        displayOrder: category.display_order,
         isActive: category.is_active ?? true,
         items: itemsData
           .filter((item: DatabaseItem) => item.category_id === category.id)
           .map((item: DatabaseItem) => ({
             id: item.id,
             name: item.name,
-            price: item.price,
+            vendaPrice: item.venda_price,
+            locacaoPrice: item.locacao_price,
+            showVenda: item.show_venda,
+            showLocacao: item.show_locacao,
+            displayOrder: item.display_order,
             category: category.name,
-            operationType: item.operation_type as OperationType,
             isActive: item.is_active ?? true,
             image_path: item.image_path ?? null,
           })),
@@ -70,12 +71,11 @@ export class CategoryService {
     }
   }
 
-  // Criar nova categoria
-  static async createCategory(name: string, operationType: OperationType = 'venda'): Promise<Category> {
+  static async createCategory(name: string, displayOrder?: number): Promise<Category> {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .insert([{ name, operation_type: operationType }])
+        .insert([{ name, display_order: displayOrder ?? 0 }])
         .select()
         .single();
 
@@ -84,7 +84,7 @@ export class CategoryService {
       return {
         id: data.id,
         name: data.name,
-        operationType: data.operation_type as OperationType,
+        displayOrder: data.display_order,
         isActive: data.is_active ?? true,
         items: [],
       };
@@ -94,12 +94,16 @@ export class CategoryService {
     }
   }
 
-  // Atualizar categoria
-  static async updateCategory(id: string, name: string): Promise<void> {
+  static async updateCategory(id: string, name: string, displayOrder?: number): Promise<void> {
     try {
+      const payload: Record<string, unknown> = { name };
+      if (displayOrder !== undefined) {
+        payload.display_order = displayOrder;
+      }
+
       const { error } = await supabase
         .from('categories')
-        .update({ name })
+        .update(payload)
         .eq('id', id);
 
       if (error) throw error;
@@ -109,7 +113,6 @@ export class CategoryService {
     }
   }
 
-  // Deletar categoria (e todos os itens relacionados)
   static async deleteCategory(id: string): Promise<void> {
     try {
       const { error } = await supabase
@@ -124,7 +127,6 @@ export class CategoryService {
     }
   }
 
-  // Alternar status ativo/inativo da categoria
   static async toggleCategoryStatus(id: string, isActive: boolean): Promise<void> {
     try {
       const { error } = await supabase
@@ -140,12 +142,17 @@ export class CategoryService {
   }
 }
 
-// Serviços para Itens
 export class ItemService {
-  // Criar novo item
-  static async createItem(categoryId: string, name: string, price: number, operationType: OperationType = 'venda'): Promise<Item> {
+  static async createItem(
+    categoryId: string,
+    name: string,
+    vendaPrice: number | null,
+    locacaoPrice: number | null,
+    showVenda: boolean,
+    showLocacao: boolean,
+    displayOrder?: number
+  ): Promise<Item> {
     try {
-      // Buscar nome da categoria
       const { data: categoryData, error: categoryError } = await supabase
         .from('categories')
         .select('name')
@@ -154,10 +161,17 @@ export class ItemService {
 
       if (categoryError) throw categoryError;
 
-      // Criar item
       const { data, error } = await supabase
         .from('items')
-        .insert([{ name, price, category_id: categoryId, operation_type: operationType }])
+        .insert([{
+          name,
+          venda_price: vendaPrice,
+          locacao_price: locacaoPrice,
+          show_venda: showVenda,
+          show_locacao: showLocacao,
+          display_order: displayOrder ?? 0,
+          category_id: categoryId,
+        }])
         .select()
         .single();
 
@@ -166,9 +180,12 @@ export class ItemService {
       return {
         id: data.id,
         name: data.name,
-        price: data.price,
+        vendaPrice: data.venda_price,
+        locacaoPrice: data.locacao_price,
+        showVenda: data.show_venda,
+        showLocacao: data.show_locacao,
+        displayOrder: data.display_order,
         category: categoryData.name,
-        operationType: data.operation_type as OperationType,
         isActive: data.is_active ?? true,
         image_path: data.image_path ?? null,
       };
@@ -178,12 +195,30 @@ export class ItemService {
     }
   }
 
-  // Atualizar item
-  static async updateItem(id: string, name: string, price: number): Promise<void> {
+  static async updateItem(
+    id: string,
+    name: string,
+    vendaPrice: number | null,
+    locacaoPrice: number | null,
+    showVenda: boolean,
+    showLocacao: boolean,
+    displayOrder?: number
+  ): Promise<void> {
     try {
+      const payload: Record<string, unknown> = {
+        name,
+        venda_price: vendaPrice,
+        locacao_price: locacaoPrice,
+        show_venda: showVenda,
+        show_locacao: showLocacao,
+      };
+      if (displayOrder !== undefined) {
+        payload.display_order = displayOrder;
+      }
+
       const { error } = await supabase
         .from('items')
-        .update({ name, price })
+        .update(payload)
         .eq('id', id);
 
       if (error) throw error;
@@ -193,7 +228,6 @@ export class ItemService {
     }
   }
 
-  // Deletar item
   static async deleteItem(id: string): Promise<void> {
     try {
       const { error } = await supabase
@@ -208,7 +242,6 @@ export class ItemService {
     }
   }
 
-  // Alternar status ativo/inativo do item
   static async toggleItemStatus(id: string, isActive: boolean): Promise<void> {
     try {
       const { error } = await supabase
@@ -219,38 +252,6 @@ export class ItemService {
       if (error) throw error;
     } catch (error) {
       console.error('Erro ao alterar status do item:', error);
-      throw error;
-    }
-  }
-
-  // Buscar itens por categoria
-  static async getItemsByCategory(categoryId: string): Promise<Item[]> {
-    try {
-      const { data: itemsData, error: itemsError } = await supabase
-        .from('items')
-        .select(`
-          id,
-          name,
-          price,
-          operation_type,
-          categories!inner(name)
-        `)
-        .eq('category_id', categoryId)
-        .order('name');
-
-      if (itemsError) throw itemsError;
-
-      return itemsData.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        category: item.categories.name,
-        operationType: item.operation_type as OperationType,
-        isActive: item.is_active ?? true,
-        image_path: item.image_path ?? null,
-      }));
-    } catch (error) {
-      console.error('Erro ao buscar itens por categoria:', error);
       throw error;
     }
   }

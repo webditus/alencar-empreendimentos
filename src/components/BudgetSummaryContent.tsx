@@ -2,6 +2,7 @@ import React from 'react';
 import { Item } from '../types';
 import { ContainerSize } from './ContainerSizeSelector';
 import { formatCurrency } from '../utils/formatters';
+import { useOperation } from '../contexts/OperationContext';
 
 interface BudgetSummaryContentProps {
   selectedContainer: ContainerSize | null;
@@ -16,6 +17,11 @@ export const BudgetSummaryContent: React.FC<BudgetSummaryContentProps> = ({
   selectedItems,
   totalPrice,
 }) => {
+  const { isVenda } = useOperation();
+
+  const resolvePrice = (item: Item): number =>
+    isVenda ? (item.vendaPrice ?? 0) : (item.locacaoPrice ?? 0);
+
   return (
     <>
       <h3 className="text-xl font-bold text-white mb-4">Simulação do seu projeto</h3>
@@ -29,7 +35,7 @@ export const BudgetSummaryContent: React.FC<BudgetSummaryContentProps> = ({
         {selectedItems.map((item) => (
           <div key={item.id} className="flex justify-between text-sm">
             <span className="text-white/60">{item.name}:</span>
-            <span className="text-alencar-green-light">{formatCurrency(item.price)}</span>
+            <span className="text-alencar-green-light">{formatCurrency(resolvePrice(item))}</span>
           </div>
         ))}
       </div>

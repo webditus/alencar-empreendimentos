@@ -4,6 +4,7 @@ import { Category, Item } from '../types';
 import { formatCurrency } from '../utils/formatters';
 import { ImageThumbnail } from './ImageThumbnail';
 import { itemImageService } from '../services/itemImageService';
+import { useOperation } from '../contexts/OperationContext';
 
 interface CategorySectionProps {
   category: Category;
@@ -16,7 +17,11 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   selectedItems,
   onItemToggle,
 }) => {
+  const { isVenda } = useOperation();
   const isSelected = (item: Item) => selectedItems.some(selected => selected.id === item.id);
+
+  const resolvePrice = (item: Item): number =>
+    isVenda ? (item.vendaPrice ?? 0) : (item.locacaoPrice ?? 0);
 
   return (
     <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 mb-6 animate-fade-up">
@@ -53,7 +58,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 <span className="text-white font-medium line-clamp-2 break-words min-w-0">{item.name}</span>
               </div>
               <span className={`shrink-0 text-right whitespace-nowrap transition-all duration-200 ${isSelected(item) ? 'text-white font-semibold text-lg' : 'text-gray-400 font-medium'}`}>
-                {formatCurrency(item.price)}
+                {formatCurrency(resolvePrice(item))}
               </span>
             </label>
           );

@@ -1,11 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Save, X, Package, DollarSign, Eye, EyeOff, Image as ImageIcon, UploadCloud, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Save, X, Package, Eye, EyeOff, Image as ImageIcon, UploadCloud, AlertCircle } from 'lucide-react';
 import { useCategories } from '../contexts/CategoryContext';
-import { useOperation } from '../contexts/OperationContext';
 import { formatCurrency } from '../utils/formatters';
 import { ContainerImageManager } from './ContainerImageManager';
 import { itemImageService } from '../services/itemImageService';
 import { validateImageFile } from '../utils/imageUtils';
+import { ItemImageSection } from './ItemImageSection';
+
+interface NewItemForm {
+  name: string;
+  vendaPrice: string;
+  locacaoPrice: string;
+  showVenda: boolean;
+  showLocacao: boolean;
+}
+
+const defaultNewItem: NewItemForm = {
+  name: '',
+  vendaPrice: '',
+  locacaoPrice: '',
+  showVenda: true,
+  showLocacao: true,
+};
 
 interface ItemImageState {
   isUploading: boolean;
@@ -30,16 +46,10 @@ export const CategoryManagement: React.FC = () => {
     refreshCategories,
   } = useCategories();
 
-  const { operationType, isVenda, isLocacao } = useOperation();
-
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<{ categoryId: string; itemId: string } | null>(null);
   const [newCategory, setNewCategory] = useState({ name: '' });
-  const [newItem, setNewItem] = useState<{ categoryId: string; name: string; price: string }>({
-    categoryId: '',
-    name: '',
-    price: ''
-  });
+  const [newItem, setNewItem] = useState<NewItemForm>({ ...defaultNewItem });
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddItem, setShowAddItem] = useState<string | null>(null);
   const [itemImageStates, setItemImageStates] = useState<Record<string, ItemImageState>>({});
@@ -56,22 +66,22 @@ export const CategoryManagement: React.FC = () => {
     };
   }, []);
 
-  const defaultItemImageState: ItemImageState = { isUploading: false, progress: 0, error: null, showUpload: false, pendingFile: null, pendingPreviewUrl: null };
+  const defaultImageState: ItemImageState = { isUploading: false, progress: 0, error: null, showUpload: false, pendingFile: null, pendingPreviewUrl: null };
 
   const getItemImageState = (itemId: string): ItemImageState =>
-    itemImageStates[itemId] ?? defaultItemImageState;
+    itemImageStates[itemId] ?? defaultImageState;
 
   const updateItemImageState = (itemId: string, patch: Partial<ItemImageState>) => {
     setItemImageStates((prev) => ({
       ...prev,
-      [itemId]: { ...(prev[itemId] ?? defaultItemImageState), ...patch },
+      [itemId]: { ...(prev[itemId] ?? defaultImageState), ...patch },
     }));
   };
 
   const handleAddCategory = async () => {
     if (newCategory.name.trim()) {
       try {
-        await addCategory(newCategory.name.trim(), operationType);
+        await addCategory(newCategory.name.trim());
         setNewCategory({ name: '' });
         setShowAddCategory(false);
       } catch (error) {
@@ -81,21 +91,35 @@ export const CategoryManagement: React.FC = () => {
   };
 
   const handleAddItem = async (categoryId: string) => {
-    if (newItem.name.trim() && newItem.price.trim()) {
-      try {
-        await addItemToCategory(categoryId, newItem.name.trim(), parseFloat(newItem.price));
-        setNewItem({ categoryId: '', name: '', price: '' });
-        setShowAddItem(null);
-      } catch (error) {
-        console.error('Erro ao adicionar item:', error);
-      }
+    if (!newItem.name.trim()) return;
+
+    const hasVenda = newItem.showVenda && newItem.vendaPrice.trim() && parseFloat(newItem.vendaPrice) > 0;
+    const hasLocacao = newItem.showLocacao && newItem.locacaoPrice.trim() && parseFloat(newItem.locacaoPrice) > 0;
+
+    if (newItem.showVenda && !hasVenda) return;
+    if (newItem.showLocacao && !hasLocacao) return;
+    if (!newItem.showVenda && !newItem.showLocacao) return;
+
+    try {
+      await addItemToCategory(
+        categoryId,
+        newItem.name.trim(),
+        newItem.showVenda ? parseFloat(newItem.vendaPrice) : null,
+        newItem.showLocacao ? parseFloat(newItem.locacaoPrice) : null,
+        newItem.showVenda,
+        newItem.showLocacao
+      );
+      setNewItem({ ...defaultNewItem });
+      setShowAddItem(null);
+    } catch (error) {
+      console.error('Erro ao adicionar item:', error);
     }
   };
 
-  const handleUpdateCategory = async (categoryId: string, name: string) => {
+  const handleUpdateCategory = async (categoryId: string, name: string, displayOrder?: number) => {
     if (name.trim()) {
       try {
-        await updateCategory(categoryId, name.trim());
+        await updateCategory(categoryId, name.trim(), displayOrder);
         setEditingCategory(null);
       } catch (error) {
         console.error('Erro ao atualizar categoria:', error);
@@ -103,14 +127,31 @@ export const CategoryManagement: React.FC = () => {
     }
   };
 
-  const handleUpdateItem = async (itemId: string, name: string, price: string) => {
-    if (name.trim() && price.trim()) {
-      try {
-        await updateItem(itemId, name.trim(), parseFloat(price));
-        setEditingItem(null);
-      } catch (error) {
-        console.error('Erro ao atualizar item:', error);
-      }
+  const handleUpdateItem = async (itemId: string) => {
+    const nameInput = document.getElementById(`item-name-${itemId}`) as HTMLInputElement;
+    const vendaPriceInput = document.getElementById(`item-venda-price-${itemId}`) as HTMLInputElement;
+    const locacaoPriceInput = document.getElementById(`item-locacao-price-${itemId}`) as HTMLInputElement;
+    const showVendaInput = document.getElementById(`item-show-venda-${itemId}`) as HTMLInputElement;
+    const showLocacaoInput = document.getElementById(`item-show-locacao-${itemId}`) as HTMLInputElement;
+    const displayOrderInput = document.getElementById(`item-display-order-${itemId}`) as HTMLInputElement;
+
+    if (!nameInput?.value.trim()) return;
+
+    const showVenda = showVendaInput?.checked ?? false;
+    const showLocacao = showLocacaoInput?.checked ?? false;
+    const vendaPrice = showVenda ? parseFloat(vendaPriceInput?.value || '0') : null;
+    const locacaoPrice = showLocacao ? parseFloat(locacaoPriceInput?.value || '0') : null;
+    const displayOrder = displayOrderInput ? parseInt(displayOrderInput.value || '0') : undefined;
+
+    if (showVenda && (!vendaPrice || vendaPrice <= 0)) return;
+    if (showLocacao && (!locacaoPrice || locacaoPrice <= 0)) return;
+    if (!showVenda && !showLocacao) return;
+
+    try {
+      await updateItem(itemId, nameInput.value.trim(), vendaPrice, locacaoPrice, showVenda, showLocacao, displayOrder);
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Erro ao atualizar item:', error);
     }
   };
 
@@ -192,8 +233,7 @@ export const CategoryManagement: React.FC = () => {
       updateItemImageState(itemId, { pendingFile: null, pendingPreviewUrl: null });
       await refreshCategories();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Erro ao enviar imagem. Tente novamente.';
+      const message = err instanceof Error ? err.message : 'Erro ao enviar imagem. Tente novamente.';
       updateItemImageState(itemId, { error: message });
     } finally {
       updateItemImageState(itemId, { isUploading: false, progress: 0 });
@@ -221,8 +261,7 @@ export const CategoryManagement: React.FC = () => {
       await itemImageService.remove(itemId);
       await refreshCategories();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Erro ao remover imagem. Tente novamente.';
+      const message = err instanceof Error ? err.message : 'Erro ao remover imagem. Tente novamente.';
       updateItemImageState(itemId, { error: message });
     }
   };
@@ -230,6 +269,25 @@ export const CategoryManagement: React.FC = () => {
   const getItemImageUrl = (imagePath: string | null | undefined): string | null => {
     if (!imagePath) return null;
     return itemImageService.getPublicUrl(imagePath);
+  };
+
+  const renderPriceBadges = (item: { vendaPrice: number | null; locacaoPrice: number | null; showVenda: boolean; showLocacao: boolean }) => {
+    const badges: React.ReactNode[] = [];
+    if (item.showVenda && item.vendaPrice != null) {
+      badges.push(
+        <span key="v" className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded">
+          V: {formatCurrency(item.vendaPrice)}
+        </span>
+      );
+    }
+    if (item.showLocacao && item.locacaoPrice != null) {
+      badges.push(
+        <span key="l" className="inline-flex items-center gap-1 text-xs font-semibold bg-sky-50 text-sky-700 px-2 py-0.5 rounded">
+          L: {formatCurrency(item.locacaoPrice)}
+        </span>
+      );
+    }
+    return badges;
   };
 
   return (
@@ -241,21 +299,15 @@ export const CategoryManagement: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-alencar-dark">Gerenciar Categorias e Itens</h2>
-          <p className="text-gray-600">
-            Modo: <span className={`font-semibold ${isVenda ? 'text-alencar-green' : 'text-alencar-green-light'}`}>
-              {isVenda ? 'Venda' : 'Locação'}
-            </span> - Configure os itens disponíveis
-          </p>
+          <p className="text-gray-600">Configure os itens disponíveis para venda e locação</p>
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowAddCategory(true)}
-            className="flex items-center gap-2 px-4 py-2 btn-primary"
-          >
-            <Plus size={16} />
-            Nova Categoria {isLocacao ? '(Locação)' : '(Venda)'}
-          </button>
-        </div>
+        <button
+          onClick={() => setShowAddCategory(true)}
+          className="flex items-center gap-2 px-4 py-2 btn-primary"
+        >
+          <Plus size={16} />
+          Nova Categoria
+        </button>
       </div>
 
       {showAddCategory && (
@@ -270,17 +322,11 @@ export const CategoryManagement: React.FC = () => {
               className="w-full p-3 border border-gray-300 rounded-lg input-base mb-4"
             />
             <div className="flex gap-3">
-              <button
-                onClick={handleAddCategory}
-                className="flex-1 btn-primary"
-              >
+              <button onClick={handleAddCategory} className="flex-1 btn-primary">
                 Adicionar
               </button>
               <button
-                onClick={() => {
-                  setShowAddCategory(false);
-                  setNewCategory({ name: '' });
-                }}
+                onClick={() => { setShowAddCategory(false); setNewCategory({ name: '' }); }}
                 className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Cancelar
@@ -299,29 +345,36 @@ export const CategoryManagement: React.FC = () => {
                   <input
                     type="text"
                     defaultValue={category.name}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleUpdateCategory(category.id, e.currentTarget.value);
-                      }
-                    }}
                     className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
+                    id={`cat-name-${category.id}`}
                     autoFocus
                   />
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs text-gray-500">Ordem:</label>
+                    <input
+                      type="number"
+                      defaultValue={category.displayOrder}
+                      className="w-16 p-2 border border-gray-300 rounded-lg input-base text-center"
+                      id={`cat-order-${category.id}`}
+                    />
+                  </div>
                   <button
-                    onClick={(e) => {
-                      const input = e.currentTarget.parentElement?.querySelector('input');
-                      if (input) {
-                        handleUpdateCategory(category.id, input.value);
+                    onClick={() => {
+                      const nameInput = document.getElementById(`cat-name-${category.id}`) as HTMLInputElement;
+                      const orderInput = document.getElementById(`cat-order-${category.id}`) as HTMLInputElement;
+                      if (nameInput) {
+                        handleUpdateCategory(
+                          category.id,
+                          nameInput.value,
+                          orderInput ? parseInt(orderInput.value || '0') : undefined
+                        );
                       }
                     }}
                     className="text-green-600 hover:text-green-800"
                   >
                     <Save size={16} />
                   </button>
-                  <button
-                    onClick={() => setEditingCategory(null)}
-                    className="text-gray-600 hover:text-gray-800"
-                  >
+                  <button onClick={() => setEditingCategory(null)} className="text-gray-600 hover:text-gray-800">
                     <X size={16} />
                   </button>
                 </div>
@@ -335,6 +388,9 @@ export const CategoryManagement: React.FC = () => {
                     </h3>
                     <span className={`${category.isActive === false ? 'bg-gray-100 text-gray-500' : 'bg-alencar-bg text-alencar-green'} px-2 py-1 rounded-full text-sm`}>
                       {category.items.length} itens
+                    </span>
+                    <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
+                      #{category.displayOrder}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -374,38 +430,67 @@ export const CategoryManagement: React.FC = () => {
             {showAddItem === category.id && (
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <h4 className="font-semibold mb-3">Adicionar Novo Item</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-3">
                   <input
                     type="text"
                     value={newItem.name}
                     onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Nome do item"
-                    className="p-2 border border-gray-300 rounded-lg input-base"
+                    className="w-full p-2 border border-gray-300 rounded-lg input-base"
                   />
-                  <input
-                    type="number"
-                    value={newItem.price}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, price: e.target.value }))}
-                    placeholder="Preço (R$)"
-                    className="p-2 border border-gray-300 rounded-lg input-base"
-                  />
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => handleAddItem(category.id)}
-                    className="btn-primary px-4 py-2"
-                  >
-                    Adicionar
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAddItem(null);
-                      setNewItem({ categoryId: '', name: '', price: '' });
-                    }}
-                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    Cancelar
-                  </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={newItem.showVenda}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, showVenda: e.target.checked }))}
+                          className="rounded text-alencar-green focus:ring-alencar-green"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Mostrar em Venda</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={newItem.vendaPrice}
+                        onChange={(e) => setNewItem(prev => ({ ...prev, vendaPrice: e.target.value }))}
+                        placeholder="Preco Venda (R$)"
+                        disabled={!newItem.showVenda}
+                        className="w-full p-2 border border-gray-300 rounded-lg input-base disabled:opacity-50 disabled:bg-gray-100"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={newItem.showLocacao}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, showLocacao: e.target.checked }))}
+                          className="rounded text-alencar-green focus:ring-alencar-green"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Mostrar em Locacao</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={newItem.locacaoPrice}
+                        onChange={(e) => setNewItem(prev => ({ ...prev, locacaoPrice: e.target.value }))}
+                        placeholder="Preco Locacao (R$)"
+                        disabled={!newItem.showLocacao}
+                        className="w-full p-2 border border-gray-300 rounded-lg input-base disabled:opacity-50 disabled:bg-gray-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button onClick={() => handleAddItem(category.id)} className="btn-primary px-4 py-2">
+                      Adicionar
+                    </button>
+                    <button
+                      onClick={() => { setShowAddItem(null); setNewItem({ ...defaultNewItem }); }}
+                      className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -419,53 +504,85 @@ export const CategoryManagement: React.FC = () => {
                   <div key={item.id} className="bg-gray-50 rounded-lg overflow-hidden">
                     <div className="flex items-center justify-between p-3">
                       {editingItem?.categoryId === category.id && editingItem?.itemId === item.id ? (
-                        <div className="flex items-center gap-3 flex-1">
-                          <input
-                            type="text"
-                            defaultValue={item.name}
-                            className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
-                            id={`item-name-${item.id}`}
-                          />
-                          <div className="flex items-center gap-1">
-                            <DollarSign size={16} className="text-gray-500" />
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-center gap-3">
                             <input
-                              type="number"
-                              defaultValue={item.price}
-                              className="w-24 p-2 border border-gray-300 rounded-lg input-base"
-                              id={`item-price-${item.id}`}
+                              type="text"
+                              defaultValue={item.name}
+                              className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
+                              id={`item-name-${item.id}`}
                             />
+                            <div className="flex items-center gap-1">
+                              <label className="text-xs text-gray-500">Ordem:</label>
+                              <input
+                                type="number"
+                                defaultValue={item.displayOrder}
+                                className="w-16 p-2 border border-gray-300 rounded-lg input-base text-center"
+                                id={`item-display-order-${item.id}`}
+                              />
+                            </div>
                           </div>
-                          <button
-                            onClick={() => {
-                              const nameInput = document.getElementById(`item-name-${item.id}`) as HTMLInputElement;
-                              const priceInput = document.getElementById(`item-price-${item.id}`) as HTMLInputElement;
-                              if (nameInput && priceInput) {
-                                handleUpdateItem(item.id, nameInput.value, priceInput.value);
-                              }
-                            }}
-                            className="text-green-600 hover:text-green-800"
-                          >
-                            <Save size={16} />
-                          </button>
-                          <button
-                            onClick={() => setEditingItem(null)}
-                            className="text-gray-600 hover:text-gray-800"
-                          >
-                            <X size={16} />
-                          </button>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  defaultChecked={item.showVenda}
+                                  id={`item-show-venda-${item.id}`}
+                                  className="rounded text-alencar-green focus:ring-alencar-green"
+                                />
+                                <span className="text-xs font-medium text-gray-700">Venda</span>
+                              </label>
+                              <input
+                                type="number"
+                                defaultValue={item.vendaPrice ?? ''}
+                                placeholder="Preco Venda"
+                                className="w-full p-2 border border-gray-300 rounded-lg input-base text-sm"
+                                id={`item-venda-price-${item.id}`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  defaultChecked={item.showLocacao}
+                                  id={`item-show-locacao-${item.id}`}
+                                  className="rounded text-alencar-green focus:ring-alencar-green"
+                                />
+                                <span className="text-xs font-medium text-gray-700">Locacao</span>
+                              </label>
+                              <input
+                                type="number"
+                                defaultValue={item.locacaoPrice ?? ''}
+                                placeholder="Preco Locacao"
+                                className="w-full p-2 border border-gray-300 rounded-lg input-base text-sm"
+                                id={`item-locacao-price-${item.id}`}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => handleUpdateItem(item.id)} className="text-green-600 hover:text-green-800">
+                              <Save size={16} />
+                            </button>
+                            <button onClick={() => setEditingItem(null)} className="text-gray-600 hover:text-gray-800">
+                              <X size={16} />
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 flex-wrap">
                             <span className={`font-medium ${item.isActive === false ? 'text-gray-400' : ''}`}>
                               {item.name}
                               {item.isActive === false && <span className="text-red-500 text-sm ml-1">(Inativo)</span>}
                             </span>
-                            <span className={`font-bold ${item.isActive === false ? 'text-gray-400' : 'text-alencar-green'}`}>
-                              {formatCurrency(item.price)}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              {renderPriceBadges(item)}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             <button
                               onClick={() => updateItemImageState(item.id, { showUpload: !imgState.showUpload })}
                               className={`p-1 transition-colors ${imageUrl ? 'text-alencar-green hover:text-alencar-dark' : 'text-gray-400 hover:text-gray-600'}`}
@@ -500,148 +617,23 @@ export const CategoryManagement: React.FC = () => {
                     </div>
 
                     {imgState.showUpload && editingItem?.itemId !== item.id && (
-                      <div className="px-3 pb-3 bg-gray-900/5 border-t border-gray-200">
-                        <div className="pt-3 max-w-xs space-y-3">
-                          {imgState.error && (
-                            <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-red-700 flex-1">{imgState.error}</p>
-                              <button
-                                onClick={() => updateItemImageState(item.id, { error: null })}
-                                className="text-red-400 hover:text-red-600 flex-shrink-0"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          )}
-
-                          {imgState.pendingPreviewUrl ? (
-                            <div className="space-y-3">
-                              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                <img
-                                  src={imgState.pendingPreviewUrl}
-                                  alt="Pré-visualização"
-                                  className="w-full h-full object-cover"
-                                />
-                                {imgState.isUploading && (
-                                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
-                                    <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    <span className="text-white text-xs">Enviando...</span>
-                                  </div>
-                                )}
-                              </div>
-                              {imgState.isUploading && (
-                                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                                  <div
-                                    className="bg-alencar-green h-1.5 rounded-full transition-all duration-200"
-                                    style={{ width: `${imgState.progress}%` }}
-                                  />
-                                </div>
-                              )}
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => openItemFilePicker(item.id)}
-                                  disabled={imgState.isUploading}
-                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  Alterar imagem
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleItemCancelPending(item.id)}
-                                  disabled={imgState.isUploading}
-                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  Remover imagem
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleItemImageSave(item.id)}
-                                  disabled={imgState.isUploading}
-                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-alencar-green text-white text-xs font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  Salvar imagem
-                                </button>
-                              </div>
-                            </div>
-                          ) : imageUrl ? (
-                            <div className="space-y-3">
-                              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                <img
-                                  src={imageUrl}
-                                  alt={item.name}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                />
-                              </div>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => openItemFilePicker(item.id)}
-                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-xs font-medium hover:bg-gray-50 transition-colors"
-                                >
-                                  Alterar imagem
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleItemImageRemove(item.id)}
-                                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors"
-                                >
-                                  Remover imagem
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="space-y-3">
-                              <div
-                                onClick={() => openItemFilePicker(item.id)}
-                                onDrop={(e) => handleItemDrop(e, item.id)}
-                                onDragOver={(e) => handleItemDragOver(e, item.id)}
-                                onDragLeave={() => handleItemDragLeave(item.id)}
-                                className={`
-                                  w-full aspect-video rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200
-                                  ${itemDragOver[item.id]
-                                    ? 'border-green-500 bg-green-50'
-                                    : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-                                  }
-                                `}
-                              >
-                                {itemDragOver[item.id] ? (
-                                  <>
-                                    <UploadCloud size={28} className="text-green-600" />
-                                    <p className="text-sm font-medium text-green-700">Solte para adicionar</p>
-                                  </>
-                                ) : (
-                                  <>
-                                    <ImageIcon size={28} className="text-gray-400" />
-                                    <div className="text-center">
-                                      <p className="text-sm font-medium text-gray-700">Nenhuma imagem definida</p>
-                                      <p className="text-gray-500 text-xs mt-0.5">Arraste uma imagem aqui ou clique no botão abaixo</p>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => openItemFilePicker(item.id)}
-                                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
-                              >
-                                <UploadCloud size={16} />
-                                Adicionar imagem
-                              </button>
-                            </div>
-                          )}
-
-                          <input
-                            ref={(el) => { itemInputRefs.current[item.id] = el; }}
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            className="hidden"
-                            onChange={(e) => handleItemInputChange(e, item.id)}
-                          />
-                        </div>
-                      </div>
+                      <ItemImageSection
+                        itemId={item.id}
+                        itemName={item.name}
+                        imgState={imgState}
+                        imageUrl={imageUrl}
+                        isDragOver={itemDragOver[item.id] ?? false}
+                        onOpenFilePicker={openItemFilePicker}
+                        onDrop={handleItemDrop}
+                        onDragOver={handleItemDragOver}
+                        onDragLeave={handleItemDragLeave}
+                        onSave={handleItemImageSave}
+                        onCancel={handleItemCancelPending}
+                        onRemove={handleItemImageRemove}
+                        onClearError={() => updateItemImageState(item.id, { error: null })}
+                        onInputChange={handleItemInputChange}
+                        inputRef={(el) => { itemInputRefs.current[item.id] = el; }}
+                      />
                     )}
                   </div>
                 );

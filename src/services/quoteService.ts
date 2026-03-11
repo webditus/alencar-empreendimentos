@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Quote, OperationType } from '../types';
+import { Quote, QuoteItemSnapshot, OperationType } from '../types';
 
 // Interface para representar o formato do banco de dados
 export interface DatabaseQuote {
@@ -13,7 +13,7 @@ export interface DatabaseQuote {
   customer_state: string;
   customer_project_date: string;
   customer_purpose: string[];
-  selected_items: any;
+  selected_items: QuoteItemSnapshot[];
   base_price: number;
   total_price: number;
   operation_type: string;
