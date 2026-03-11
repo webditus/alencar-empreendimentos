@@ -17,8 +17,8 @@ import { generateWhatsAppLink, generateEmailLink } from '../utils/formatters';
 import { generateQuotePDF } from '../services/pdfService';
 import { useQuotes } from '../contexts/QuoteContext';
 
-const DESKTOP_LABELS = ['Operação', 'Container', 'Personalização e dados'];
-const MOBILE_LABELS = ['Operação', 'Container', 'Itens', 'Seus dados'];
+const DESKTOP_LABELS = ['Operação', 'Container', 'Itens'];
+const MOBILE_LABELS = ['Operação', 'Container', 'Itens', 'Dados'];
 
 export const PublicQuote: React.FC = () => {
   const { addQuote } = useQuotes();
@@ -407,7 +407,7 @@ export const PublicQuote: React.FC = () => {
 };
 
 const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => void }> = ({ onChoose }) => (
-  <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+  <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
     <div className="w-full max-w-2xl text-center space-y-10">
       <div className="space-y-4">
         <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
@@ -416,10 +416,6 @@ const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => v
         <p className="text-white/50 text-base">
           Escolha o modelo de aquisição para iniciar sua simulação de orçamento.
         </p>
-        <div className="flex items-center justify-center gap-2 text-white/40 text-sm pt-1">
-          <Lightbulb size={14} className="flex-shrink-0" />
-          <span>Você poderá alterar essa escolha a qualquer momento durante a simulação.</span>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
@@ -428,14 +424,18 @@ const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => v
           className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#0d2b25] to-[#1a4a3a] p-8 text-left transition-all duration-300 hover:border-[#2F855A] hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(47,133,90,0.3)] max-w-[420px] mx-auto w-full min-h-[240px] flex flex-col justify-between"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-alencar-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative z-10 flex flex-col items-start text-left gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-alencar-green/20 flex items-center justify-center group-hover:bg-alencar-green/30 transition-colors duration-300">
-              <Package size={32} className="text-alencar-green-light" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-alencar-green/20 flex items-center justify-center group-hover:bg-alencar-green/30 transition-colors duration-300 flex-shrink-0">
+                <Package size={32} className="text-alencar-green-light" />
+              </div>
+              <div>
+                <span className="text-sm text-white/60">Simular a</span>
+                <h2 className="text-2xl font-bold text-white">Compra</h2>
+              </div>
             </div>
-            <div>
-              <span className="text-sm text-white/60">Simular a</span>
-              <h2 className="text-3xl font-bold text-white">Compra</h2>
-              <p className="text-white/50 text-sm mt-2 mb-3">Para quem deseja adquirir o container definitivamente.</p>
+            <div className="space-y-3 mt-4">
+              <p className="text-white/50 text-sm">Para quem deseja adquirir o container definitivamente.</p>
               <ul className="text-sm text-white/70 space-y-1">
                 <li>• Investimento único</li>
                 <li>• Personalização completa</li>
@@ -445,7 +445,7 @@ const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => v
           </div>
           <div className="relative z-10 mt-4">
             <span className="block w-full text-center py-2.5 rounded-lg border border-alencar-green/30 text-alencar-green-light text-sm font-semibold group-hover:bg-alencar-green/10 transition-colors duration-300">
-              Montar container para compra
+              Simular compra
             </span>
           </div>
         </button>
@@ -455,14 +455,18 @@ const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => v
           className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#0d2b25] to-[#1a4a3a] p-8 text-left transition-all duration-300 hover:border-[#2F855A] hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(47,133,90,0.3)] max-w-[420px] mx-auto w-full min-h-[240px] flex flex-col justify-between"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-alencar-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative z-10 flex flex-col items-start text-left gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-alencar-green/20 flex items-center justify-center group-hover:bg-alencar-green/30 transition-colors duration-300">
-              <RefreshCw size={32} className="text-alencar-green-light" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-alencar-green/20 flex items-center justify-center group-hover:bg-alencar-green/30 transition-colors duration-300 flex-shrink-0">
+                <RefreshCw size={32} className="text-alencar-green-light" />
+              </div>
+              <div>
+                <span className="text-sm text-white/60">Simular o</span>
+                <h2 className="text-2xl font-bold text-white">Aluguel</h2>
+              </div>
             </div>
-            <div>
-              <span className="text-sm text-white/60">Simular o</span>
-              <h2 className="text-3xl font-bold text-white">Aluguel</h2>
-              <p className="text-white/50 text-sm mt-2 mb-3">Para quem precisa de uma solução flexível.</p>
+            <div className="space-y-3 mt-4">
+              <p className="text-white/50 text-sm">Para quem precisa de uma solução flexível.</p>
               <ul className="text-sm text-white/70 space-y-1">
                 <li>• Pagamento mensal</li>
                 <li>• Ideal para obras e eventos</li>
@@ -472,10 +476,15 @@ const StepOperationChoice: React.FC<{ onChoose: (type: 'venda' | 'aluguel') => v
           </div>
           <div className="relative z-10 mt-4">
             <span className="block w-full text-center py-2.5 rounded-lg border border-alencar-green/30 text-alencar-green-light text-sm font-semibold group-hover:bg-alencar-green/10 transition-colors duration-300">
-              Montar container para aluguel
+              Simular aluguel
             </span>
           </div>
         </button>
+      </div>
+
+      <div className="flex items-center justify-center gap-2 text-white/40 text-sm">
+        <Lightbulb size={14} className="flex-shrink-0" />
+        <span>Você poderá alterar essa escolha a qualquer momento durante a simulação.</span>
       </div>
     </div>
   </div>
