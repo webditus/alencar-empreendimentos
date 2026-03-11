@@ -4,6 +4,8 @@ import { Download, MessageCircle, Mail, Eye, ArrowLeft, ShoppingBag, Home } from
 import { CategorySection } from '../components/CategorySection';
 import { QuoteModal } from '../components/QuoteModal';
 import { ContainerSizeSelector, ContainerSize } from '../components/ContainerSizeSelector';
+import { BudgetSummaryContent } from '../components/BudgetSummaryContent';
+import { MobileBudgetBar } from '../components/MobileBudgetBar';
 import { Logo } from '../components/Logo';
 import { useCategories } from '../contexts/CategoryContext';
 import { useOperation } from '../contexts/OperationContext';
@@ -225,7 +227,7 @@ export const PublicQuote: React.FC = () => {
 
       {step === 'configure' && (
         <div className="flex-1">
-          <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="max-w-7xl mx-auto px-6 py-8 pb-24 lg:pb-8">
             <div className="flex items-center gap-4 mb-8">
               <button
                 onClick={handleBack}
@@ -262,29 +264,17 @@ export const PublicQuote: React.FC = () => {
 
               <div className="space-y-6">
                 <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-24 shadow-glow animate-fade-up overflow-hidden">
-                  <h3 className="text-xl font-bold text-white mb-4">Resumo do Orcamento</h3>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-white/60">Container base:</span>
-                      <span className="font-semibold text-white">
-                        {selectedContainer ? formatCurrency(basePrice) : 'R$ 0,00'}
-                      </span>
-                    </div>
-                    {selectedItems.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span className="text-white/60">{item.name}:</span>
-                        <span className="text-alencar-green-light">{formatCurrency(item.price)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-white/10 pt-3 mb-6">
-                    <div className="flex justify-between items-end">
-                      <span className="text-xs uppercase tracking-wide text-gray-400">Total:</span>
-                      <span className="text-xl font-bold text-white">{formatCurrency(totalPrice)}</span>
-                    </div>
+                  <div className="hidden lg:block mb-6">
+                    <BudgetSummaryContent
+                      selectedContainer={selectedContainer}
+                      basePrice={basePrice}
+                      selectedItems={selectedItems}
+                      totalPrice={totalPrice}
+                    />
                   </div>
 
-                  <div className="border-t border-white/10 pt-6">
+                  <div className="hidden lg:block border-t border-white/10" />
+                  <div className="lg:pt-6">
                     <h3 className="text-xl font-bold text-white mb-4">Seus Dados</h3>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                       <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Informacoes pessoais</p>
@@ -596,6 +586,15 @@ export const PublicQuote: React.FC = () => {
           </p>
         </div>
       </footer>
+
+      {step === 'configure' && (
+        <MobileBudgetBar
+          selectedContainer={selectedContainer}
+          basePrice={basePrice}
+          selectedItems={selectedItems}
+          totalPrice={totalPrice}
+        />
+      )}
 
       {currentQuote && (
         <QuoteModal

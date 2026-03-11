@@ -1,0 +1,44 @@
+import React from 'react';
+import { Item } from '../types';
+import { ContainerSize } from './ContainerSizeSelector';
+import { formatCurrency } from '../utils/formatters';
+
+interface BudgetSummaryContentProps {
+  selectedContainer: ContainerSize | null;
+  basePrice: number;
+  selectedItems: Item[];
+  totalPrice: number;
+}
+
+export const BudgetSummaryContent: React.FC<BudgetSummaryContentProps> = ({
+  selectedContainer,
+  basePrice,
+  selectedItems,
+  totalPrice,
+}) => {
+  return (
+    <>
+      <h3 className="text-xl font-bold text-white mb-4">Resumo do Orcamento</h3>
+      <div className="space-y-2 mb-4">
+        <div className="flex justify-between">
+          <span className="text-white/60">Container base:</span>
+          <span className="font-semibold text-white">
+            {selectedContainer ? formatCurrency(basePrice) : 'R$ 0,00'}
+          </span>
+        </div>
+        {selectedItems.map((item) => (
+          <div key={item.id} className="flex justify-between text-sm">
+            <span className="text-white/60">{item.name}:</span>
+            <span className="text-alencar-green-light">{formatCurrency(item.price)}</span>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-white/10 pt-3">
+        <div className="flex justify-between items-end">
+          <span className="text-xs uppercase tracking-wide text-gray-400">Total:</span>
+          <span className="text-xl font-bold text-white">{formatCurrency(totalPrice)}</span>
+        </div>
+      </div>
+    </>
+  );
+};
