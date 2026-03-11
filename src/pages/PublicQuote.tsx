@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { ArrowLeft, Package, RefreshCw, ArrowRight, Lightbulb } from 'lucide-react';
 import { CategorySection } from '../components/CategorySection';
@@ -32,6 +32,8 @@ export const PublicQuote: React.FC = () => {
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addressInfo, setAddressInfo] = useState({ city: '', state: '' });
+  const [sidebarSubmitAttempted, setSidebarSubmitAttempted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const {
     register,
@@ -230,24 +232,45 @@ export const PublicQuote: React.FC = () => {
               label={isVenda ? 'Compra de Container' : 'Locação de Container'}
             />
 
-            <h3 className="text-2xl font-bold text-white mb-6">Selecione os itens desejados:</h3>
-            {categories.map((category) => (
-              <CategorySection
-                key={category.id}
-                category={category}
-                selectedItems={selectedItems}
-                onItemToggle={handleItemToggle}
-              />
-            ))}
+            <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-8">
+              <div className="lg:col-span-8">
+                <h3 className="text-2xl font-bold text-white mb-6">Selecione os itens desejados:</h3>
+                {categories.map((category) => (
+                  <CategorySection
+                    key={category.id}
+                    category={category}
+                    selectedItems={selectedItems}
+                    onItemToggle={handleItemToggle}
+                  />
+                ))}
 
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={handleNext}
-                className="flex items-center gap-2 px-8 py-3 rounded-button font-semibold btn-primary hover:scale-[1.02] transition-all duration-200"
-              >
-                Próximo
-                <ArrowRight size={18} />
-              </button>
+                <div className="flex justify-end mt-6">
+                  <button
+                    onClick={handleNext}
+                    className="flex items-center gap-2 px-8 py-3 rounded-button font-semibold btn-primary hover:scale-[1.02] transition-all duration-200"
+                  >
+                    Próximo
+                    <ArrowRight size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="hidden lg:block lg:col-span-4">
+                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-24">
+                  <BudgetSummaryContent
+                    selectedContainer={selectedContainer}
+                    basePrice={basePrice}
+                    selectedItems={selectedItems}
+                    totalPrice={totalPrice}
+                  />
+                  <button
+                    onClick={() => setCurrentStep(4)}
+                    className="btn-primary w-full mt-5"
+                  >
+                    Simular orçamento
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -255,31 +278,20 @@ export const PublicQuote: React.FC = () => {
 
       {currentStep === 4 && (
         <div className="flex-1">
-          <div className="max-w-4xl mx-auto px-6 py-8 pb-28">
+          <div className="max-w-7xl mx-auto px-6 py-8 pb-28">
             <StepHeader
               onBack={handleBack}
               label={isVenda ? 'Compra de Container' : 'Locação de Container'}
             />
 
-            <p className="text-xs text-white/50 mb-3">Simulação utilizada por empresas e proprietários em todo o Brasil.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-8">
+              <div className="lg:col-span-8">
+                <h3 className="text-2xl font-bold text-white mb-3">Informações para gerar seu orçamento</h3>
+                <p className="text-white/60 text-sm leading-relaxed mb-6">
+                  Preencha essas informações para gerar o PDF gratuito e sem compromisso. Esses dados são utilizados apenas para gerar o orçamento e não representam qualquer obrigação de compra.
+                </p>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 shadow-glow animate-fade-up h-fit">
-                <BudgetSummaryContent
-                  selectedContainer={selectedContainer}
-                  basePrice={basePrice}
-                  selectedItems={selectedItems}
-                  totalPrice={totalPrice}
-                />
-              </div>
-
-              <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 shadow-glow animate-fade-up">
-                <div className="border border-white/10 bg-white/5 rounded-lg p-4 mb-5">
-                  <p className="text-white font-semibold text-sm mb-2">Gere seu orçamento sem compromisso</p>
-                  <p className="text-white/60 text-xs leading-relaxed">Preencha algumas informações rápidas para que possamos calcular seu projeto com mais precisão. Esses dados são utilizados apenas para gerar o orçamento e não representam qualquer obrigação de compra.</p>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-4">Informações para gerar seu orçamento</h3>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
                   <ClientForm
                     register={register}
                     errors={errors}
@@ -309,6 +321,47 @@ export const PublicQuote: React.FC = () => {
                     onViewDetails={handleViewDetails}
                   />
                 )}
+
+                <div className="lg:hidden mt-8">
+                  <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6">
+                    <BudgetSummaryContent
+                      selectedContainer={selectedContainer}
+                      basePrice={basePrice}
+                      selectedItems={selectedItems}
+                      totalPrice={totalPrice}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="hidden lg:block lg:col-span-4">
+                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-24">
+                  <BudgetSummaryContent
+                    selectedContainer={selectedContainer}
+                    basePrice={basePrice}
+                    selectedItems={selectedItems}
+                    totalPrice={totalPrice}
+                  />
+                  <button
+                    onClick={() => {
+                      setSidebarSubmitAttempted(true);
+                      formRef.current?.requestSubmit();
+                    }}
+                    disabled={!selectedContainer}
+                    className={`w-full py-3 rounded-button font-semibold shadow-lg transition-all mt-5 ${
+                      selectedContainer
+                        ? 'btn-primary'
+                        : 'bg-white/10 text-white/30 cursor-not-allowed'
+                    }`}
+                  >
+                    {selectedContainer ? 'Gerar meu orçamento' : 'Selecione um Container'}
+                  </button>
+                  {sidebarSubmitAttempted && Object.keys(errors).length > 0 && (
+                    <p className="text-amber-400/80 text-xs text-center mt-2">
+                      Preencha as informações para gerar o PDF gratuito e sem compromisso.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
