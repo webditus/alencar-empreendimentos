@@ -1,11 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Save, X, Package, Eye, EyeOff, Image as ImageIcon, UploadCloud, AlertCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Plus, Pencil, Trash2, Save, X, Package, Eye, EyeOff, Image as ImageIcon, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
 import { useCategories } from '../contexts/CategoryContext';
 import { formatCurrency } from '../utils/formatters';
 import { ContainerImageManager } from './ContainerImageManager';
 import { itemImageService } from '../services/itemImageService';
 import { validateImageFile } from '../utils/imageUtils';
 import { ItemImageSection } from './ItemImageSection';
+import { Category, Item } from '../types';
 
 interface NewItemForm {
   name: string;
@@ -32,6 +53,66 @@ interface ItemImageState {
   pendingPreviewUrl: string | null;
 }
 
+function SortableCategoryCard({
+  category,
+  children,
+}: {
+  category: Category;
+  children: (dragHandleProps: Record<string, unknown>) => React.ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      {children({ ...attributes, ...listeners })}
+    </div>
+  );
+}
+
+function SortableItemRow({
+  item,
+  children,
+}: {
+  item: Item;
+  children: (dragHandleProps: Record<string, unknown>) => React.ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      {children({ ...attributes, ...listeners })}
+    </div>
+  );
+}
+
 export const CategoryManagement: React.FC = () => {
   const {
     adminCategories: categories,
@@ -43,6 +124,8 @@ export const CategoryManagement: React.FC = () => {
     updateItem,
     deleteItem,
     toggleItemStatus,
+    reorderCategories,
+    reorderItems,
     refreshCategories,
   } = useCategories();
 
@@ -57,6 +140,8 @@ export const CategoryManagement: React.FC = () => {
   const pendingFilesRef = useRef<Record<string, File | null>>({});
   const pendingPreviewUrlsRef = useRef<Record<string, string | null>>({});
   const [itemDragOver, setItemDragOver] = useState<Record<string, boolean>>({});
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [activeDragType, setActiveDragType] = useState<'category' | 'item' | null>(null);
 
   useEffect(() => {
     return () => {
@@ -65,6 +150,13 @@ export const CategoryManagement: React.FC = () => {
       });
     };
   }, []);
+
+  const categoryIds = useMemo(() => categories.map(c => c.id), [categories]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const defaultImageState: ItemImageState = { isUploading: false, progress: 0, error: null, showUpload: false, pendingFile: null, pendingPreviewUrl: null };
 
@@ -76,6 +168,53 @@ export const CategoryManagement: React.FC = () => {
       ...prev,
       [itemId]: { ...(prev[itemId] ?? defaultImageState), ...patch },
     }));
+  };
+
+  const handleCategoryDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+    setActiveDragType('category');
+  };
+
+  const handleCategoryDragEnd = async (event: DragEndEvent) => {
+    setActiveDragId(null);
+    setActiveDragType(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = categories.findIndex(c => c.id === active.id);
+    const newIndex = categories.findIndex(c => c.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(categories, oldIndex, newIndex);
+    const orderedIds = reordered.map(c => c.id);
+
+    try {
+      await reorderCategories(orderedIds);
+    } catch {
+      // revert handled in context
+    }
+  };
+
+  const handleItemDragEnd = async (categoryId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
+
+    const sortedItems = [...category.items].sort((a, b) => a.displayOrder - b.displayOrder);
+    const oldIndex = sortedItems.findIndex(i => i.id === active.id);
+    const newIndex = sortedItems.findIndex(i => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(sortedItems, oldIndex, newIndex);
+    const orderedIds = reordered.map(i => i.id);
+
+    try {
+      await reorderItems(categoryId, orderedIds);
+    } catch {
+      // revert handled in context
+    }
   };
 
   const handleAddCategory = async () => {
@@ -116,10 +255,10 @@ export const CategoryManagement: React.FC = () => {
     }
   };
 
-  const handleUpdateCategory = async (categoryId: string, name: string, displayOrder?: number) => {
+  const handleUpdateCategory = async (categoryId: string, name: string) => {
     if (name.trim()) {
       try {
-        await updateCategory(categoryId, name.trim(), displayOrder);
+        await updateCategory(categoryId, name.trim());
         setEditingCategory(null);
       } catch (error) {
         console.error('Erro ao atualizar categoria:', error);
@@ -133,7 +272,6 @@ export const CategoryManagement: React.FC = () => {
     const locacaoPriceInput = document.getElementById(`item-locacao-price-${itemId}`) as HTMLInputElement;
     const showVendaInput = document.getElementById(`item-show-venda-${itemId}`) as HTMLInputElement;
     const showLocacaoInput = document.getElementById(`item-show-locacao-${itemId}`) as HTMLInputElement;
-    const displayOrderInput = document.getElementById(`item-display-order-${itemId}`) as HTMLInputElement;
 
     if (!nameInput?.value.trim()) return;
 
@@ -141,14 +279,13 @@ export const CategoryManagement: React.FC = () => {
     const showLocacao = showLocacaoInput?.checked ?? false;
     const vendaPrice = showVenda ? parseFloat(vendaPriceInput?.value || '0') : null;
     const locacaoPrice = showLocacao ? parseFloat(locacaoPriceInput?.value || '0') : null;
-    const displayOrder = displayOrderInput ? parseInt(displayOrderInput.value || '0') : undefined;
 
     if (showVenda && (!vendaPrice || vendaPrice <= 0)) return;
     if (showLocacao && (!locacaoPrice || locacaoPrice <= 0)) return;
     if (!showVenda && !showLocacao) return;
 
     try {
-      await updateItem(itemId, nameInput.value.trim(), vendaPrice, locacaoPrice, showVenda, showLocacao, displayOrder);
+      await updateItem(itemId, nameInput.value.trim(), vendaPrice, locacaoPrice, showVenda, showLocacao);
       setEditingItem(null);
     } catch (error) {
       console.error('Erro ao atualizar item:', error);
@@ -196,19 +333,19 @@ export const CategoryManagement: React.FC = () => {
     e.target.value = '';
   };
 
-  const handleItemDrop = (e: React.DragEvent<HTMLDivElement>, itemId: string) => {
+  const handleImageDrop = (e: React.DragEvent<HTMLDivElement>, itemId: string) => {
     e.preventDefault();
     setItemDragOver((prev) => ({ ...prev, [itemId]: false }));
     const file = e.dataTransfer.files[0];
     if (file) handleItemFileSelected(file, itemId);
   };
 
-  const handleItemDragOver = (e: React.DragEvent<HTMLDivElement>, itemId: string) => {
+  const handleImageDragOver = (e: React.DragEvent<HTMLDivElement>, itemId: string) => {
     e.preventDefault();
     setItemDragOver((prev) => ({ ...prev, [itemId]: true }));
   };
 
-  const handleItemDragLeave = (itemId: string) => {
+  const handleImageDragLeave = (itemId: string) => {
     setItemDragOver((prev) => ({ ...prev, [itemId]: false }));
   };
 
@@ -290,6 +427,316 @@ export const CategoryManagement: React.FC = () => {
     return badges;
   };
 
+  const renderCategoryCard = (category: Category, dragHandleProps: Record<string, unknown>) => {
+    const sortedItems = [...category.items].sort((a, b) => a.displayOrder - b.displayOrder);
+    const itemIds = sortedItems.map(i => i.id);
+
+    return (
+      <div className="bg-white rounded-card shadow-card p-6">
+        <div className="flex items-center justify-between mb-4">
+          {editingCategory === category.id ? (
+            <div className="flex items-center gap-3 flex-1">
+              <input
+                type="text"
+                defaultValue={category.name}
+                className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
+                id={`cat-name-${category.id}`}
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  const nameInput = document.getElementById(`cat-name-${category.id}`) as HTMLInputElement;
+                  if (nameInput) handleUpdateCategory(category.id, nameInput.value);
+                }}
+                className="text-green-600 hover:text-green-800"
+              >
+                <Save size={16} />
+              </button>
+              <button onClick={() => setEditingCategory(null)} className="text-gray-600 hover:text-gray-800">
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="cursor-grab active:cursor-grabbing touch-none text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  {...dragHandleProps}
+                >
+                  <GripVertical size={18} />
+                </button>
+                <Package className={category.isActive === false ? "text-gray-400" : "text-alencar-green"} size={20} />
+                <h3 className={`text-xl font-bold ${category.isActive === false ? 'text-gray-400' : 'text-alencar-dark'}`}>
+                  {category.name}
+                  {category.isActive === false && <span className="text-red-500 text-sm ml-2">(Inativo)</span>}
+                </h3>
+                <span className={`${category.isActive === false ? 'bg-gray-100 text-gray-500' : 'bg-alencar-bg text-alencar-green'} px-2 py-1 rounded-full text-sm`}>
+                  {category.items.length} itens
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggleCategoryStatus(category.id, category.isActive ?? true)}
+                  className={`p-1 ${category.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
+                  title={category.isActive === false ? "Ativar categoria" : "Desativar categoria"}
+                >
+                  {category.isActive === false ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <button
+                  onClick={() => setShowAddItem(category.id)}
+                  className="text-alencar-green hover:text-alencar-dark p-1"
+                  title="Adicionar item"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
+                  onClick={() => setEditingCategory(category.id)}
+                  className="text-blue-600 hover:text-blue-800 p-1"
+                  title="Editar categoria"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  onClick={() => deleteCategory(category.id)}
+                  className="text-red-600 hover:text-red-800 p-1"
+                  title="Excluir categoria"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {showAddItem === category.id && (
+          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+            <h4 className="font-semibold mb-3">Adicionar Novo Item</h4>
+            <div className="space-y-3">
+              <input
+                type="text"
+                value={newItem.name}
+                onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Nome do item"
+                className="w-full p-2 border border-gray-300 rounded-lg input-base"
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={newItem.showVenda}
+                      onChange={(e) => setNewItem(prev => ({ ...prev, showVenda: e.target.checked }))}
+                      className="rounded text-alencar-green focus:ring-alencar-green"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Mostrar em Venda</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={newItem.vendaPrice}
+                    onChange={(e) => setNewItem(prev => ({ ...prev, vendaPrice: e.target.value }))}
+                    placeholder="Preco Venda (R$)"
+                    disabled={!newItem.showVenda}
+                    className="w-full p-2 border border-gray-300 rounded-lg input-base disabled:opacity-50 disabled:bg-gray-100"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={newItem.showLocacao}
+                      onChange={(e) => setNewItem(prev => ({ ...prev, showLocacao: e.target.checked }))}
+                      className="rounded text-alencar-green focus:ring-alencar-green"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Mostrar em Locacao</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={newItem.locacaoPrice}
+                    onChange={(e) => setNewItem(prev => ({ ...prev, locacaoPrice: e.target.value }))}
+                    placeholder="Preco Locacao (R$)"
+                    disabled={!newItem.showLocacao}
+                    className="w-full p-2 border border-gray-300 rounded-lg input-base disabled:opacity-50 disabled:bg-gray-100"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => handleAddItem(category.id)} className="btn-primary px-4 py-2">
+                  Adicionar
+                </button>
+                <button
+                  onClick={() => { setShowAddItem(null); setNewItem({ ...defaultNewItem }); }}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+          onDragEnd={(event) => handleItemDragEnd(category.id, event)}
+        >
+          <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {sortedItems.map((item) => (
+                <SortableItemRow key={item.id} item={item}>
+                  {(itemHandleProps) => renderItemRow(category, item, itemHandleProps)}
+                </SortableItemRow>
+              ))}
+              {category.items.length === 0 && (
+                <p className="text-gray-500 text-center py-4">Nenhum item nesta categoria</p>
+              )}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </div>
+    );
+  };
+
+  const renderItemRow = (category: Category, item: Item, dragHandleProps: Record<string, unknown>) => {
+    const imgState = getItemImageState(item.id);
+    const imageUrl = getItemImageUrl(item.image_path);
+
+    return (
+      <div className="bg-gray-50 rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between p-3">
+          {editingItem?.categoryId === category.id && editingItem?.itemId === item.id ? (
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  defaultValue={item.name}
+                  className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
+                  id={`item-name-${item.id}`}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      defaultChecked={item.showVenda}
+                      id={`item-show-venda-${item.id}`}
+                      className="rounded text-alencar-green focus:ring-alencar-green"
+                    />
+                    <span className="text-xs font-medium text-gray-700">Venda</span>
+                  </label>
+                  <input
+                    type="number"
+                    defaultValue={item.vendaPrice ?? ''}
+                    placeholder="Preco Venda"
+                    className="w-full p-2 border border-gray-300 rounded-lg input-base text-sm"
+                    id={`item-venda-price-${item.id}`}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      defaultChecked={item.showLocacao}
+                      id={`item-show-locacao-${item.id}`}
+                      className="rounded text-alencar-green focus:ring-alencar-green"
+                    />
+                    <span className="text-xs font-medium text-gray-700">Locacao</span>
+                  </label>
+                  <input
+                    type="number"
+                    defaultValue={item.locacaoPrice ?? ''}
+                    placeholder="Preco Locacao"
+                    className="w-full p-2 border border-gray-300 rounded-lg input-base text-sm"
+                    id={`item-locacao-price-${item.id}`}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => handleUpdateItem(item.id)} className="text-green-600 hover:text-green-800">
+                  <Save size={16} />
+                </button>
+                <button onClick={() => setEditingItem(null)} className="text-gray-600 hover:text-gray-800">
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  className="cursor-grab active:cursor-grabbing touch-none text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+                  {...dragHandleProps}
+                >
+                  <GripVertical size={14} />
+                </button>
+                <span className={`font-medium ${item.isActive === false ? 'text-gray-400' : ''}`}>
+                  {item.name}
+                  {item.isActive === false && <span className="text-red-500 text-sm ml-1">(Inativo)</span>}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {renderPriceBadges(item)}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => updateItemImageState(item.id, { showUpload: !imgState.showUpload })}
+                  className={`p-1 transition-colors ${imageUrl ? 'text-alencar-green hover:text-alencar-dark' : 'text-gray-400 hover:text-gray-600'}`}
+                  title="Gerenciar imagem"
+                >
+                  <ImageIcon size={14} />
+                </button>
+                <button
+                  onClick={() => handleToggleItemStatus(item.id, item.isActive ?? true)}
+                  className={`p-1 ${item.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
+                  title={item.isActive === false ? "Ativar item" : "Desativar item"}
+                >
+                  {item.isActive === false ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+                <button
+                  onClick={() => setEditingItem({ categoryId: category.id, itemId: item.id })}
+                  className="text-blue-600 hover:text-blue-800 p-1"
+                  title="Editar item"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => deleteItem(item.id)}
+                  className="text-red-600 hover:text-red-800 p-1"
+                  title="Excluir item"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {imgState.showUpload && editingItem?.itemId !== item.id && (
+          <ItemImageSection
+            itemId={item.id}
+            itemName={item.name}
+            imgState={imgState}
+            imageUrl={imageUrl}
+            isDragOver={itemDragOver[item.id] ?? false}
+            onOpenFilePicker={openItemFilePicker}
+            onDrop={handleImageDrop}
+            onDragOver={handleImageDragOver}
+            onDragLeave={handleImageDragLeave}
+            onSave={handleItemImageSave}
+            onCancel={handleItemCancelPending}
+            onRemove={handleItemImageRemove}
+            onClearError={() => updateItemImageState(item.id, { error: null })}
+            onInputChange={handleItemInputChange}
+            inputRef={(el) => { itemInputRefs.current[item.id] = el; }}
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-card shadow-card p-6">
@@ -299,7 +746,7 @@ export const CategoryManagement: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-alencar-dark">Gerenciar Categorias e Itens</h2>
-          <p className="text-gray-600">Configure os itens disponíveis para venda e locação</p>
+          <p className="text-gray-600">Configure os itens disponíveis para venda e locação. Arraste para reordenar.</p>
         </div>
         <button
           onClick={() => setShowAddCategory(true)}
@@ -336,315 +783,41 @@ export const CategoryManagement: React.FC = () => {
         </div>
       )}
 
-      <div className="space-y-6">
-        {categories.map((category) => (
-          <div key={category.id} className="bg-white rounded-card shadow-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              {editingCategory === category.id ? (
-                <div className="flex items-center gap-3 flex-1">
-                  <input
-                    type="text"
-                    defaultValue={category.name}
-                    className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
-                    id={`cat-name-${category.id}`}
-                    autoFocus
-                  />
-                  <div className="flex items-center gap-1">
-                    <label className="text-xs text-gray-500">Ordem:</label>
-                    <input
-                      type="number"
-                      defaultValue={category.displayOrder}
-                      className="w-16 p-2 border border-gray-300 rounded-lg input-base text-center"
-                      id={`cat-order-${category.id}`}
-                    />
-                  </div>
-                  <button
-                    onClick={() => {
-                      const nameInput = document.getElementById(`cat-name-${category.id}`) as HTMLInputElement;
-                      const orderInput = document.getElementById(`cat-order-${category.id}`) as HTMLInputElement;
-                      if (nameInput) {
-                        handleUpdateCategory(
-                          category.id,
-                          nameInput.value,
-                          orderInput ? parseInt(orderInput.value || '0') : undefined
-                        );
-                      }
-                    }}
-                    className="text-green-600 hover:text-green-800"
-                  >
-                    <Save size={16} />
-                  </button>
-                  <button onClick={() => setEditingCategory(null)} className="text-gray-600 hover:text-gray-800">
-                    <X size={16} />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3">
-                    <Package className={category.isActive === false ? "text-gray-400" : "text-alencar-green"} size={20} />
-                    <h3 className={`text-xl font-bold ${category.isActive === false ? 'text-gray-400' : 'text-alencar-dark'}`}>
-                      {category.name}
-                      {category.isActive === false && <span className="text-red-500 text-sm ml-2">(Inativo)</span>}
-                    </h3>
-                    <span className={`${category.isActive === false ? 'bg-gray-100 text-gray-500' : 'bg-alencar-bg text-alencar-green'} px-2 py-1 rounded-full text-sm`}>
-                      {category.items.length} itens
-                    </span>
-                    <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">
-                      #{category.displayOrder}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleToggleCategoryStatus(category.id, category.isActive ?? true)}
-                      className={`p-1 ${category.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
-                      title={category.isActive === false ? "Ativar categoria" : "Desativar categoria"}
-                    >
-                      {category.isActive === false ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                    <button
-                      onClick={() => setShowAddItem(category.id)}
-                      className="text-alencar-green hover:text-alencar-dark p-1"
-                      title="Adicionar item"
-                    >
-                      <Plus size={16} />
-                    </button>
-                    <button
-                      onClick={() => setEditingCategory(category.id)}
-                      className="text-blue-600 hover:text-blue-800 p-1"
-                      title="Editar categoria"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      onClick={() => deleteCategory(category.id)}
-                      className="text-red-600 hover:text-red-800 p-1"
-                      title="Excluir categoria"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {showAddItem === category.id && (
-              <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                <h4 className="font-semibold mb-3">Adicionar Novo Item</h4>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={newItem.name}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Nome do item"
-                    className="w-full p-2 border border-gray-300 rounded-lg input-base"
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={newItem.showVenda}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, showVenda: e.target.checked }))}
-                          className="rounded text-alencar-green focus:ring-alencar-green"
-                        />
-                        <span className="text-sm font-medium text-gray-700">Mostrar em Venda</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={newItem.vendaPrice}
-                        onChange={(e) => setNewItem(prev => ({ ...prev, vendaPrice: e.target.value }))}
-                        placeholder="Preco Venda (R$)"
-                        disabled={!newItem.showVenda}
-                        className="w-full p-2 border border-gray-300 rounded-lg input-base disabled:opacity-50 disabled:bg-gray-100"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={newItem.showLocacao}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, showLocacao: e.target.checked }))}
-                          className="rounded text-alencar-green focus:ring-alencar-green"
-                        />
-                        <span className="text-sm font-medium text-gray-700">Mostrar em Locacao</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={newItem.locacaoPrice}
-                        onChange={(e) => setNewItem(prev => ({ ...prev, locacaoPrice: e.target.value }))}
-                        placeholder="Preco Locacao (R$)"
-                        disabled={!newItem.showLocacao}
-                        className="w-full p-2 border border-gray-300 rounded-lg input-base disabled:opacity-50 disabled:bg-gray-100"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button onClick={() => handleAddItem(category.id)} className="btn-primary px-4 py-2">
-                      Adicionar
-                    </button>
-                    <button
-                      onClick={() => { setShowAddItem(null); setNewItem({ ...defaultNewItem }); }}
-                      className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragStart={handleCategoryDragStart}
+        onDragEnd={handleCategoryDragEnd}
+      >
+        <SortableContext items={categoryIds} strategy={verticalListSortingStrategy}>
+          <div className="space-y-6">
+            {categories.map((category) => (
+              <SortableCategoryCard key={category.id} category={category}>
+                {(dragHandleProps) => renderCategoryCard(category, dragHandleProps)}
+              </SortableCategoryCard>
+            ))}
+          </div>
+        </SortableContext>
+        <DragOverlay>
+          {activeDragId && activeDragType === 'category' && (() => {
+            const cat = categories.find(c => c.id === activeDragId);
+            if (!cat) return null;
+            return (
+              <div className="bg-white rounded-card shadow-2xl p-6 opacity-90 border-2 border-alencar-green/30">
+                <div className="flex items-center gap-3">
+                  <GripVertical size={18} className="text-alencar-green" />
+                  <Package className="text-alencar-green" size={20} />
+                  <h3 className="text-xl font-bold text-alencar-dark">{cat.name}</h3>
+                  <span className="bg-alencar-bg text-alencar-green px-2 py-1 rounded-full text-sm">
+                    {cat.items.length} itens
+                  </span>
                 </div>
               </div>
-            )}
-
-            <div className="space-y-2">
-              {category.items.map((item) => {
-                const imgState = getItemImageState(item.id);
-                const imageUrl = getItemImageUrl(item.image_path);
-
-                return (
-                  <div key={item.id} className="bg-gray-50 rounded-lg overflow-hidden">
-                    <div className="flex items-center justify-between p-3">
-                      {editingItem?.categoryId === category.id && editingItem?.itemId === item.id ? (
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="text"
-                              defaultValue={item.name}
-                              className="flex-1 p-2 border border-gray-300 rounded-lg input-base"
-                              id={`item-name-${item.id}`}
-                            />
-                            <div className="flex items-center gap-1">
-                              <label className="text-xs text-gray-500">Ordem:</label>
-                              <input
-                                type="number"
-                                defaultValue={item.displayOrder}
-                                className="w-16 p-2 border border-gray-300 rounded-lg input-base text-center"
-                                id={`item-display-order-${item.id}`}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <label className="flex items-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  defaultChecked={item.showVenda}
-                                  id={`item-show-venda-${item.id}`}
-                                  className="rounded text-alencar-green focus:ring-alencar-green"
-                                />
-                                <span className="text-xs font-medium text-gray-700">Venda</span>
-                              </label>
-                              <input
-                                type="number"
-                                defaultValue={item.vendaPrice ?? ''}
-                                placeholder="Preco Venda"
-                                className="w-full p-2 border border-gray-300 rounded-lg input-base text-sm"
-                                id={`item-venda-price-${item.id}`}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="flex items-center gap-2">
-                                <input
-                                  type="checkbox"
-                                  defaultChecked={item.showLocacao}
-                                  id={`item-show-locacao-${item.id}`}
-                                  className="rounded text-alencar-green focus:ring-alencar-green"
-                                />
-                                <span className="text-xs font-medium text-gray-700">Locacao</span>
-                              </label>
-                              <input
-                                type="number"
-                                defaultValue={item.locacaoPrice ?? ''}
-                                placeholder="Preco Locacao"
-                                className="w-full p-2 border border-gray-300 rounded-lg input-base text-sm"
-                                id={`item-locacao-price-${item.id}`}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => handleUpdateItem(item.id)} className="text-green-600 hover:text-green-800">
-                              <Save size={16} />
-                            </button>
-                            <button onClick={() => setEditingItem(null)} className="text-gray-600 hover:text-gray-800">
-                              <X size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <span className={`font-medium ${item.isActive === false ? 'text-gray-400' : ''}`}>
-                              {item.name}
-                              {item.isActive === false && <span className="text-red-500 text-sm ml-1">(Inativo)</span>}
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                              {renderPriceBadges(item)}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <button
-                              onClick={() => updateItemImageState(item.id, { showUpload: !imgState.showUpload })}
-                              className={`p-1 transition-colors ${imageUrl ? 'text-alencar-green hover:text-alencar-dark' : 'text-gray-400 hover:text-gray-600'}`}
-                              title="Gerenciar imagem"
-                            >
-                              <ImageIcon size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleToggleItemStatus(item.id, item.isActive ?? true)}
-                              className={`p-1 ${item.isActive === false ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
-                              title={item.isActive === false ? "Ativar item" : "Desativar item"}
-                            >
-                              {item.isActive === false ? <EyeOff size={14} /> : <Eye size={14} />}
-                            </button>
-                            <button
-                              onClick={() => setEditingItem({ categoryId: category.id, itemId: item.id })}
-                              className="text-blue-600 hover:text-blue-800 p-1"
-                              title="Editar item"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={() => deleteItem(item.id)}
-                              className="text-red-600 hover:text-red-800 p-1"
-                              title="Excluir item"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {imgState.showUpload && editingItem?.itemId !== item.id && (
-                      <ItemImageSection
-                        itemId={item.id}
-                        itemName={item.name}
-                        imgState={imgState}
-                        imageUrl={imageUrl}
-                        isDragOver={itemDragOver[item.id] ?? false}
-                        onOpenFilePicker={openItemFilePicker}
-                        onDrop={handleItemDrop}
-                        onDragOver={handleItemDragOver}
-                        onDragLeave={handleItemDragLeave}
-                        onSave={handleItemImageSave}
-                        onCancel={handleItemCancelPending}
-                        onRemove={handleItemImageRemove}
-                        onClearError={() => updateItemImageState(item.id, { error: null })}
-                        onInputChange={handleItemInputChange}
-                        inputRef={(el) => { itemInputRefs.current[item.id] = el; }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-              {category.items.length === 0 && (
-                <p className="text-gray-500 text-center py-4">Nenhum item nesta categoria</p>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })()}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 };

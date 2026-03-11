@@ -30,6 +30,8 @@ interface CategoryContextType {
   ) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
   toggleItemStatus: (id: string, isActive: boolean) => Promise<void>;
+  reorderCategories: (orderedIds: string[]) => Promise<void>;
+  reorderItems: (categoryId: string, orderedItemIds: string[]) => Promise<void>;
   isLoading: boolean;
   error: string | null;
   refreshCategories: () => Promise<void>;
@@ -243,6 +245,56 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const reorderCategories = async (orderedIds: string[]): Promise<void> => {
+    const previousCategories = [...allCategories];
+    const updates = orderedIds.map((id, index) => ({ id, displayOrder: index }));
+
+    setAllCategories(prev =>
+      prev.map(cat => {
+        const update = updates.find(u => u.id === cat.id);
+        return update ? { ...cat, displayOrder: update.displayOrder } : cat;
+      })
+    );
+
+    try {
+      setError(null);
+      await CategoryService.reorderCategories(updates);
+    } catch (err) {
+      console.error('Erro ao reordenar categorias:', err);
+      setError('Erro ao reordenar categorias');
+      setAllCategories(previousCategories);
+      throw err;
+    }
+  };
+
+  const reorderItems = async (categoryId: string, orderedItemIds: string[]): Promise<void> => {
+    const previousCategories = [...allCategories];
+    const updates = orderedItemIds.map((id, index) => ({ id, displayOrder: index }));
+
+    setAllCategories(prev =>
+      prev.map(cat => {
+        if (cat.id !== categoryId) return cat;
+        return {
+          ...cat,
+          items: cat.items.map(item => {
+            const update = updates.find(u => u.id === item.id);
+            return update ? { ...item, displayOrder: update.displayOrder } : item;
+          }),
+        };
+      })
+    );
+
+    try {
+      setError(null);
+      await ItemService.reorderItems(updates);
+    } catch (err) {
+      console.error('Erro ao reordenar itens:', err);
+      setError('Erro ao reordenar itens');
+      setAllCategories(previousCategories);
+      throw err;
+    }
+  };
+
   return (
     <CategoryContext.Provider value={{
       categories,
@@ -256,6 +308,8 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       updateItem,
       deleteItem,
       toggleItemStatus,
+      reorderCategories,
+      reorderItems,
       isLoading,
       error,
       refreshCategories

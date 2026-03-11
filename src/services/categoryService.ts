@@ -127,6 +127,20 @@ export class CategoryService {
     }
   }
 
+  static async reorderCategories(orderedIds: { id: string; displayOrder: number }[]): Promise<void> {
+    try {
+      const updates = orderedIds.map(({ id, displayOrder }) =>
+        supabase.from('categories').update({ display_order: displayOrder }).eq('id', id)
+      );
+      const results = await Promise.all(updates);
+      const failed = results.find(r => r.error);
+      if (failed?.error) throw failed.error;
+    } catch (error) {
+      console.error('Erro ao reordenar categorias:', error);
+      throw error;
+    }
+  }
+
   static async toggleCategoryStatus(id: string, isActive: boolean): Promise<void> {
     try {
       const { error } = await supabase
@@ -224,6 +238,20 @@ export class ItemService {
       if (error) throw error;
     } catch (error) {
       console.error('Erro ao atualizar item:', error);
+      throw error;
+    }
+  }
+
+  static async reorderItems(orderedIds: { id: string; displayOrder: number }[]): Promise<void> {
+    try {
+      const updates = orderedIds.map(({ id, displayOrder }) =>
+        supabase.from('items').update({ display_order: displayOrder }).eq('id', id)
+      );
+      const results = await Promise.all(updates);
+      const failed = results.find(r => r.error);
+      if (failed?.error) throw failed.error;
+    } catch (error) {
+      console.error('Erro ao reordenar itens:', error);
       throw error;
     }
   }
