@@ -14,6 +14,7 @@ interface AuthContextType {
   deleteUser: (userId: string) => Promise<{ success: boolean; error?: string }>;
   updateUserRole: (userId: string, role: UserRole) => Promise<{ success: boolean; error?: string }>;
   sendPasswordResetEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
+  resetUserPassword: (userId: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return {
       id: supabaseUser.id,
-      name: supabaseUser.user_metadata?.name || 'Usuário',
+      name: supabaseUser.user_metadata?.name || 'Usuario',
       email: supabaseUser.email,
       role: role as UserRole,
     };
@@ -117,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || 'Erro ao criar usuário' };
+        return { success: false, error: data.error || 'Erro ao criar usuario' };
       }
 
       return { success: true };
@@ -133,12 +134,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || 'Erro ao buscar usuários' };
+        return { success: false, error: data.error || 'Erro ao buscar usuarios' };
       }
 
       const users: User[] = data.users.map((u: any) => ({
         id: u.id,
-        name: u.name || 'Usuário',
+        name: u.name || 'Usuario',
         email: u.email || '',
         role: (u.role as UserRole) || 'viewer',
         createdAt: u.createdAt,
@@ -146,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { success: true, users };
     } catch {
-      return { success: false, error: 'Erro ao buscar usuários' };
+      return { success: false, error: 'Erro ao buscar usuarios' };
     }
   };
 
@@ -161,12 +162,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || 'Erro ao excluir usuário' };
+        return { success: false, error: data.error || 'Erro ao desativar usuario' };
       }
 
       return { success: true };
     } catch {
-      return { success: false, error: 'Erro ao excluir usuário' };
+      return { success: false, error: 'Erro ao desativar usuario' };
     }
   };
 
@@ -181,7 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || 'Erro ao atualizar função' };
+        return { success: false, error: data.error || 'Erro ao atualizar funcao' };
       }
 
       return { success: true };
@@ -202,7 +203,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { success: true };
     } catch {
-      return { success: false, error: 'Erro ao enviar email de redefinição' };
+      return { success: false, error: 'Erro ao enviar email de redefinicao' };
+    }
+  };
+
+  const resetUserPassword = async (userId: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(ADMIN_USERS_URL, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ userId, password: newPassword }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Erro ao alterar senha' };
+      }
+
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Erro ao conectar com o servidor' };
     }
   };
 
@@ -216,7 +237,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       getAllUsers,
       deleteUser,
       updateUserRole,
-      sendPasswordResetEmail
+      sendPasswordResetEmail,
+      resetUserPassword,
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { UserProfile, ProfileUpdatePayload } from '../types/profile';
-import { convertToWebP, generateWebPFilename } from '../utils/imageUtils';
+import { convertAvatarToWebP, generateWebPFilename } from '../utils/imageUtils';
 
 export async function fetchProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await supabase
@@ -40,7 +40,7 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
 }
 
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
-  const webpBlob = await convertToWebP(file);
+  const webpBlob = await convertAvatarToWebP(file, 256);
   const filename = generateWebPFilename('avatar');
   const path = `${userId}/${filename}`;
 

@@ -29,14 +29,14 @@ function getSupabaseAdmin() {
 async function authenticateAdmin(supabase, event) {
   const authHeader = event.headers?.authorization || event.headers?.Authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return { error: 'Token de autenticação não fornecido', status: 401 };
+    return { error: 'Token de autenticacao nao fornecido', status: 401 };
   }
 
   const token = authHeader.replace('Bearer ', '');
   const { data: { user }, error } = await supabase.auth.getUser(token);
 
   if (error || !user) {
-    return { error: 'Token inválido ou expirado', status: 401 };
+    return { error: 'Token invalido ou expirado', status: 401 };
   }
 
   const role = user.app_metadata?.role || user.user_metadata?.role;
@@ -49,8 +49,12 @@ async function authenticateAdmin(supabase, event) {
 
 async function logAdminAction(supabase, performedBy, action, targetUserId, targetEmail, metadata) {
   try {
+    const { data: performer } = await supabase.auth.admin.getUserById(performedBy);
+    const performerEmail = performer?.user?.email || null;
+
     await supabase.from('admin_logs').insert({
       performed_by: performedBy,
+      performer_email: performerEmail,
       action,
       target_user_id: targetUserId || null,
       target_email: targetEmail || null,
@@ -72,7 +76,7 @@ async function ensureUserProfile(supabase, userId, displayName) {
     if (!data) {
       await supabase.from('user_profiles').insert({
         id: userId,
-        display_name: displayName || 'Usuário',
+        display_name: displayName || 'Usuario',
       });
     }
   } catch (err) {
@@ -84,7 +88,7 @@ function mapUserResponse(user) {
   return {
     id: user.id,
     email: user.email || '',
-    name: user.user_metadata?.name || 'Usuário',
+    name: user.user_metadata?.name || 'Usuario',
     role: user.app_metadata?.role || user.user_metadata?.role || 'viewer',
     createdAt: user.created_at,
   };
@@ -134,7 +138,7 @@ async function handlePost(supabase, event, adminUser) {
   try {
     body = JSON.parse(event.body);
   } catch {
-    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON inválido' }) };
+    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON invalido' }) };
   }
 
   const { email, password, name, role } = body;
@@ -143,7 +147,7 @@ async function handlePost(supabase, event, adminUser) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ success: false, error: 'Email, senha e nome são obrigatórios' }),
+      body: JSON.stringify({ success: false, error: 'Email, senha e nome sao obrigatorios' }),
     };
   }
 
@@ -180,7 +184,7 @@ async function handlePatch(supabase, event, adminUser) {
   try {
     body = JSON.parse(event.body);
   } catch {
-    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON inválido' }) };
+    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON invalido' }) };
   }
 
   const { userId, role } = body;
@@ -189,7 +193,7 @@ async function handlePatch(supabase, event, adminUser) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ success: false, error: 'userId e role são obrigatórios' }),
+      body: JSON.stringify({ success: false, error: 'userId e role sao obrigatorios' }),
     };
   }
 
@@ -197,7 +201,7 @@ async function handlePatch(supabase, event, adminUser) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ success: false, error: `Role inválido. Use: ${VALID_ROLES.join(', ')}` }),
+      body: JSON.stringify({ success: false, error: `Role invalido. Use: ${VALID_ROLES.join(', ')}` }),
     };
   }
 
@@ -206,7 +210,7 @@ async function handlePatch(supabase, event, adminUser) {
     return {
       statusCode: 403,
       headers,
-      body: JSON.stringify({ success: false, error: 'Administrador principal não pode ser modificado' }),
+      body: JSON.stringify({ success: false, error: 'Administrador principal nao pode ser modificado' }),
     };
   }
 
@@ -232,21 +236,29 @@ async function handlePatch(supabase, event, adminUser) {
   };
 }
 
-async function handleDelete(supabase, event, adminUser) {
+async function handlePut(supabase, event, adminUser) {
   let body;
   try {
     body = JSON.parse(event.body);
   } catch {
-    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON inválido' }) };
+    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON invalido' }) };
   }
 
-  const { userId } = body;
+  const { userId, password } = body;
 
-  if (!userId) {
+  if (!userId || !password) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ success: false, error: 'userId é obrigatório' }),
+      body: JSON.stringify({ success: false, error: 'userId e password sao obrigatorios' }),
+    };
+  }
+
+  if (password.length < 6) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: 'A senha deve ter no minimo 6 caracteres' }),
     };
   }
 
@@ -255,21 +267,74 @@ async function handleDelete(supabase, event, adminUser) {
     return {
       statusCode: 403,
       headers,
-      body: JSON.stringify({ success: false, error: 'Administrador principal não pode ser modificado' }),
+      body: JSON.stringify({ success: false, error: 'Senha do administrador principal nao pode ser alterada por aqui' }),
+    };
+  }
+
+  const { error } = await supabase.auth.admin.updateUserById(userId, {
+    password,
+  });
+
+  if (error) {
+    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: error.message }) };
+  }
+
+  await logAdminAction(supabase, adminUser.id, 'change_password', userId, targetUser?.user?.email, {
+    changed_by_admin: true,
+  });
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ success: true }),
+  };
+}
+
+async function handleDelete(supabase, event, adminUser) {
+  let body;
+  try {
+    body = JSON.parse(event.body);
+  } catch {
+    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON invalido' }) };
+  }
+
+  const { userId } = body;
+
+  if (!userId) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: 'userId e obrigatorio' }),
+    };
+  }
+
+  const { data: targetUser } = await supabase.auth.admin.getUserById(userId);
+  if (targetUser?.user?.email === PRIMARY_ADMIN_EMAIL) {
+    return {
+      statusCode: 403,
+      headers,
+      body: JSON.stringify({ success: false, error: 'Administrador principal nao pode ser modificado' }),
     };
   }
 
   const targetEmail = targetUser?.user?.email || '';
   const targetName = targetUser?.user?.user_metadata?.name || '';
 
-  const { error } = await supabase.auth.admin.deleteUser(userId);
+  await supabase
+    .from('user_profiles')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', userId);
+
+  const { error } = await supabase.auth.admin.updateUserById(userId, {
+    ban_duration: '876000h',
+  });
 
   if (error) {
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: error.message }) };
   }
 
-  await logAdminAction(supabase, adminUser.id, 'delete_user', userId, targetEmail, {
-    deleted_user_name: targetName,
+  await logAdminAction(supabase, adminUser.id, 'deactivate_user', userId, targetEmail, {
+    deactivated_user_name: targetName,
   });
 
   return {
@@ -303,6 +368,8 @@ export const handler = async (event) => {
         return await handleGet(supabase);
       case 'POST':
         return await handlePost(supabase, event, adminUser);
+      case 'PUT':
+        return await handlePut(supabase, event, adminUser);
       case 'PATCH':
         return await handlePatch(supabase, event, adminUser);
       case 'DELETE':
@@ -311,7 +378,7 @@ export const handler = async (event) => {
         return {
           statusCode: 405,
           headers,
-          body: JSON.stringify({ success: false, error: 'Método não permitido' }),
+          body: JSON.stringify({ success: false, error: 'Metodo nao permitido' }),
         };
     }
   } catch (error) {

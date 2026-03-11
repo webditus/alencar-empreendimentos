@@ -1,6 +1,6 @@
-import { FileText, Kanban, Package, Users, FileCheck, LayoutDashboard, Box, CalendarDays, Video as LucideIcon } from 'lucide-react';
+import { FileText, Kanban, Package, Users, FileCheck, LayoutDashboard, Box, CalendarDays, ClipboardList, type LucideIcon } from 'lucide-react';
 
-export type TabId = 'dashboard' | 'quotes' | 'kanban' | 'categories' | 'users' | 'contracts' | 'containers' | 'deliveries';
+export type TabId = 'dashboard' | 'quotes' | 'kanban' | 'categories' | 'users' | 'contracts' | 'containers' | 'deliveries' | 'activity-log';
 
 export interface SidebarNavItem {
   id: TabId;
@@ -64,10 +64,17 @@ export const sidebarNavItems: SidebarNavItem[] = [
   },
   {
     id: 'users',
-    label: 'Usuários',
+    label: 'Usuarios',
     icon: Users,
     section: 'management',
-    allowedRoles: ['admin', 'manager', 'viewer'],
+    allowedRoles: ['admin'],
+  },
+  {
+    id: 'activity-log',
+    label: 'Log de Atividades',
+    icon: ClipboardList,
+    section: 'management',
+    allowedRoles: ['admin'],
   },
 ];
 

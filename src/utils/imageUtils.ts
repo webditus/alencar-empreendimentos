@@ -72,6 +72,52 @@ export function convertToWebP(file: File): Promise<Blob> {
   });
 }
 
+export function convertAvatarToWebP(file: File, size = 256): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Nao foi possivel obter contexto do canvas.'));
+        return;
+      }
+
+      const minDim = Math.min(img.width, img.height);
+      const sx = (img.width - minDim) / 2;
+      const sy = (img.height - minDim) / 2;
+
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Falha ao converter avatar para WebP.'));
+            return;
+          }
+          resolve(blob);
+        },
+        'image/webp',
+        QUALITY
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Falha ao carregar imagem.'));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 export function generateWebPFilename(prefix?: string): string {
   const uuid = crypto.randomUUID();
   return prefix ? `${prefix}-${uuid}.webp` : `${uuid}.webp`;

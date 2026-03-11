@@ -52,6 +52,22 @@ function App() {
                           }
                         />
                         <Route
+                          path="/admin/users"
+                          element={
+                            <ProtectedRoute requiredRole="admin">
+                              <AdminDashboard initialTab="users" />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/activity-log"
+                          element={
+                            <ProtectedRoute requiredRole="admin">
+                              <AdminDashboard initialTab="activity-log" />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
                           path="/admin/containers"
                           element={
                             <ProtectedRoute>

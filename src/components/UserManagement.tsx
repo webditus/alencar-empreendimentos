@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Eye, EyeOff, CheckCircle, XCircle, Trash2, Mail, RotateCcw, AlertTriangle, Shield, User as UserIcon, Clock } from 'lucide-react';
+import {
+  UserPlus, Users, Eye, EyeOff, CheckCircle, XCircle,
+  Trash2, Mail, RotateCcw, AlertTriangle, Shield,
+  User as UserIcon, Clock, Copy, Wand2, Key,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { User } from '../types';
 import { formatDate } from '../utils/formatters';
@@ -14,6 +18,17 @@ const ROLE_CONFIG: Record<UserRole, { label: string; badgeClass: string }> = {
   viewer: { label: 'Visualizador', badgeClass: 'bg-slate-100 text-slate-700' },
 };
 
+function generateRandomPassword(length = 12): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars[array[i] % chars.length];
+  }
+  return result;
+}
+
 export const UserManagement: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [email, setEmail] = useState('');
@@ -27,8 +42,12 @@ export const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [resetPasswordUserId, setResetPasswordUserId] = useState<string | null>(null);
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [showNewAdminPassword, setShowNewAdminPassword] = useState(false);
 
-  const { createUser, getAllUsers, deleteUser, updateUserRole, sendPasswordResetEmail } = useAuth();
+  const { createUser, getAllUsers, deleteUser, updateUserRole, sendPasswordResetEmail, resetUserPassword } = useAuth();
 
   useEffect(() => {
     loadUsers();
@@ -41,13 +60,35 @@ export const UserManagement: React.FC = () => {
       if (result.success && result.users) {
         setUsers(result.users);
       } else {
-        setMessage({ type: 'error', text: result.error || 'Erro ao carregar usuários' });
+        setMessage({ type: 'error', text: result.error || 'Erro ao carregar usuarios' });
       }
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao carregar usuários' });
+      setMessage({ type: 'error', text: 'Erro ao carregar usuarios' });
     } finally {
       setIsLoadingUsers(false);
     }
+  };
+
+  const handleCopyToClipboard = async (text: string, fieldId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(fieldId);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      /* noop */
+    }
+  };
+
+  const handleGeneratePassword = () => {
+    const pwd = generateRandomPassword(12);
+    setPassword(pwd);
+    setShowPassword(true);
+  };
+
+  const handleGenerateAdminPassword = () => {
+    const pwd = generateRandomPassword(12);
+    setNewAdminPassword(pwd);
+    setShowNewAdminPassword(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +100,7 @@ export const UserManagement: React.FC = () => {
       const result = await createUser(email, password, name, role);
 
       if (result.success) {
-        setMessage({ type: 'success', text: 'Usuário criado com sucesso!' });
+        setMessage({ type: 'success', text: 'Usuario criado com sucesso!' });
         setEmail('');
         setPassword('');
         setName('');
@@ -67,10 +108,10 @@ export const UserManagement: React.FC = () => {
         setShowCreateForm(false);
         loadUsers();
       } else {
-        setMessage({ type: 'error', text: result.error || 'Erro ao criar usuário' });
+        setMessage({ type: 'error', text: result.error || 'Erro ao criar usuario' });
       }
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao criar usuário. Tente novamente.' });
+      setMessage({ type: 'error', text: 'Erro ao criar usuario. Tente novamente.' });
     } finally {
       setIsLoading(false);
     }
@@ -81,13 +122,13 @@ export const UserManagement: React.FC = () => {
     try {
       const result = await deleteUser(userId);
       if (result.success) {
-        setMessage({ type: 'success', text: 'Usuário excluído com sucesso!' });
+        setMessage({ type: 'success', text: 'Usuario desativado com sucesso!' });
         loadUsers();
       } else {
-        setMessage({ type: 'error', text: result.error || 'Erro ao excluir usuário' });
+        setMessage({ type: 'error', text: result.error || 'Erro ao desativar usuario' });
       }
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao excluir usuário' });
+      setMessage({ type: 'error', text: 'Erro ao desativar usuario' });
     } finally {
       setIsLoading(false);
       setShowDeleteConfirm(null);
@@ -101,12 +142,12 @@ export const UserManagement: React.FC = () => {
       const result = await updateUserRole(userId, newRole);
       if (result.success) {
         setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-        setMessage({ type: 'success', text: 'Função atualizada com sucesso!' });
+        setMessage({ type: 'success', text: 'Funcao atualizada com sucesso!' });
       } else {
-        setMessage({ type: 'error', text: result.error || 'Erro ao atualizar função' });
+        setMessage({ type: 'error', text: result.error || 'Erro ao atualizar funcao' });
       }
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao atualizar função' });
+      setMessage({ type: 'error', text: 'Erro ao atualizar funcao' });
     } finally {
       setUpdatingRoleId(null);
     }
@@ -117,12 +158,35 @@ export const UserManagement: React.FC = () => {
     try {
       const result = await sendPasswordResetEmail(userEmail);
       if (result.success) {
-        setMessage({ type: 'success', text: 'Email de redefinição enviado com sucesso!' });
+        setMessage({ type: 'success', text: 'Email de redefinicao enviado com sucesso!' });
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao enviar email' });
       }
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao enviar email de redefinição' });
+      setMessage({ type: 'error', text: 'Erro ao enviar email de redefinicao' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAdminPasswordReset = async (userId: string) => {
+    if (!newAdminPassword || newAdminPassword.length < 6) {
+      setMessage({ type: 'error', text: 'A senha deve ter no minimo 6 caracteres' });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const result = await resetUserPassword(userId, newAdminPassword);
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Senha alterada com sucesso!' });
+        setResetPasswordUserId(null);
+        setNewAdminPassword('');
+        setShowNewAdminPassword(false);
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Erro ao alterar senha' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Erro ao alterar senha' });
     } finally {
       setIsLoading(false);
     }
@@ -135,14 +199,14 @@ export const UserManagement: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Users className="text-alencar-green" size={24} />
-          <h2 className="text-xl font-semibold text-alencar-dark">Gerenciar Usuários</h2>
+          <h2 className="text-xl font-semibold text-alencar-dark">Gerenciar Usuarios</h2>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="btn-primary flex items-center gap-2"
         >
           <UserPlus size={18} />
-          Novo Usuário
+          Novo Usuario
         </button>
       </div>
 
@@ -152,18 +216,14 @@ export const UserManagement: React.FC = () => {
             ? 'bg-green-50 text-green-700 border border-green-200'
             : 'bg-red-50 text-red-700 border border-red-200'
         }`}>
-          {message.type === 'success' ? (
-            <CheckCircle size={18} />
-          ) : (
-            <XCircle size={18} />
-          )}
+          {message.type === 'success' ? <CheckCircle size={18} /> : <XCircle size={18} />}
           {message.text}
         </div>
       )}
 
       {showCreateForm && (
         <div className="border rounded-lg p-6 mb-6 bg-gray-50">
-          <h3 className="text-lg font-medium text-alencar-dark mb-4">Criar Novo Usuário</h3>
+          <h3 className="text-lg font-medium text-alencar-dark mb-4">Criar Novo Usuario</h3>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -203,25 +263,47 @@ export const UserManagement: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input-base pr-10"
+                    className="input-base pr-20"
                     autoComplete="new-password"
                     minLength={6}
                     required
                   />
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                    {password && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopyToClipboard(password, 'create-password')}
+                        className="p-1 text-gray-400 hover:text-alencar-green transition-colors"
+                        title="Copiar senha"
+                      >
+                        {copiedField === 'create-password' ? <CheckCircle size={16} className="text-green-500" /> : <Copy size={16} />}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="p-1 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    onClick={handleGeneratePassword}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-teal-50 text-teal-700 rounded-md hover:bg-teal-100 transition-colors border border-teal-200"
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    <Wand2 size={13} />
+                    Gerar senha automatica
                   </button>
+                  <span className="text-xs text-gray-500">Minimo 6 caracteres</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Função
+                  Funcao
                 </label>
                 <select
                   value={role}
@@ -249,7 +331,7 @@ export const UserManagement: React.FC = () => {
                 ) : (
                   <>
                     <UserPlus size={18} />
-                    Criar Usuário
+                    Criar Usuario
                   </>
                 )}
               </button>
@@ -278,7 +360,7 @@ export const UserManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium text-alencar-dark flex items-center gap-2">
               <Users size={20} />
-              Usuários Cadastrados ({users.length})
+              Usuarios Cadastrados ({users.length})
             </h3>
             <button
               onClick={loadUsers}
@@ -294,13 +376,13 @@ export const UserManagement: React.FC = () => {
         {isLoadingUsers ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-alencar-green mx-auto mb-4"></div>
-            <p className="text-gray-500">Carregando usuários...</p>
+            <p className="text-gray-500">Carregando usuarios...</p>
           </div>
         ) : users.length === 0 ? (
           <div className="p-8 text-center">
             <Users size={48} className="mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 mb-2">Nenhum usuário encontrado</p>
-            <p className="text-sm text-gray-400">Crie o primeiro usuário usando o botão acima</p>
+            <p className="text-gray-500 mb-2">Nenhum usuario encontrado</p>
+            <p className="text-sm text-gray-400">Crie o primeiro usuario usando o botao acima</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -308,89 +390,180 @@ export const UserManagement: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Usuário
+                    Usuario
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     E-mail
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Função
+                    Funcao
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Criado em
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
+                    Acoes
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-alencar-green rounded-full flex items-center justify-center">
-                          <UserIcon className="w-5 h-5 text-white" />
+                  <React.Fragment key={u.id}>
+                    <tr className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-alencar-green rounded-full flex items-center justify-center">
+                            <UserIcon className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{u.name}</div>
+                            <div className="text-sm text-gray-500">ID: {u.id.slice(0, 8)}...</div>
+                          </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{u.name}</div>
-                          <div className="text-sm text-gray-500">ID: {u.id.slice(0, 8)}...</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{u.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {isPrimaryAdmin(u.email) ? (
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_CONFIG.admin.badgeClass}`}>
-                          <Shield size={12} />
-                          {ROLE_CONFIG.admin.label}
-                        </span>
-                      ) : (
-                        <select
-                          value={u.role}
-                          onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
-                          disabled={updatingRoleId === u.id}
-                          className={`text-xs font-medium rounded-lg border px-2.5 py-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait ${ROLE_CONFIG[u.role]?.badgeClass || ROLE_CONFIG.viewer.badgeClass} border-transparent hover:border-gray-300 focus:border-alencar-green focus:ring-1 focus:ring-alencar-green focus:outline-none`}
-                        >
-                          <option value="admin">Administrador</option>
-                          <option value="manager">Gerente</option>
-                          <option value="viewer">Visualizador</option>
-                        </select>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                        <Clock size={14} />
-                        {u.createdAt ? formatDate(u.createdAt) : '-'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleSendPasswordReset(u.email)}
-                          disabled={isLoading}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50 text-xs"
-                          title="Reenviar link de redefinição de senha"
-                        >
-                          <Mail size={14} />
-                          Reset Senha
-                        </button>
-                        {!isPrimaryAdmin(u.email) && (
-                          <button
-                            onClick={() => setShowDeleteConfirm(u.id)}
-                            disabled={isLoading}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 text-xs"
-                            title="Excluir usuário"
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{u.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {isPrimaryAdmin(u.email) ? (
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_CONFIG.admin.badgeClass}`}>
+                            <Shield size={12} />
+                            {ROLE_CONFIG.admin.label}
+                          </span>
+                        ) : (
+                          <select
+                            value={u.role}
+                            onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
+                            disabled={updatingRoleId === u.id}
+                            className={`text-xs font-medium rounded-lg border px-2.5 py-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait ${ROLE_CONFIG[u.role]?.badgeClass || ROLE_CONFIG.viewer.badgeClass} border-transparent hover:border-gray-300 focus:border-alencar-green focus:ring-1 focus:ring-alencar-green focus:outline-none`}
                           >
-                            <Trash2 size={14} />
-                            Excluir
-                          </button>
+                            <option value="admin">Administrador</option>
+                            <option value="manager">Gerente</option>
+                            <option value="viewer">Visualizador</option>
+                          </select>
                         )}
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <Clock size={14} />
+                          {u.createdAt ? formatDate(u.createdAt) : '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleSendPasswordReset(u.email)}
+                            disabled={isLoading}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50 text-xs"
+                            title="Enviar link de redefinicao de senha"
+                          >
+                            <Mail size={14} />
+                            Reset Senha
+                          </button>
+                          {!isPrimaryAdmin(u.email) && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setResetPasswordUserId(resetPasswordUserId === u.id ? null : u.id);
+                                  setNewAdminPassword('');
+                                  setShowNewAdminPassword(false);
+                                }}
+                                disabled={isLoading}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors disabled:opacity-50 text-xs"
+                                title="Definir nova senha"
+                              >
+                                <Key size={14} />
+                                Definir Senha
+                              </button>
+                              <button
+                                onClick={() => setShowDeleteConfirm(u.id)}
+                                disabled={isLoading}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 text-xs"
+                                title="Desativar usuario"
+                              >
+                                <Trash2 size={14} />
+                                Desativar
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {resetPasswordUserId === u.id && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 bg-amber-50 border-b border-amber-100">
+                          <div className="flex items-end gap-3">
+                            <div className="flex-1 max-w-sm">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Nova senha para {u.name}
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type={showNewAdminPassword ? 'text' : 'password'}
+                                  value={newAdminPassword}
+                                  onChange={(e) => setNewAdminPassword(e.target.value)}
+                                  className="input-base pr-20 text-sm"
+                                  placeholder="Nova senha..."
+                                  minLength={6}
+                                />
+                                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                                  {newAdminPassword && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyToClipboard(newAdminPassword, `reset-${u.id}`)}
+                                      className="p-1 text-gray-400 hover:text-alencar-green transition-colors"
+                                      title="Copiar senha"
+                                    >
+                                      {copiedField === `reset-${u.id}` ? <CheckCircle size={14} className="text-green-500" /> : <Copy size={14} />}
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowNewAdminPassword(!showNewAdminPassword)}
+                                    className="p-1 text-gray-500 hover:text-gray-700"
+                                  >
+                                    {showNewAdminPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleGenerateAdminPassword}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors border border-teal-200"
+                            >
+                              <Wand2 size={13} />
+                              Gerar senha automatica
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAdminPasswordReset(u.id)}
+                              disabled={isLoading || !newAdminPassword}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-alencar-green text-white rounded-lg hover:bg-alencar-hover transition-colors disabled:opacity-50"
+                            >
+                              {isLoading ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white" />
+                              ) : (
+                                <Key size={13} />
+                              )}
+                              Salvar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setResetPasswordUserId(null);
+                                setNewAdminPassword('');
+                                setShowNewAdminPassword(false);
+                              }}
+                              className="px-4 py-2 text-xs font-medium text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -406,13 +579,13 @@ export const UserManagement: React.FC = () => {
                 <AlertTriangle className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Confirmar Exclusão</h3>
-                <p className="text-sm text-gray-500">Esta ação não pode ser desfeita</p>
+                <h3 className="text-lg font-semibold text-gray-900">Confirmar Desativacao</h3>
+                <p className="text-sm text-gray-500">O usuario sera desativado</p>
               </div>
             </div>
 
             <p className="text-gray-700 mb-6">
-              Tem certeza que deseja excluir este usuário? Todos os dados relacionados serão perdidos permanentemente.
+              Tem certeza que deseja desativar este usuario? O usuario nao podera mais acessar o sistema, mas seus dados serao mantidos.
             </p>
 
             <div className="flex gap-3 justify-end">
@@ -431,12 +604,12 @@ export const UserManagement: React.FC = () => {
                 {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Excluindo...
+                    Desativando...
                   </>
                 ) : (
                   <>
                     <Trash2 size={16} />
-                    Excluir
+                    Desativar
                   </>
                 )}
               </button>

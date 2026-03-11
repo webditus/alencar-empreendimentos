@@ -10,6 +10,7 @@ import ContractManagementRefactor from '../components/ContractManagementRefactor
 import { CRMDashboard } from '../components/CRMDashboard';
 import { ContainerInventory } from '../components/ContainerInventory';
 import { DeliverySchedule } from '../components/DeliverySchedule';
+import { ActivityLog } from '../components/ActivityLog';
 import { useAuth } from '../contexts/AuthContext';
 import { TabId, SIDEBAR_STORAGE_KEY } from '../config/sidebarNav';
 
@@ -27,9 +28,24 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'dashboard' }) => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredCollapsed);
+
+  const isAdmin = user?.role === 'admin';
+
+  const handleTabChange = (tab: TabId) => {
+    if ((tab === 'users' || tab === 'activity-log') && !isAdmin) {
+      return;
+    }
+    setActiveTab(tab);
+  };
+
+  useEffect(() => {
+    if ((activeTab === 'users' || activeTab === 'activity-log') && !isAdmin) {
+      setActiveTab('dashboard');
+    }
+  }, [activeTab, isAdmin]);
 
   useEffect(() => {
     const onStorage = () => setSidebarCollapsed(getStoredCollapsed());
@@ -57,7 +73,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'da
     <div className="min-h-screen bg-alencar-dark flex">
       <Sidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
 
       <Header
@@ -77,10 +93,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'da
             {activeTab === 'dashboard' && <CRMDashboard />}
             {activeTab === 'quotes' && <QuoteManagement />}
             {activeTab === 'categories' && <CategoryManagement />}
-            {activeTab === 'users' && <UserManagement />}
+            {activeTab === 'users' && isAdmin && <UserManagement />}
             {activeTab === 'contracts' && <ContractManagementRefactor />}
             {activeTab === 'containers' && <ContainerInventory />}
             {activeTab === 'deliveries' && <DeliverySchedule />}
+            {activeTab === 'activity-log' && isAdmin && <ActivityLog />}
           </div>
         )}
       </main>
