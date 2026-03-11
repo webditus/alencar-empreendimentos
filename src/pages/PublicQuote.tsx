@@ -261,7 +261,7 @@ export const PublicQuote: React.FC = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-24 shadow-glow animate-fade-up">
+                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-24 shadow-glow animate-fade-up overflow-hidden">
                   <h3 className="text-xl font-bold text-white mb-4">Resumo do Orcamento</h3>
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between">
@@ -473,7 +473,7 @@ export const PublicQuote: React.FC = () => {
                         </select>
                       </div>
 
-                      <div>
+                      <div className="w-full max-w-full">
                         <label className="block text-sm font-medium text-white/70 mb-1">
                           Data prevista para o projeto *
                         </label>
@@ -481,7 +481,7 @@ export const PublicQuote: React.FC = () => {
                           type="date"
                           {...register('projectDate', { required: 'Data e obrigatoria' })}
                           min={new Date().toISOString().split('T')[0]}
-                          className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent [color-scheme:dark]"
+                          className="w-full min-w-0 max-w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent [color-scheme:dark]"
                         />
                         {errors.projectDate && (
                           <p className="text-red-300 text-sm mt-1">{errors.projectDate.message}</p>

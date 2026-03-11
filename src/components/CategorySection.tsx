@@ -28,7 +28,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
           return (
             <label
               key={item.id}
-              className={`relative flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+              className={`relative flex items-center justify-between gap-3 w-full min-w-0 max-w-full px-4 py-4 rounded-lg border cursor-pointer transition-all duration-200 ${
                 isSelected(item)
                   ? 'border-alencar-green ring-1 ring-alencar-green/40'
                   : 'border-white/10 bg-transparent hover:border-white/20 hover:bg-white/5'
@@ -40,19 +40,19 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                   <Check size={12} strokeWidth={3} />
                 </div>
               )}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <input
                   type="checkbox"
                   checked={isSelected(item)}
                   onChange={() => onItemToggle(item)}
-                  className="w-5 h-5 text-alencar-green rounded focus:ring-alencar-green focus:ring-2 accent-alencar-green"
+                  className="w-5 h-5 shrink-0 text-alencar-green rounded focus:ring-alencar-green focus:ring-2 accent-alencar-green"
                 />
-                <div className={`transition-all duration-200 ${isSelected(item) ? 'text-alencar-green' : 'text-gray-500'}`}>
+                <div className={`w-12 h-12 shrink-0 transition-all duration-200 ${isSelected(item) ? 'text-alencar-green' : 'text-gray-500'}`}>
                   <ImageThumbnail imageUrl={imageUrl} altText={item.name} />
                 </div>
-                <span className="text-white font-medium">{item.name}</span>
+                <span className="text-white font-medium line-clamp-2 break-words min-w-0">{item.name}</span>
               </div>
-              <span className={`transition-all duration-200 ${isSelected(item) ? 'text-white font-semibold text-lg' : 'text-gray-400 font-medium'}`}>
+              <span className={`shrink-0 text-right whitespace-nowrap transition-all duration-200 ${isSelected(item) ? 'text-white font-semibold text-lg' : 'text-gray-400 font-medium'}`}>
                 {formatCurrency(item.price)}
               </span>
             </label>
