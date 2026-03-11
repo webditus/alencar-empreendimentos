@@ -155,25 +155,25 @@ const ContractManagementRefactor: React.FC = () => {
             </button>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="table-auto w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nome
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                   Tipo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28 hidden xl:table-cell">
                   Criado em
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28 hidden xl:table-cell">
                   Atualizado em
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   Ações
                 </th>
               </tr>
@@ -181,17 +181,17 @@ const ContractManagementRefactor: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {contracts.map((contract) => (
                 <tr key={contract.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                  <td className="px-4 py-4">
+                    <div className="text-sm font-medium text-gray-900 truncate max-w-[280px]" title={contract.name}>
                       {contract.name}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                  <td className="px-4 py-4 w-40">
+                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full whitespace-nowrap">
                       {CONTRACT_TYPE_LABELS[contract.type]}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 w-24">
                     <button
                       onClick={() => handleToggleStatus(contract.id, contract.isActive)}
                       className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
@@ -213,31 +213,31 @@ const ContractManagementRefactor: React.FC = () => {
                       )}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-4 w-28 text-sm text-gray-500 hidden xl:table-cell">
                     {formatDate(contract.createdAt)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-4 w-28 text-sm text-gray-500 hidden xl:table-cell">
                     {formatDate(contract.updatedAt)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-4 py-4 w-24 text-right text-sm font-medium">
                     <div className="flex items-center gap-2 justify-end">
                       <button
                         onClick={() => handleView(contract)}
-                        className="text-alencar-green hover:text-alencar-hover transition-colors"
+                        className="p-1.5 text-alencar-green hover:text-alencar-hover hover:bg-green-50 rounded-md transition-colors"
                         title="Visualizar"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleEdit(contract)}
-                        className="text-green-600 hover:text-green-900 transition-colors"
+                        className="p-1.5 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-md transition-colors"
                         title="Editar"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(contract.id)}
-                        className="text-red-600 hover:text-red-900 transition-colors"
+                        className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors"
                         title="Excluir"
                       >
                         <Trash2 className="w-4 h-4" />

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   UserPlus, Users, Eye, EyeOff, CheckCircle, XCircle,
   Trash2, Mail, RotateCcw, AlertTriangle, Shield,
-  User as UserIcon, Clock, Copy, Wand2, Key, Pencil,
+  User as UserIcon, Clock, Copy, Wand2, Key, Pencil, ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { User } from '../types';
@@ -47,12 +47,24 @@ export const UserManagement: React.FC = () => {
   const [resetPasswordUserId, setResetPasswordUserId] = useState<string | null>(null);
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [showNewAdminPassword, setShowNewAdminPassword] = useState(false);
+  const [openActionsDropdown, setOpenActionsDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
   const { createUser, getAllUsers, deleteUser, updateUserRole, sendPasswordResetEmail, resetUserPassword } = useAuth();
 
   useEffect(() => {
     loadUsers();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenActionsDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const loadUsers = async () => {
@@ -387,23 +399,23 @@ export const UserManagement: React.FC = () => {
             <p className="text-sm text-gray-400">Crie o primeiro usuario usando o botao acima</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div ref={dropdownRef}>
+            <table className="table-auto w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Usuario
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     E-mail
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                     Funcao
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 hidden xl:table-cell">
                     Criado em
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                     Acoes
                   </th>
                 </tr>
@@ -412,21 +424,21 @@ export const UserManagement: React.FC = () => {
                 {users.map((u) => (
                   <React.Fragment key={u.id}>
                     <tr className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-alencar-green rounded-full flex items-center justify-center">
-                            <UserIcon className="w-5 h-5 text-white" />
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 bg-alencar-green rounded-full flex items-center justify-center shrink-0">
+                            <UserIcon className="w-4 h-4 text-white" />
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{u.name}</div>
-                            <div className="text-sm text-gray-500">ID: {u.id.slice(0, 8)}...</div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">{u.name}</div>
+                            <div className="text-xs text-gray-400">ID: {u.id.slice(0, 8)}...</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{u.email}</div>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900 truncate max-w-[200px]" title={u.email}>{u.email}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 w-36">
                         {isPrimaryAdmin(u.email) ? (
                           <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_CONFIG.admin.badgeClass}`}>
                             <Shield size={12} />
@@ -437,7 +449,7 @@ export const UserManagement: React.FC = () => {
                             value={u.role}
                             onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
                             disabled={updatingRoleId === u.id}
-                            className={`text-xs font-medium rounded-lg border px-2.5 py-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait ${ROLE_CONFIG[u.role]?.badgeClass || ROLE_CONFIG.viewer.badgeClass} border-transparent hover:border-gray-300 focus:border-alencar-green focus:ring-1 focus:ring-alencar-green focus:outline-none`}
+                            className={`text-xs font-medium rounded-lg border px-2.5 py-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait w-full ${ROLE_CONFIG[u.role]?.badgeClass || ROLE_CONFIG.viewer.badgeClass} border-transparent hover:border-gray-300 focus:border-alencar-green focus:ring-1 focus:ring-alencar-green focus:outline-none`}
                           >
                             <option value="admin">Administrador</option>
                             <option value="manager">Gerente</option>
@@ -445,65 +457,76 @@ export const UserManagement: React.FC = () => {
                           </select>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 w-32 hidden xl:table-cell">
                         <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                          <Clock size={14} />
+                          <Clock size={13} />
                           {u.createdAt ? formatDate(u.createdAt) : '-'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-4 py-4 w-28 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => navigate(`/admin/users/${u.id}`)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors text-xs"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors text-xs"
                             title="Editar usuario"
                           >
-                            <Pencil size={14} />
+                            <Pencil size={13} />
                             Editar
                           </button>
-                          <button
-                            onClick={() => handleSendPasswordReset(u.email)}
-                            disabled={isLoading}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50 text-xs"
-                            title="Enviar link de redefinicao de senha"
-                          >
-                            <Mail size={14} />
-                            Reset Senha
-                          </button>
-                          {!isPrimaryAdmin(u.email) && (
-                            <>
-                              <button
-                                onClick={() => {
-                                  setResetPasswordUserId(resetPasswordUserId === u.id ? null : u.id);
-                                  setNewAdminPassword('');
-                                  setShowNewAdminPassword(false);
-                                }}
-                                disabled={isLoading}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors disabled:opacity-50 text-xs"
-                                title="Definir nova senha"
-                              >
-                                <Key size={14} />
-                                Definir Senha
-                              </button>
-                              <button
-                                onClick={() => setShowDeleteConfirm(u.id)}
-                                disabled={isLoading}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 text-xs"
-                                title="Desativar usuario"
-                              >
-                                <Trash2 size={14} />
-                                Desativar
-                              </button>
-                            </>
-                          )}
+                          <div className="relative">
+                            <button
+                              onClick={() => setOpenActionsDropdown(openActionsDropdown === u.id ? null : u.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs"
+                            >
+                              <ChevronDown size={13} />
+                            </button>
+                            {openActionsDropdown === u.id && (
+                              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
+                                <button
+                                  onClick={() => { handleSendPasswordReset(u.email); setOpenActionsDropdown(null); }}
+                                  disabled={isLoading}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-blue-700 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                                >
+                                  <Mail size={13} />
+                                  Enviar Reset Senha
+                                </button>
+                                {!isPrimaryAdmin(u.email) && (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        setResetPasswordUserId(resetPasswordUserId === u.id ? null : u.id);
+                                        setNewAdminPassword('');
+                                        setShowNewAdminPassword(false);
+                                        setOpenActionsDropdown(null);
+                                      }}
+                                      disabled={isLoading}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-50"
+                                    >
+                                      <Key size={13} />
+                                      Definir Senha
+                                    </button>
+                                    <div className="border-t border-gray-100 my-1" />
+                                    <button
+                                      onClick={() => { setShowDeleteConfirm(u.id); setOpenActionsDropdown(null); }}
+                                      disabled={isLoading}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-700 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                    >
+                                      <Trash2 size={13} />
+                                      Desativar
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                     </tr>
                     {resetPasswordUserId === u.id && (
                       <tr>
-                        <td colSpan={5} className="px-6 py-4 bg-amber-50 border-b border-amber-100">
-                          <div className="flex items-end gap-3">
-                            <div className="flex-1 max-w-sm">
+                        <td colSpan={5} className="px-4 py-4 bg-amber-50 border-b border-amber-100">
+                          <div className="flex items-end gap-3 flex-wrap">
+                            <div className="flex-1 min-w-[200px] max-w-sm">
                               <label className="block text-xs font-medium text-gray-700 mb-1">
                                 Nova senha para {u.name}
                               </label>

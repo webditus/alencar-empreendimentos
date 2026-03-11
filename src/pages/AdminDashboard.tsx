@@ -81,7 +81,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'da
       />
 
       <main
-        className="flex-1 min-h-screen bg-alencar-bg transition-[margin-left] duration-300 ease-in-out pt-16"
+        className="flex-1 min-w-0 min-h-screen bg-alencar-bg transition-[margin-left] duration-300 ease-in-out pt-16"
         style={{ marginLeft: sidebarWidth }}
       >
         {activeTab === 'kanban' ? (
@@ -89,7 +89,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'da
             <KanbanBoard />
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="w-full max-w-none px-6 xl:px-8 py-8">
             {activeTab === 'dashboard' && <CRMDashboard />}
             {activeTab === 'quotes' && <QuoteManagement />}
             {activeTab === 'categories' && <CategoryManagement />}
