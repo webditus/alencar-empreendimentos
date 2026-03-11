@@ -5,7 +5,7 @@ import { ContainerSize } from './ContainerSizeSelector';
 import { BudgetSummaryContent } from './BudgetSummaryContent';
 import { formatCurrency } from '../utils/formatters';
 
-interface MobileBudgetBarProps {
+interface BudgetBarProps {
   selectedContainer: ContainerSize | null;
   basePrice: number;
   selectedItems: Item[];
@@ -13,7 +13,7 @@ interface MobileBudgetBarProps {
   onSimulate?: () => void;
 }
 
-export const MobileBudgetBar: React.FC<MobileBudgetBarProps> = ({
+export const BudgetBar: React.FC<BudgetBarProps> = ({
   selectedContainer,
   basePrice,
   selectedItems,
@@ -36,7 +36,7 @@ export const MobileBudgetBar: React.FC<MobileBudgetBarProps> = ({
   const itemCount = selectedItems.length + (selectedContainer ? 1 : 0);
 
   return (
-    <div className="lg:hidden">
+    <>
       {isExpanded && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300"
@@ -51,7 +51,7 @@ export const MobileBudgetBar: React.FC<MobileBudgetBarProps> = ({
           }`}
         >
           <div className="bg-[#060A13] border-t border-white/10 max-h-[70vh] overflow-y-auto">
-            <div className="px-5 pt-5 pb-4">
+            <div className="px-5 pt-5 pb-4 max-w-4xl mx-auto">
               <div className="flex items-center justify-end mb-2">
                 <button
                   onClick={() => setIsExpanded(false)}
@@ -104,6 +104,6 @@ export const MobileBudgetBar: React.FC<MobileBudgetBarProps> = ({
           </div>
         </button>
       </div>
-    </div>
+    </>
   );
 };

@@ -5,7 +5,7 @@ import { CategorySection } from '../components/CategorySection';
 import { QuoteModal } from '../components/QuoteModal';
 import { ContainerSizeSelector, ContainerSize } from '../components/ContainerSizeSelector';
 import { BudgetSummaryContent } from '../components/BudgetSummaryContent';
-import { MobileBudgetBar } from '../components/MobileBudgetBar';
+import { BudgetBar } from '../components/BudgetBar';
 import { StepIndicator } from '../components/StepIndicator';
 import { ClientForm } from '../components/ClientForm';
 import { QuoteActions } from '../components/QuoteActions';
@@ -17,8 +17,7 @@ import { generateWhatsAppLink, generateEmailLink } from '../utils/formatters';
 import { generateQuotePDF } from '../services/pdfService';
 import { useQuotes } from '../contexts/QuoteContext';
 
-const DESKTOP_LABELS = ['Operação', 'Container', 'Itens'];
-const MOBILE_LABELS = ['Operação', 'Container', 'Itens', 'Dados'];
+const STEP_LABELS = ['Operação', 'Container', 'Itens', 'Dados'];
 
 export const PublicQuote: React.FC = () => {
   const { addQuote } = useQuotes();
@@ -27,7 +26,6 @@ export const PublicQuote: React.FC = () => {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [highestStepReached, setHighestStepReached] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
 
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [selectedContainer, setSelectedContainer] = useState<ContainerSize | null>(null);
@@ -43,21 +41,7 @@ export const PublicQuote: React.FC = () => {
     watch,
   } = useForm<Customer>();
 
-  const totalSteps = isMobile ? 4 : 3;
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)');
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  useEffect(() => {
-    if (currentStep > totalSteps) {
-      setCurrentStep(totalSteps);
-    }
-  }, [totalSteps, currentStep]);
+  const totalSteps = 4;
 
   useEffect(() => {
     setHighestStepReached(prev => Math.max(prev, currentStep));
@@ -191,7 +175,7 @@ export const PublicQuote: React.FC = () => {
     }
   };
 
-  const stepLabels = isMobile ? MOBILE_LABELS : DESKTOP_LABELS;
+  const stepLabels = STEP_LABELS;
 
   return (
     <div className="min-h-screen bg-alencar-dark flex flex-col">
@@ -218,7 +202,7 @@ export const PublicQuote: React.FC = () => {
 
       {currentStep === 2 && (
         <div className="flex-1">
-          <div className="max-w-7xl mx-auto px-6 py-8 pb-24 lg:pb-8">
+          <div className="max-w-7xl mx-auto px-6 py-8 pb-28">
             <StepHeader
               onBack={handleBack}
               label={isVenda ? 'Compra de Container' : 'Locação de Container'}
@@ -240,89 +224,30 @@ export const PublicQuote: React.FC = () => {
 
       {currentStep === 3 && (
         <div className="flex-1">
-          <div className="max-w-7xl mx-auto px-6 py-8 pb-24 lg:pb-8">
+          <div className="max-w-7xl mx-auto px-6 py-8 pb-28">
             <StepHeader
               onBack={handleBack}
               label={isVenda ? 'Compra de Container' : 'Locação de Container'}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10">
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-6">Selecione os itens desejados:</h3>
-                {categories.map((category) => (
-                  <CategorySection
-                    key={category.id}
-                    category={category}
-                    selectedItems={selectedItems}
-                    onItemToggle={handleItemToggle}
-                  />
-                ))}
+            <h3 className="text-2xl font-bold text-white mb-6">Selecione os itens desejados:</h3>
+            {categories.map((category) => (
+              <CategorySection
+                key={category.id}
+                category={category}
+                selectedItems={selectedItems}
+                onItemToggle={handleItemToggle}
+              />
+            ))}
 
-                {isMobile && (
-                  <div className="flex justify-end mt-6">
-                    <button
-                      onClick={handleNext}
-                      className="flex items-center gap-2 px-8 py-3 rounded-button font-semibold btn-primary hover:scale-[1.02] transition-all duration-200"
-                    >
-                      Próximo
-                      <ArrowRight size={18} />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="hidden lg:block">
-                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-24 shadow-glow animate-fade-up overflow-hidden">
-                  <p className="text-xs text-white/50 mb-3">Simulação utilizada por empresas e proprietários em todo o Brasil.</p>
-                  <div className="mb-6">
-                    <BudgetSummaryContent
-                      selectedContainer={selectedContainer}
-                      basePrice={basePrice}
-                      selectedItems={selectedItems}
-                      totalPrice={totalPrice}
-                    />
-                  </div>
-
-                  <div className="border-t border-white/10" />
-                  <div className="pt-6">
-                    <div className="border border-white/10 bg-white/5 rounded-lg p-4 mb-5">
-                      <p className="text-white font-semibold text-sm mb-2">Gere seu orçamento sem compromisso</p>
-                      <p className="text-white/60 text-xs leading-relaxed">Preencha algumas informações rápidas para que possamos calcular seu projeto com mais precisão. Esses dados são utilizados apenas para gerar o orçamento e não representam qualquer obrigação de compra.</p>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-4">Informações para gerar seu orçamento</h3>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                      <ClientForm
-                        register={register}
-                        errors={errors}
-                        setValue={setValue}
-                        watch={watch}
-                        onAddressInfoChange={setAddressInfo}
-                      />
-                      <button
-                        type="submit"
-                        disabled={!selectedContainer}
-                        className={`w-full py-4 rounded-button font-semibold text-lg shadow-lg transition-all mt-5 ${
-                          selectedContainer
-                            ? 'btn-primary-lg'
-                            : 'bg-white/10 text-white/30 cursor-not-allowed'
-                        }`}
-                      >
-                        {selectedContainer ? 'Gerar meu orçamento' : 'Selecione um Container'}
-                      </button>
-                      <p className="text-xs text-white/40 text-center mt-2">Orçamento gratuito • Sem compromisso • Resposta rápida da equipe</p>
-                    </form>
-                  </div>
-
-                  {currentQuote && (
-                    <QuoteActions
-                      onDownloadPDF={handleDownloadPDF}
-                      onWhatsApp={handleWhatsApp}
-                      onEmail={handleEmail}
-                      onViewDetails={handleViewDetails}
-                    />
-                  )}
-                </div>
-              </div>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-2 px-8 py-3 rounded-button font-semibold btn-primary hover:scale-[1.02] transition-all duration-200"
+              >
+                Próximo
+                <ArrowRight size={18} />
+              </button>
             </div>
           </div>
         </div>
@@ -330,58 +255,61 @@ export const PublicQuote: React.FC = () => {
 
       {currentStep === 4 && (
         <div className="flex-1">
-          <div className="max-w-7xl mx-auto px-6 py-8 pb-24 lg:pb-8">
+          <div className="max-w-4xl mx-auto px-6 py-8 pb-28">
             <StepHeader
               onBack={handleBack}
               label={isVenda ? 'Compra de Container' : 'Locação de Container'}
             />
 
             <p className="text-xs text-white/50 mb-3">Simulação utilizada por empresas e proprietários em todo o Brasil.</p>
-            <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 mb-8 shadow-glow animate-fade-up">
-              <BudgetSummaryContent
-                selectedContainer={selectedContainer}
-                basePrice={basePrice}
-                selectedItems={selectedItems}
-                totalPrice={totalPrice}
-              />
-            </div>
 
-            <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 shadow-glow animate-fade-up">
-              <div className="border border-white/10 bg-white/5 rounded-lg p-4 mb-5">
-                <p className="text-white font-semibold text-sm mb-2">Gere seu orçamento sem compromisso</p>
-                <p className="text-white/60 text-xs leading-relaxed">Preencha algumas informações rápidas para que possamos calcular seu projeto com mais precisão. Esses dados são utilizados apenas para gerar o orçamento e não representam qualquer obrigação de compra.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 shadow-glow animate-fade-up h-fit">
+                <BudgetSummaryContent
+                  selectedContainer={selectedContainer}
+                  basePrice={basePrice}
+                  selectedItems={selectedItems}
+                  totalPrice={totalPrice}
+                />
               </div>
-              <h3 className="text-lg font-bold text-white mb-4">Informações para gerar seu orçamento</h3>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <ClientForm
-                  register={register}
-                  errors={errors}
-                  setValue={setValue}
-                  watch={watch}
-                  onAddressInfoChange={setAddressInfo}
-                />
-                <button
-                  type="submit"
-                  disabled={!selectedContainer}
-                  className={`w-full py-4 rounded-button font-semibold text-lg shadow-lg transition-all mt-5 ${
-                    selectedContainer
-                      ? 'btn-primary-lg'
-                      : 'bg-white/10 text-white/30 cursor-not-allowed'
-                  }`}
-                >
-                  {selectedContainer ? 'Gerar meu orçamento' : 'Selecione um Container'}
-                </button>
-                <p className="text-xs text-white/40 text-center mt-2">Orçamento gratuito • Sem compromisso • Resposta rápida da equipe</p>
-              </form>
 
-              {currentQuote && (
-                <QuoteActions
-                  onDownloadPDF={handleDownloadPDF}
-                  onWhatsApp={handleWhatsApp}
-                  onEmail={handleEmail}
-                  onViewDetails={handleViewDetails}
-                />
-              )}
+              <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 shadow-glow animate-fade-up">
+                <div className="border border-white/10 bg-white/5 rounded-lg p-4 mb-5">
+                  <p className="text-white font-semibold text-sm mb-2">Gere seu orçamento sem compromisso</p>
+                  <p className="text-white/60 text-xs leading-relaxed">Preencha algumas informações rápidas para que possamos calcular seu projeto com mais precisão. Esses dados são utilizados apenas para gerar o orçamento e não representam qualquer obrigação de compra.</p>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-4">Informações para gerar seu orçamento</h3>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <ClientForm
+                    register={register}
+                    errors={errors}
+                    setValue={setValue}
+                    watch={watch}
+                    onAddressInfoChange={setAddressInfo}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!selectedContainer}
+                    className={`w-full py-4 rounded-button font-semibold text-lg shadow-lg transition-all mt-5 ${
+                      selectedContainer
+                        ? 'btn-primary-lg'
+                        : 'bg-white/10 text-white/30 cursor-not-allowed'
+                    }`}
+                  >
+                    {selectedContainer ? 'Gerar meu orçamento' : 'Selecione um Container'}
+                  </button>
+                  <p className="text-xs text-white/40 text-center mt-2">Orçamento gratuito • Sem compromisso • Resposta rápida da equipe</p>
+                </form>
+
+                {currentQuote && (
+                  <QuoteActions
+                    onDownloadPDF={handleDownloadPDF}
+                    onWhatsApp={handleWhatsApp}
+                    onEmail={handleEmail}
+                    onViewDetails={handleViewDetails}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -397,7 +325,7 @@ export const PublicQuote: React.FC = () => {
       </footer>
 
       {currentStep >= 2 && (
-        <MobileBudgetBar
+        <BudgetBar
           selectedContainer={selectedContainer}
           basePrice={basePrice}
           selectedItems={selectedItems}
