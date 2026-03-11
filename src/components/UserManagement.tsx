@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Users, Eye, EyeOff, CheckCircle, XCircle, Trash2, Mail, RotateCcw, AlertTriangle, Shield, User as UserIcon } from 'lucide-react';
+import { UserPlus, Users, Eye, EyeOff, CheckCircle, XCircle, Trash2, Mail, RotateCcw, AlertTriangle, Shield, User as UserIcon, Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { User } from '../types';
+import { formatDate } from '../utils/formatters';
+
+type UserRole = 'admin' | 'manager' | 'viewer';
+
+const PRIMARY_ADMIN_EMAIL = 'comercial@alencaremp.com.br';
+
+const ROLE_CONFIG: Record<UserRole, { label: string; badgeClass: string }> = {
+  admin: { label: 'Administrador', badgeClass: 'bg-emerald-100 text-emerald-800' },
+  manager: { label: 'Gerente', badgeClass: 'bg-amber-100 text-amber-800' },
+  viewer: { label: 'Visualizador', badgeClass: 'bg-slate-100 text-slate-700' },
+};
 
 export const UserManagement: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState<'admin' | 'user'>('user');
+  const [role, setRole] = useState<UserRole>('viewer');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
 
-  const { createUser, getAllUsers, deleteUser, sendPasswordResetEmail } = useAuth();
+  const { createUser, getAllUsers, deleteUser, updateUserRole, sendPasswordResetEmail } = useAuth();
 
   useEffect(() => {
     loadUsers();
@@ -31,7 +43,7 @@ export const UserManagement: React.FC = () => {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao carregar usuários' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Erro ao carregar usuários' });
     } finally {
       setIsLoadingUsers(false);
@@ -51,13 +63,13 @@ export const UserManagement: React.FC = () => {
         setEmail('');
         setPassword('');
         setName('');
-        setRole('user');
+        setRole('viewer');
         setShowCreateForm(false);
         loadUsers();
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao criar usuário' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Erro ao criar usuário. Tente novamente.' });
     } finally {
       setIsLoading(false);
@@ -74,7 +86,7 @@ export const UserManagement: React.FC = () => {
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao excluir usuário' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Erro ao excluir usuário' });
     } finally {
       setIsLoading(false);
@@ -82,21 +94,41 @@ export const UserManagement: React.FC = () => {
     }
   };
 
-  const handleSendPasswordReset = async (email: string) => {
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    setUpdatingRoleId(userId);
+    setMessage(null);
+    try {
+      const result = await updateUserRole(userId, newRole);
+      if (result.success) {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+        setMessage({ type: 'success', text: 'Função atualizada com sucesso!' });
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Erro ao atualizar função' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Erro ao atualizar função' });
+    } finally {
+      setUpdatingRoleId(null);
+    }
+  };
+
+  const handleSendPasswordReset = async (userEmail: string) => {
     setIsLoading(true);
     try {
-      const result = await sendPasswordResetEmail(email);
+      const result = await sendPasswordResetEmail(userEmail);
       if (result.success) {
         setMessage({ type: 'success', text: 'Email de redefinição enviado com sucesso!' });
       } else {
         setMessage({ type: 'error', text: result.error || 'Erro ao enviar email' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Erro ao enviar email de redefinição' });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const isPrimaryAdmin = (userEmail: string) => userEmail === PRIMARY_ADMIN_EMAIL;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -157,6 +189,7 @@ export const UserManagement: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-base"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -171,6 +204,7 @@ export const UserManagement: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="input-base pr-10"
+                    autoComplete="new-password"
                     minLength={6}
                     required
                   />
@@ -187,14 +221,15 @@ export const UserManagement: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de Usuário
+                  Função
                 </label>
                 <select
                   value={role}
-                  onChange={(e) => setRole(e.target.value as 'admin' | 'user')}
+                  onChange={(e) => setRole(e.target.value as UserRole)}
                   className="input-base"
                 >
-                  <option value="user">Usuário</option>
+                  <option value="viewer">Visualizador</option>
+                  <option value="manager">Gerente</option>
                   <option value="admin">Administrador</option>
                 </select>
               </div>
@@ -227,7 +262,7 @@ export const UserManagement: React.FC = () => {
                   setEmail('');
                   setPassword('');
                   setName('');
-                  setRole('user');
+                  setRole('viewer');
                 }}
                 className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
@@ -281,42 +316,60 @@ export const UserManagement: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Função
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Criado em
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                {users.map((u) => (
+                  <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-alencar-green rounded-full flex items-center justify-center">
                           <UserIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500">ID: {user.id.slice(0, 8)}...</div>
+                          <div className="text-sm font-medium text-gray-900">{u.name}</div>
+                          <div className="text-sm text-gray-500">ID: {u.id.slice(0, 8)}...</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{user.email}</div>
+                      <div className="text-sm text-gray-900">{u.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.role === 'admin'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {user.role === 'admin' ? <Shield size={12} /> : <UserIcon size={12} />}
-                        {user.role === 'admin' ? 'Administrador' : 'Usuário'}
-                      </span>
+                      {isPrimaryAdmin(u.email) ? (
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_CONFIG.admin.badgeClass}`}>
+                          <Shield size={12} />
+                          {ROLE_CONFIG.admin.label}
+                        </span>
+                      ) : (
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
+                          disabled={updatingRoleId === u.id}
+                          className={`text-xs font-medium rounded-lg border px-2.5 py-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait ${ROLE_CONFIG[u.role]?.badgeClass || ROLE_CONFIG.viewer.badgeClass} border-transparent hover:border-gray-300 focus:border-alencar-green focus:ring-1 focus:ring-alencar-green focus:outline-none`}
+                        >
+                          <option value="admin">Administrador</option>
+                          <option value="manager">Gerente</option>
+                          <option value="viewer">Visualizador</option>
+                        </select>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                        <Clock size={14} />
+                        {u.createdAt ? formatDate(u.createdAt) : '-'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => handleSendPasswordReset(user.email)}
+                          onClick={() => handleSendPasswordReset(u.email)}
                           disabled={isLoading}
                           className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50 text-xs"
                           title="Reenviar link de redefinição de senha"
@@ -324,15 +377,17 @@ export const UserManagement: React.FC = () => {
                           <Mail size={14} />
                           Reset Senha
                         </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(user.id)}
-                          disabled={isLoading}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 text-xs"
-                          title="Excluir usuário"
-                        >
-                          <Trash2 size={14} />
-                          Excluir
-                        </button>
+                        {!isPrimaryAdmin(u.email) && (
+                          <button
+                            onClick={() => setShowDeleteConfirm(u.id)}
+                            disabled={isLoading}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 text-xs"
+                            title="Excluir usuário"
+                          >
+                            <Trash2 size={14} />
+                            Excluir
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

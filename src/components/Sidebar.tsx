@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [toggleCollapsed]);
 
-  const userRole = user?.role ?? 'user';
+  const userRole = user?.role ?? 'viewer';
 
   const visibleItems = sidebarNavItems.filter((item) =>
     item.allowedRoles.includes(userRole)
