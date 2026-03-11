@@ -15,13 +15,13 @@ interface MetricCardProps {
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, accent }) => (
-  <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-    <div className="flex items-start justify-between">
-      <div className="flex-1">
-        <p className="text-sm text-gray-500 font-medium">{title}</p>
-        <p className="text-2xl font-bold text-gray-900 mt-1.5">{value}</p>
+  <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 hover:shadow-md transition-shadow min-w-0">
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-gray-500 font-medium leading-tight">{title}</p>
+        <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1.5 break-words leading-tight" title={value}>{value}</p>
       </div>
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${accent}`}>
+      <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${accent}`}>
         {icon}
       </div>
     </div>
@@ -78,7 +78,7 @@ export const CRMDashboard: React.FC = () => {
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <MetricCard
           title="Pipeline Total"
           value={formatCurrency(pipelineTotal)}
