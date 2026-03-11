@@ -47,6 +47,39 @@ async function authenticateAdmin(supabase, event) {
   return { user };
 }
 
+async function logAdminAction(supabase, performedBy, action, targetUserId, targetEmail, metadata) {
+  try {
+    await supabase.from('admin_logs').insert({
+      performed_by: performedBy,
+      action,
+      target_user_id: targetUserId || null,
+      target_email: targetEmail || null,
+      metadata: metadata || null,
+    });
+  } catch (err) {
+    console.error('Failed to write audit log:', err);
+  }
+}
+
+async function ensureUserProfile(supabase, userId, displayName) {
+  try {
+    const { data } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (!data) {
+      await supabase.from('user_profiles').insert({
+        id: userId,
+        display_name: displayName || 'Usuário',
+      });
+    }
+  } catch (err) {
+    console.error('Failed to ensure user profile:', err);
+  }
+}
+
 function mapUserResponse(user) {
   return {
     id: user.id,
@@ -84,6 +117,8 @@ async function handleGet(supabase) {
       }
     }
 
+    await ensureUserProfile(supabase, user.id, user.user_metadata?.name);
+
     users.push(mapUserResponse(user));
   }
 
@@ -94,7 +129,7 @@ async function handleGet(supabase) {
   };
 }
 
-async function handlePost(supabase, event) {
+async function handlePost(supabase, event, adminUser) {
   let body;
   try {
     body = JSON.parse(event.body);
@@ -126,6 +161,13 @@ async function handlePost(supabase, event) {
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: error.message }) };
   }
 
+  await ensureUserProfile(supabase, data.user.id, name);
+
+  await logAdminAction(supabase, adminUser.id, 'create_user', data.user.id, email, {
+    name,
+    role: finalRole,
+  });
+
   return {
     statusCode: 201,
     headers,
@@ -133,7 +175,7 @@ async function handlePost(supabase, event) {
   };
 }
 
-async function handlePatch(supabase, event) {
+async function handlePatch(supabase, event, adminUser) {
   let body;
   try {
     body = JSON.parse(event.body);
@@ -164,9 +206,11 @@ async function handlePatch(supabase, event) {
     return {
       statusCode: 403,
       headers,
-      body: JSON.stringify({ success: false, error: 'Não é possível alterar o role do administrador principal' }),
+      body: JSON.stringify({ success: false, error: 'Administrador principal não pode ser modificado' }),
     };
   }
+
+  const oldRole = targetUser?.user?.app_metadata?.role || 'viewer';
 
   const { data, error } = await supabase.auth.admin.updateUserById(userId, {
     app_metadata: { role },
@@ -176,6 +220,11 @@ async function handlePatch(supabase, event) {
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: error.message }) };
   }
 
+  await logAdminAction(supabase, adminUser.id, 'update_role', userId, targetUser?.user?.email, {
+    old_role: oldRole,
+    new_role: role,
+  });
+
   return {
     statusCode: 200,
     headers,
@@ -183,7 +232,7 @@ async function handlePatch(supabase, event) {
   };
 }
 
-async function handleDelete(supabase, event) {
+async function handleDelete(supabase, event, adminUser) {
   let body;
   try {
     body = JSON.parse(event.body);
@@ -206,15 +255,22 @@ async function handleDelete(supabase, event) {
     return {
       statusCode: 403,
       headers,
-      body: JSON.stringify({ success: false, error: 'Não é possível excluir o administrador principal' }),
+      body: JSON.stringify({ success: false, error: 'Administrador principal não pode ser modificado' }),
     };
   }
+
+  const targetEmail = targetUser?.user?.email || '';
+  const targetName = targetUser?.user?.user_metadata?.name || '';
 
   const { error } = await supabase.auth.admin.deleteUser(userId);
 
   if (error) {
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: error.message }) };
   }
+
+  await logAdminAction(supabase, adminUser.id, 'delete_user', userId, targetEmail, {
+    deleted_user_name: targetName,
+  });
 
   return {
     statusCode: 200,
@@ -240,15 +296,17 @@ export const handler = async (event) => {
       };
     }
 
+    const adminUser = authResult.user;
+
     switch (event.httpMethod) {
       case 'GET':
         return await handleGet(supabase);
       case 'POST':
-        return await handlePost(supabase, event);
+        return await handlePost(supabase, event, adminUser);
       case 'PATCH':
-        return await handlePatch(supabase, event);
+        return await handlePatch(supabase, event, adminUser);
       case 'DELETE':
-        return await handleDelete(supabase, event);
+        return await handleDelete(supabase, event, adminUser);
       default:
         return {
           statusCode: 405,
