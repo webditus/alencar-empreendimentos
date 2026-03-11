@@ -359,22 +359,22 @@ export const QuoteManagement: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="table-auto w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Cliente
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Valor Total
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Orçamento Final Aprovado
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Data de Criação
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -385,12 +385,12 @@ export const QuoteManagement: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredQuotes.map((quote) => (
                   <tr key={quote.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">{quote.customer.name}</div>
                       <div className="text-sm text-gray-500">{quote.customer.email}</div>
                       <div className="text-sm text-gray-500">{formatPhone(quote.customer.phone)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 w-36">
                       <select
                         value={quote.status}
                         onChange={(e) => handleStatusChange(quote.id, e.target.value as Quote['status'])}
@@ -407,13 +407,13 @@ export const QuoteManagement: React.FC = () => {
                         <option value="completed">Concluído</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-gray-900 text-right whitespace-nowrap">
                       {formatCurrency(quote.totalPrice)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-gray-900 text-right whitespace-nowrap">
                       {quote.finalApprovedAmount ? (
-                        <div className="flex items-center">
-                          <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        <div className="flex items-center justify-end">
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                           <span className="text-green-600 font-semibold">
                             {formatCurrency(quote.finalApprovedAmount)}
                           </span>
@@ -422,7 +422,7 @@ export const QuoteManagement: React.FC = () => {
                         <span className="text-gray-400 italic">Não definido</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                       {formatDate(quote.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

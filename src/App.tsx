@@ -17,6 +17,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import ContractDetails from './components/contracts/ContractDetails';
 import PublicContractSigning from './pages/PublicContractSigning';
 import ContainerCreate from './pages/ContainerCreate';
+import ContainerEdit from './pages/ContainerEdit';
 import { AdminUserEdit } from './pages/AdminUserEdit';
 
 function App() {
@@ -89,6 +90,14 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <ContainerCreate />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/containers/:id"
+                          element={
+                            <ProtectedRoute>
+                              <ContainerEdit />
                             </ProtectedRoute>
                           }
                         />
