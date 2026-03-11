@@ -1,4 +1,4 @@
-export type OperationType = 'venda' | 'aluguel';
+export type OperationType = 'venda' | 'aluguel' | 'locacao';
 
 // Contract types
 export * from './contract';

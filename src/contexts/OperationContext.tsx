@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type OperationType = 'venda' | 'aluguel';
+export type OperationType = 'venda' | 'aluguel' | 'locacao';
 
 interface OperationContextType {
   operationType: OperationType;
@@ -13,8 +13,11 @@ const OperationContext = createContext<OperationContextType | undefined>(undefin
 
 export function OperationProvider({ children }: { children: React.ReactNode }) {
   const [operationType, setOperationType] = useState<OperationType>(() => {
-    // Persistir a escolha no localStorage
     const saved = localStorage.getItem('operation-type');
+    if (saved === 'aluguel') {
+      localStorage.setItem('operation-type', 'locacao');
+      return 'locacao';
+    }
     return (saved as OperationType) || 'venda';
   });
 
@@ -27,7 +30,7 @@ export function OperationProvider({ children }: { children: React.ReactNode }) {
     operationType,
     setOperationType,
     isVenda: operationType === 'venda',
-    isAluguel: operationType === 'aluguel'
+    isAluguel: operationType === 'aluguel' || operationType === 'locacao'
   };
 
   return (

@@ -1,5 +1,8 @@
 import { supabase } from '../lib/supabase';
-import { Quote } from '../types';
+import { Quote, OperationType } from '../types';
+
+const normalizeOperationType = (value: string): OperationType =>
+  value === 'aluguel' ? 'locacao' : value as OperationType;
 
 // Interface para representar o formato do banco de dados
 export interface DatabaseQuote {
@@ -52,7 +55,7 @@ const quoteToDatabase = (quote: Quote): Omit<DatabaseQuote, 'id' | 'created_at'>
   selected_items: quote.selectedItems,
   base_price: quote.basePrice,
   total_price: quote.totalPrice,
-  operation_type: quote.operationType,
+  operation_type: normalizeOperationType(quote.operationType),
   status: quote.status,
   assigned_to: quote.assignedTo || null,
   internal_notes: quote.internalNotes || null,
@@ -97,7 +100,7 @@ export const databaseToQuote = (dbQuote: DatabaseQuote): Quote => ({
   selectedItems: dbQuote.selected_items,
   basePrice: dbQuote.base_price,
   totalPrice: dbQuote.total_price,
-  operationType: dbQuote.operation_type as 'venda' | 'aluguel',
+  operationType: normalizeOperationType(dbQuote.operation_type),
   status: dbQuote.status as Quote['status'],
   createdAt: dbQuote.created_at,
   assignedTo: dbQuote.assigned_to || undefined,
@@ -185,6 +188,7 @@ export const updateQuote = async (id: string, updates: Partial<Quote>): Promise<
     if (updates.customer.purposeOther !== undefined) dbUpdates.customer_purpose_other = updates.customer.purposeOther;
   }
   
+  if (updates.operationType !== undefined) dbUpdates.operation_type = normalizeOperationType(updates.operationType);
   if (updates.selectedItems !== undefined) dbUpdates.selected_items = updates.selectedItems;
   if (updates.basePrice !== undefined) dbUpdates.base_price = updates.basePrice;
   if (updates.totalPrice !== undefined) dbUpdates.total_price = updates.totalPrice;
