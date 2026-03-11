@@ -4,6 +4,27 @@ import { supabase } from '../lib/supabase';
 
 type UserRole = 'admin' | 'manager' | 'viewer';
 
+export interface AdminUserDetail {
+  id: string;
+  email: string;
+  name: string;
+  display_name: string;
+  role: UserRole;
+  phone: string | null;
+  avatar_url: string | null;
+  createdAt: string;
+}
+
+interface AdminUpdatePayload {
+  userId: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  role?: UserRole;
+  avatar_url?: string | null;
+  password?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -15,6 +36,8 @@ interface AuthContextType {
   updateUserRole: (userId: string, role: UserRole) => Promise<{ success: boolean; error?: string }>;
   sendPasswordResetEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
   resetUserPassword: (userId: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  getUserById: (userId: string) => Promise<{ success: boolean; user?: AdminUserDetail; error?: string }>;
+  adminUpdateUser: (payload: AdminUpdatePayload) => Promise<{ success: boolean; user?: AdminUserDetail; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +59,19 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 }
 
 const ADMIN_USERS_URL = '/api/admin-users';
+
+function mapAdminUserDetail(u: any): AdminUserDetail {
+  return {
+    id: u.id,
+    email: u.email || '',
+    name: u.name || 'Usuario',
+    display_name: u.display_name || u.name || 'Usuario',
+    role: (u.role as UserRole) || 'viewer',
+    phone: u.phone || null,
+    avatar_url: u.avatar_url || null,
+    createdAt: u.createdAt || '',
+  };
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -151,6 +187,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const getUserById = async (userId: string): Promise<{ success: boolean; user?: AdminUserDetail; error?: string }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${ADMIN_USERS_URL}?userId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
+        headers,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Erro ao buscar usuario' };
+      }
+
+      return { success: true, user: mapAdminUserDetail(data.user) };
+    } catch {
+      return { success: false, error: 'Erro ao conectar com o servidor' };
+    }
+  };
+
+  const adminUpdateUser = async (payload: AdminUpdatePayload): Promise<{ success: boolean; user?: AdminUserDetail; error?: string }> => {
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(ADMIN_USERS_URL, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Erro ao atualizar usuario' };
+      }
+
+      return { success: true, user: mapAdminUserDetail(data.user) };
+    } catch {
+      return { success: false, error: 'Erro ao conectar com o servidor' };
+    }
+  };
+
   const deleteUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const headers = await getAuthHeaders();
@@ -239,6 +314,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateUserRole,
       sendPasswordResetEmail,
       resetUserPassword,
+      getUserById,
+      adminUpdateUser,
     }}>
       {children}
     </AuthContext.Provider>

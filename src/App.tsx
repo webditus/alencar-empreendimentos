@@ -17,6 +17,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import ContractDetails from './components/contracts/ContractDetails';
 import PublicContractSigning from './pages/PublicContractSigning';
 import ContainerCreate from './pages/ContainerCreate';
+import { AdminUserEdit } from './pages/AdminUserEdit';
 
 function App() {
   return (
@@ -56,6 +57,14 @@ function App() {
                           element={
                             <ProtectedRoute requiredRole="admin">
                               <AdminDashboard initialTab="users" />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/users/:id"
+                          element={
+                            <ProtectedRoute requiredRole="admin">
+                              <AdminUserEdit />
                             </ProtectedRoute>
                           }
                         />

@@ -84,17 +84,50 @@ async function ensureUserProfile(supabase, userId, displayName) {
   }
 }
 
-function mapUserResponse(user) {
+function mapUserResponse(user, profile) {
   return {
     id: user.id,
     email: user.email || '',
     name: user.user_metadata?.name || 'Usuario',
     role: user.app_metadata?.role || user.user_metadata?.role || 'viewer',
     createdAt: user.created_at,
+    phone: profile?.phone || null,
+    avatar_url: profile?.avatar_url || null,
+    display_name: profile?.display_name || user.user_metadata?.name || 'Usuario',
   };
 }
 
-async function handleGet(supabase) {
+async function handleGetSingleUser(supabase, userId) {
+  const { data: userData, error } = await supabase.auth.admin.getUserById(userId);
+
+  if (error || !userData?.user) {
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ success: false, error: 'Usuario nao encontrado' }),
+    };
+  }
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ success: true, user: mapUserResponse(userData.user, profile) }),
+  };
+}
+
+async function handleGet(supabase, event) {
+  const params = event.queryStringParameters || {};
+
+  if (params.userId) {
+    return handleGetSingleUser(supabase, params.userId);
+  }
+
   const { data, error } = await supabase.auth.admin.listUsers();
 
   if (error) {
@@ -123,7 +156,7 @@ async function handleGet(supabase) {
 
     await ensureUserProfile(supabase, user.id, user.user_metadata?.name);
 
-    users.push(mapUserResponse(user));
+    users.push(mapUserResponse(user, null));
   }
 
   return {
@@ -175,7 +208,7 @@ async function handlePost(supabase, event, adminUser) {
   return {
     statusCode: 201,
     headers,
-    body: JSON.stringify({ success: true, user: mapUserResponse(data.user) }),
+    body: JSON.stringify({ success: true, user: mapUserResponse(data.user, null) }),
   };
 }
 
@@ -232,7 +265,7 @@ async function handlePatch(supabase, event, adminUser) {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ success: true, user: mapUserResponse(data.user) }),
+    body: JSON.stringify({ success: true, user: mapUserResponse(data.user, null) }),
   };
 }
 
@@ -244,49 +277,150 @@ async function handlePut(supabase, event, adminUser) {
     return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: 'JSON invalido' }) };
   }
 
-  const { userId, password } = body;
+  const { userId, password, name, email, phone, role, avatar_url } = body;
 
-  if (!userId || !password) {
+  if (!userId) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ success: false, error: 'userId e password sao obrigatorios' }),
+      body: JSON.stringify({ success: false, error: 'userId e obrigatorio' }),
     };
   }
 
-  if (password.length < 6) {
+  const { data: targetUserData } = await supabase.auth.admin.getUserById(userId);
+  const targetUser = targetUserData?.user;
+
+  if (!targetUser) {
     return {
-      statusCode: 400,
+      statusCode: 404,
       headers,
-      body: JSON.stringify({ success: false, error: 'A senha deve ter no minimo 6 caracteres' }),
+      body: JSON.stringify({ success: false, error: 'Usuario nao encontrado' }),
     };
   }
 
-  const { data: targetUser } = await supabase.auth.admin.getUserById(userId);
-  if (targetUser?.user?.email === PRIMARY_ADMIN_EMAIL) {
-    return {
-      statusCode: 403,
-      headers,
-      body: JSON.stringify({ success: false, error: 'Senha do administrador principal nao pode ser alterada por aqui' }),
-    };
+  const isPrimary = targetUser.email === PRIMARY_ADMIN_EMAIL;
+  const changes = [];
+
+  const authUpdates = {};
+
+  if (name !== undefined && name !== targetUser.user_metadata?.name) {
+    authUpdates.user_metadata = { ...targetUser.user_metadata, name };
+    changes.push({ field: 'name', old: targetUser.user_metadata?.name, new: name });
   }
 
-  const { error } = await supabase.auth.admin.updateUserById(userId, {
-    password,
-  });
-
-  if (error) {
-    return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: error.message }) };
+  if (email !== undefined && email !== targetUser.email) {
+    if (isPrimary) {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ success: false, error: 'Administrador principal nao pode ser modificado' }),
+      };
+    }
+    authUpdates.email = email;
+    authUpdates.email_confirm = true;
+    changes.push({ field: 'email', old: targetUser.email, new: email });
   }
 
-  await logAdminAction(supabase, adminUser.id, 'change_password', userId, targetUser?.user?.email, {
-    changed_by_admin: true,
-  });
+  if (role !== undefined && VALID_ROLES.includes(role)) {
+    const currentRole = targetUser.app_metadata?.role || 'viewer';
+    if (role !== currentRole) {
+      if (isPrimary) {
+        return {
+          statusCode: 403,
+          headers,
+          body: JSON.stringify({ success: false, error: 'Administrador principal nao pode ser modificado' }),
+        };
+      }
+      authUpdates.app_metadata = { ...targetUser.app_metadata, role };
+      changes.push({ field: 'role', old: currentRole, new: role });
+    }
+  }
+
+  if (password !== undefined && password.length > 0) {
+    if (password.length < 6) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ success: false, error: 'A senha deve ter no minimo 6 caracteres' }),
+      };
+    }
+    if (isPrimary) {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ success: false, error: 'Senha do administrador principal nao pode ser alterada por aqui' }),
+      };
+    }
+    authUpdates.password = password;
+    changes.push({ field: 'password', old: '***', new: '***' });
+  }
+
+  if (Object.keys(authUpdates).length > 0) {
+    const { error } = await supabase.auth.admin.updateUserById(userId, authUpdates);
+    if (error) {
+      return { statusCode: 400, headers, body: JSON.stringify({ success: false, error: error.message }) };
+    }
+  }
+
+  const profileUpdates = { updated_at: new Date().toISOString() };
+  let profileChanged = false;
+
+  if (name !== undefined) {
+    profileUpdates.display_name = name;
+    profileChanged = true;
+  }
+  if (phone !== undefined) {
+    profileUpdates.phone = phone || null;
+    profileChanged = true;
+  }
+  if (avatar_url !== undefined) {
+    profileUpdates.avatar_url = avatar_url || null;
+    profileChanged = true;
+  }
+
+  if (profileChanged) {
+    await ensureUserProfile(supabase, userId, name || targetUser.user_metadata?.name);
+    await supabase.from('user_profiles').update(profileUpdates).eq('id', userId);
+  }
+
+  for (const change of changes) {
+    let action = 'update_profile';
+    if (change.field === 'email') action = 'update_email';
+    else if (change.field === 'role') action = 'update_role';
+    else if (change.field === 'password') action = 'change_password';
+
+    await logAdminAction(
+      supabase,
+      adminUser.id,
+      action,
+      userId,
+      email || targetUser.email,
+      { [change.field]: { old: change.old, new: change.new } }
+    );
+  }
+
+  if (profileChanged && !changes.some(c => ['name', 'email', 'role', 'password'].includes(c.field))) {
+    await logAdminAction(
+      supabase,
+      adminUser.id,
+      'update_profile',
+      userId,
+      email || targetUser.email,
+      { fields_updated: Object.keys(profileUpdates).filter(k => k !== 'updated_at') }
+    );
+  }
+
+  const { data: updatedUser } = await supabase.auth.admin.getUserById(userId);
+  const { data: updatedProfile } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ success: true }),
+    body: JSON.stringify({ success: true, user: mapUserResponse(updatedUser?.user || targetUser, updatedProfile) }),
   };
 }
 
@@ -365,7 +499,7 @@ export const handler = async (event) => {
 
     switch (event.httpMethod) {
       case 'GET':
-        return await handleGet(supabase);
+        return await handleGet(supabase, event);
       case 'POST':
         return await handlePost(supabase, event, adminUser);
       case 'PUT':

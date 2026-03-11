@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   UserPlus, Users, Eye, EyeOff, CheckCircle, XCircle,
   Trash2, Mail, RotateCcw, AlertTriangle, Shield,
-  User as UserIcon, Clock, Copy, Wand2, Key,
+  User as UserIcon, Clock, Copy, Wand2, Key, Pencil,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { User } from '../types';
@@ -47,6 +48,7 @@ export const UserManagement: React.FC = () => {
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [showNewAdminPassword, setShowNewAdminPassword] = useState(false);
 
+  const navigate = useNavigate();
   const { createUser, getAllUsers, deleteUser, updateUserRole, sendPasswordResetEmail, resetUserPassword } = useAuth();
 
   useEffect(() => {
@@ -451,6 +453,14 @@ export const UserManagement: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => navigate(`/admin/users/${u.id}`)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 transition-colors text-xs"
+                            title="Editar usuario"
+                          >
+                            <Pencil size={14} />
+                            Editar
+                          </button>
                           <button
                             onClick={() => handleSendPasswordReset(u.email)}
                             disabled={isLoading}
