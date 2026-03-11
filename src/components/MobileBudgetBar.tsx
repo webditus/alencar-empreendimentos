@@ -10,6 +10,7 @@ interface MobileBudgetBarProps {
   basePrice: number;
   selectedItems: Item[];
   totalPrice: number;
+  onSimulate?: () => void;
 }
 
 export const MobileBudgetBar: React.FC<MobileBudgetBarProps> = ({
@@ -17,6 +18,7 @@ export const MobileBudgetBar: React.FC<MobileBudgetBarProps> = ({
   basePrice,
   selectedItems,
   totalPrice,
+  onSimulate,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -64,6 +66,17 @@ export const MobileBudgetBar: React.FC<MobileBudgetBarProps> = ({
                 selectedItems={selectedItems}
                 totalPrice={totalPrice}
               />
+              {onSimulate && (
+                <button
+                  onClick={() => {
+                    setIsExpanded(false);
+                    onSimulate();
+                  }}
+                  className="btn-primary w-full mt-4"
+                >
+                  Simular orçamento
+                </button>
+              )}
             </div>
           </div>
         </div>
