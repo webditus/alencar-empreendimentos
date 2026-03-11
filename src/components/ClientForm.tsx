@@ -4,20 +4,20 @@ import { Customer } from '../types';
 import { applyPhoneMask, applyCepMask, removeMask } from '../utils/maskUtils';
 import { fetchCEP } from '../services/cepService';
 
-const PURPOSE_OPTIONS = ['Pessoal', 'Comercial', 'Locacao para Airbnb', 'Outro'];
+const PURPOSE_OPTIONS = ['Pessoal', 'Comercial', 'Locação para Airbnb', 'Outro'];
 
 const INSTALLATION_LOCATION_OPTIONS = [
   'Terreno residencial',
   'Terreno comercial',
-  'Area rural',
+  'Área rural',
   'Obra em andamento',
   'Outro',
 ];
 
 const TIMELINE_OPTIONS = [
   'Imediato',
-  'Nos proximos 30 dias',
-  'Em ate 3 meses',
+  'Nos próximos 30 dias',
+  'Em até 3 meses',
   'Ainda estou planejando',
 ];
 
@@ -53,7 +53,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
   return (
     <div className="space-y-5">
-      <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Informacoes pessoais</p>
+      <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Informações pessoais</p>
 
       <div>
         <label className="block text-sm font-medium text-white/70 mb-1">
@@ -61,7 +61,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         </label>
         <input
           type="text"
-          {...register('name', { required: 'Nome e obrigatorio' })}
+          {...register('name', { required: 'Nome é obrigatório' })}
           className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
           placeholder="Digite seu nome completo"
         />
@@ -76,7 +76,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         </label>
         <input
           type="tel"
-          {...register('phone', { required: 'Telefone e obrigatorio' })}
+          {...register('phone', { required: 'Telefone é obrigatório' })}
           onChange={(e) => {
             const maskedValue = applyPhoneMask(e.target.value);
             e.target.value = maskedValue;
@@ -98,10 +98,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         <input
           type="email"
           {...register('email', {
-            required: 'E-mail e obrigatorio',
+            required: 'E-mail é obrigatório',
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'E-mail invalido'
+              message: 'E-mail inválido'
             }
           })}
           className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
@@ -113,7 +113,8 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       </div>
 
       <div className="border-t border-white/10 pt-5">
-        <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-4">Localizacao do projeto</p>
+        <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-2">Localização do projeto</p>
+        <p className="text-sm text-white/60 mb-3">Essas informações ajudam a calcular logística, transporte e instalação do container.</p>
       </div>
 
       <div>
@@ -122,7 +123,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         </label>
         <input
           type="text"
-          {...register('cep', { required: 'CEP e obrigatorio' })}
+          {...register('cep', { required: 'CEP é obrigatório' })}
           onChange={(e) => {
             const maskedValue = applyCepMask(e.target.value);
             e.target.value = maskedValue;
@@ -140,13 +141,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-white/70 mb-1">
-          Endereco da instalacao *
+          Endereço da instalação *
         </label>
         <input
           type="text"
-          {...register('address', { required: 'Endereco e obrigatorio' })}
+          {...register('address', { required: 'Endereço é obrigatório' })}
           className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
-          placeholder="Endereco sera preenchido automaticamente"
+          placeholder="Endereço será preenchido automaticamente"
           readOnly
         />
         {errors.address && (
@@ -156,7 +157,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-white/70 mb-1">
-          Numero da propriedade
+          Número da propriedade
         </label>
         <input
           type="text"
@@ -172,14 +173,14 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             onChange={(e) => {
               setNoPropertyNumber(e.target.checked);
               if (e.target.checked) {
-                setValue('propertyNumber', 'Sem numero');
+                setValue('propertyNumber', 'Sem número');
               } else {
                 setValue('propertyNumber', '');
               }
             }}
             className="w-3.5 h-3.5 text-alencar-green rounded focus:ring-alencar-green accent-alencar-green"
           />
-          <span className="text-xs text-white/50">Sem numero</span>
+          <span className="text-xs text-white/50">Sem número</span>
         </label>
       </div>
 
@@ -191,7 +192,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           type="text"
           {...register('addressComplement')}
           className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
-          placeholder="Apartamento, Fundos, Portao lateral, Bloco B"
+          placeholder="Apartamento, Fundos, Portão lateral, Bloco B"
         />
       </div>
 
@@ -201,7 +202,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-white/70 mb-1">
-          Onde o container sera instalado?
+          Onde o container será instalado?
         </label>
         <select
           {...register('installationLocation')}
@@ -218,7 +219,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
               type="text"
               {...register('installationLocationOther')}
               className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
-              placeholder="Exemplo: estacionamento de evento, terreno industrial, apoio de obra."
+              placeholder="Exemplo: estacionamento de evento, terreno industrial, apoio de obra"
             />
           </div>
         )}
@@ -245,7 +246,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         </label>
         <input
           type="date"
-          {...register('projectDate', { required: 'Data e obrigatoria' })}
+          {...register('projectDate', { required: 'Data é obrigatória' })}
           min={new Date().toISOString().split('T')[0]}
           className="w-full min-w-0 max-w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent [color-scheme:dark]"
         />
@@ -256,7 +257,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-white/70 mb-2">
-          Finalidade de uso do container * (multipla escolha)
+          Finalidade de uso do container * (múltipla escolha)
         </label>
         <div className="space-y-2">
           {PURPOSE_OPTIONS.map((purpose) => (
@@ -277,7 +278,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
               type="text"
               {...register('purposeOther')}
               className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent"
-              placeholder="Exemplo: estudio de gravacao, escritorio temporario, apoio de obra."
+              placeholder="Exemplo: estúdio de gravação, escritório temporário, apoio de obra."
             />
           </div>
         )}
@@ -288,13 +289,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-white/70 mb-1">
-          Observacoes gerais
+          Observações gerais
         </label>
         <textarea
           {...register('generalNotes')}
           rows={3}
           className="w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent resize-none"
-          placeholder="Informacoes adicionais que possam ajudar no entendimento do projeto."
+          placeholder="Informações adicionais que possam ajudar no entendimento do projeto."
         />
       </div>
     </div>

@@ -16,7 +16,7 @@ export const QuoteActions: React.FC<QuoteActionsProps> = ({
 }) => {
   return (
     <div className="border-t border-white/10 pt-6 mt-6">
-      <h3 className="text-xl font-bold text-white mb-4">Orcamento Gerado!</h3>
+      <h3 className="text-xl font-bold text-white mb-4">Orçamento gerado com sucesso!</h3>
       <div className="space-y-3">
         <button
           onClick={onDownloadPDF}

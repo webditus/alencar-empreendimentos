@@ -18,7 +18,7 @@ export const BudgetSummaryContent: React.FC<BudgetSummaryContentProps> = ({
 }) => {
   return (
     <>
-      <h3 className="text-xl font-bold text-white mb-4">Resumo do Orcamento</h3>
+      <h3 className="text-xl font-bold text-white mb-4">Simulação do seu projeto</h3>
       <div className="space-y-2 mb-4">
         <div className="flex justify-between">
           <span className="text-white/60">Container base:</span>
