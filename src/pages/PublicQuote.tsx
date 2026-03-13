@@ -290,7 +290,7 @@ export const PublicQuote: React.FC = () => {
               <div className="lg:col-span-8">
                 <h3 className="text-2xl font-bold text-white mb-3">Informações para gerar seu orçamento</h3>
                 <p className="text-white/60 text-sm leading-relaxed mb-6">
-                  Preencha essas informações para gerar o PDF gratuito e sem compromisso. Esses dados são utilizados apenas para gerar o orçamento e não representam qualquer obrigação de compra.
+                  Preencha essas informações <span className="text-white font-semibold">para gerar o PDF gratuito e sem compromisso</span>. Esses dados são utilizados apenas para gerar o orçamento e não representam qualquer obrigação de compra.
                 </p>
 
                 <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
@@ -360,7 +360,7 @@ export const PublicQuote: React.FC = () => {
                   </button>
                   {sidebarSubmitAttempted && Object.keys(errors).length > 0 && (
                     <p className="text-amber-400/80 text-xs text-center mt-2">
-                      Preencha as informações para gerar o PDF gratuito e sem compromisso.
+                      Preencha as informações <span className="font-semibold text-amber-300">para gerar o PDF gratuito e sem compromisso</span>.
                     </p>
                   )}
                 </div>

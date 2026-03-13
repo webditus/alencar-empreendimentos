@@ -240,7 +240,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         </select>
       </div>
 
-      <div className="w-full max-w-full">
+      <div className="overflow-hidden">
         <label className="block text-sm font-medium text-white/70 mb-1">
           Data prevista para o projeto *
         </label>
@@ -248,7 +248,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           type="date"
           {...register('projectDate', { required: 'Data é obrigatória' })}
           min={new Date().toISOString().split('T')[0]}
-          className="w-full min-w-0 max-w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent [color-scheme:dark]"
+          className="w-full min-w-0 box-border appearance-none bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-alencar-green-light focus:border-transparent [color-scheme:dark]"
         />
         {errors.projectDate && (
           <p className="text-red-300 text-sm mt-1">{errors.projectDate.message}</p>
