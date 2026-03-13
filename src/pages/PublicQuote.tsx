@@ -182,8 +182,8 @@ export const PublicQuote: React.FC = () => {
   return (
     <div className="min-h-screen bg-alencar-dark flex flex-col">
       <header className="bg-alencar-gradient border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 lg:py-2 flex items-center justify-between gap-4">
-          <Logo variant="horizontal" darkBackground={true} className="h-9 md:h-11 lg:h-9 flex-shrink-0" />
+        <div className="max-w-7xl mx-auto px-6 py-4 lg:py-1 flex items-center justify-between gap-4">
+          <Logo variant="horizontal" darkBackground={true} className="h-9 md:h-11 lg:h-8 flex-shrink-0" />
           <p className="text-white/70 text-sm md:text-base text-right leading-snug">
             Simule seu container personalizado gratuitamente e sem compromisso.
           </p>
@@ -256,7 +256,7 @@ export const PublicQuote: React.FC = () => {
               </div>
 
               <div className="hidden lg:block lg:col-span-4">
-                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-16">
+                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-12">
                   <BudgetSummaryContent
                     selectedContainer={selectedContainer}
                     basePrice={basePrice}
@@ -335,7 +335,7 @@ export const PublicQuote: React.FC = () => {
               </div>
 
               <div className="hidden lg:block lg:col-span-4">
-                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-16">
+                <div className="bg-gradient-to-br from-[#0a1f1a] to-[#0d2b25] border border-white/10 rounded-card shadow-xl p-6 sticky top-12">
                   <BudgetSummaryContent
                     selectedContainer={selectedContainer}
                     basePrice={basePrice}
