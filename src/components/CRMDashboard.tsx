@@ -8,23 +8,24 @@ import { formatCurrency } from '../utils/formatters';
 const EXCLUDED_STATUSES = ['rejected', 'completed', 'deleted'];
 
 interface MetricCardProps {
-  title: string;
+  titleLines: [string, string];
   value: string;
   icon: React.ReactNode;
   accent: string;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, accent }) => (
+const MetricCard: React.FC<MetricCardProps> = ({ titleLines, value, icon, accent }) => (
   <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 hover:shadow-md transition-shadow min-w-0">
     <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-gray-500 font-medium leading-tight">{title}</p>
-        <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1.5 truncate leading-tight" title={value}>{value}</p>
+      <div className="flex flex-col leading-tight">
+        <span className="text-sm text-gray-500 font-medium">{titleLines[0]}</span>
+        <span className="text-sm text-gray-500 font-medium">{titleLines[1]}</span>
       </div>
       <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${accent}`}>
         {icon}
       </div>
     </div>
+    <p className="text-lg sm:text-xl font-semibold text-gray-900 mt-2 whitespace-nowrap">{value}</p>
   </div>
 );
 
@@ -80,25 +81,25 @@ export const CRMDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <MetricCard
-          title="Pipeline Total"
+          titleLines={["Pipeline", "Total"]}
           value={formatCurrency(pipelineTotal)}
           icon={<TrendingUp className="w-5 h-5 text-teal-600" />}
           accent="bg-teal-50"
         />
         <MetricCard
-          title="Aprovados este Mes"
+          titleLines={["Aprovados", "este M\u00eas"]}
           value={formatCurrency(approvedThisMonth)}
           icon={<CheckCircle className="w-5 h-5 text-green-600" />}
           accent="bg-green-50"
         />
         <MetricCard
-          title="Containers Locados"
+          titleLines={["Containers", "Locados"]}
           value={String(stats.rented)}
           icon={<Box className="w-5 h-5 text-blue-600" />}
           accent="bg-blue-50"
         />
         <MetricCard
-          title="Containers Disponiveis"
+          titleLines={["Containers", "Dispon\u00edveis"]}
           value={String(stats.available)}
           icon={<Package className="w-5 h-5 text-emerald-600" />}
           accent="bg-emerald-50"
