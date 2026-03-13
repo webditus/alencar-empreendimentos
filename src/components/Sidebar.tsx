@@ -105,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
               className="h-8 w-8 object-contain"
             />
           ) : (
-            <Logo variant="horizontal" darkBackground={true} className="h-8" />
+            <Logo variant="horizontal-no-slogan" darkBackground={true} className="h-8" />
           )}
         </div>
 

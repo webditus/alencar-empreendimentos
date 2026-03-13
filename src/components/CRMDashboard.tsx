@@ -19,7 +19,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, accent }) =
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0 flex-1">
         <p className="text-sm text-gray-500 font-medium leading-tight">{title}</p>
-        <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1.5 break-words leading-tight" title={value}>{value}</p>
+        <p className="text-lg sm:text-xl font-bold text-gray-900 mt-1.5 truncate leading-tight" title={value}>{value}</p>
       </div>
       <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${accent}`}>
         {icon}
