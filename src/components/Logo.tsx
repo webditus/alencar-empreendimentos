@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface LogoProps {
-  variant: 'horizontal' | 'vertical';
+  variant: 'horizontal' | 'vertical' | 'horizontal-no-slogan';
   darkBackground?: boolean;
   className?: string;
 }
@@ -9,6 +9,7 @@ interface LogoProps {
 const logoFiles = {
   horizontal: '/logotipo-alencar-empreendimentos-horizontal.webp',
   vertical: '/logotipo-alencar-empreendimentos-vertical.webp',
+  'horizontal-no-slogan': '/logotipo-alencar-empreendimentos-horizontal-semslogan.webp',
 };
 
 export const Logo: React.FC<LogoProps> = ({ variant, darkBackground = true, className = '' }) => {

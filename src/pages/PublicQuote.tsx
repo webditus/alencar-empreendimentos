@@ -182,8 +182,10 @@ export const PublicQuote: React.FC = () => {
   return (
     <div className="min-h-screen bg-alencar-dark flex flex-col">
       <header className="bg-alencar-gradient border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 lg:py-0.5 flex items-center justify-between gap-4">
-          <Logo variant="horizontal" darkBackground={true} className="h-9 md:h-11 lg:h-6 flex-shrink-0" />
+        <div className="max-w-7xl mx-auto px-6 py-3 lg:py-0.5 flex items-center justify-between gap-4">
+          <a href="/" aria-label="Ir para o inicio" className="flex-shrink-0">
+            <Logo variant="horizontal-no-slogan" darkBackground={true} className="h-9 md:h-11 lg:h-6" />
+          </a>
           <p className="text-white/70 text-sm md:text-base lg:text-xs text-right leading-snug">
             Simule seu container personalizado gratuitamente e sem compromisso.
           </p>
