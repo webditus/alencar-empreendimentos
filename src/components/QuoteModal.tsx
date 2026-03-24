@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Download, MessageCircle, Mail } from 'lucide-react';
 import { Quote } from '../types';
-import { formatCurrency, generateWhatsAppLink, generateEmailLink } from '../utils/formatters';
+import { formatCurrency, formatDate, generateWhatsAppLink, generateEmailLink } from '../utils/formatters';
 import { generateQuotePDF } from '../services/pdfService';
 import { Logo } from './Logo';
 
@@ -49,9 +49,15 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
 
         <div className="p-6">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-alencar-dark mb-3">Dados do Cliente</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-alencar-dark">Dados do Cliente</h3>
+              <span className="text-xs font-semibold px-2 py-1 rounded bg-alencar-green/10 text-alencar-green border border-alencar-green/20">
+                {quote.operationType === 'locacao' ? 'Locação' : 'Compra'}
+              </span>
+            </div>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <p className="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-3">Informações pessoais</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <div>
                   <span className="text-sm text-gray-600">Nome:</span>
                   <p className="font-medium">{quote.customer.name}</p>
@@ -60,39 +66,39 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
                   <span className="text-sm text-gray-600">Telefone:</span>
                   <p className="font-medium">{quote.customer.phone}</p>
                 </div>
-                <div>
+                <div className="md:col-span-2">
                   <span className="text-sm text-gray-600">E-mail:</span>
                   <p className="font-medium">{quote.customer.email}</p>
                 </div>
+              </div>
+
+              <p className="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-3">Local do projeto</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <div>
-                  <span className="text-sm text-gray-600">Data do Projeto:</span>
-                  <p className="font-medium">{quote.customer.projectDate}</p>
+                  <span className="text-sm text-gray-600">CEP:</span>
+                  <p className="font-medium">{quote.customer.cep || 'Não informado'}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600">Número:</span>
+                  <p className="font-medium">{quote.customer.propertyNumber || 'Sem número'}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <span className="text-sm text-gray-600">Endereco:</span>
+                  <span className="text-sm text-gray-600">Endereço:</span>
                   <p className="font-medium">{quote.customer.address}</p>
                 </div>
-                {quote.customer.propertyNumber && (
-                  <div>
-                    <span className="text-sm text-gray-600">Numero:</span>
-                    <p className="font-medium">{quote.customer.propertyNumber}</p>
-                  </div>
-                )}
                 {quote.customer.addressComplement && (
-                  <div>
+                  <div className="md:col-span-2">
                     <span className="text-sm text-gray-600">Complemento:</span>
                     <p className="font-medium">{quote.customer.addressComplement}</p>
                   </div>
                 )}
-                <div>
-                  <span className="text-sm text-gray-600">Finalidade:</span>
-                  <p className="font-medium">{quote.customer.purpose.map(p =>
-                    p === 'Outro' && quote.customer.purposeOther ? quote.customer.purposeOther : p
-                  ).join(', ')}</p>
-                </div>
+              </div>
+
+              <p className="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-3">Contexto do projeto</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {quote.customer.installationLocation && (
                   <div>
-                    <span className="text-sm text-gray-600">Local de instalacao:</span>
+                    <span className="text-sm text-gray-600">Local de instalação:</span>
                     <p className="font-medium">{
                       quote.customer.installationLocation === 'Outro' && quote.customer.installationLocationOther
                         ? quote.customer.installationLocationOther
@@ -102,13 +108,23 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ quote, isOpen, onClose }
                 )}
                 {quote.customer.projectStartTimeline && (
                   <div>
-                    <span className="text-sm text-gray-600">Prazo para inicio:</span>
+                    <span className="text-sm text-gray-600">Prazo para início:</span>
                     <p className="font-medium">{quote.customer.projectStartTimeline}</p>
                   </div>
                 )}
+                <div>
+                  <span className="text-sm text-gray-600">Data prevista:</span>
+                  <p className="font-medium">{quote.customer.projectDate ? formatDate(quote.customer.projectDate) : 'Não informado'}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600">Finalidade:</span>
+                  <p className="font-medium">{quote.customer.purpose.map(p =>
+                    p === 'Outro' && quote.customer.purposeOther ? quote.customer.purposeOther : p
+                  ).join(', ')}</p>
+                </div>
                 {quote.customer.generalNotes && (
                   <div className="md:col-span-2">
-                    <span className="text-sm text-gray-600">Observacoes:</span>
+                    <span className="text-sm text-gray-600">Observações:</span>
                     <p className="font-medium">{quote.customer.generalNotes}</p>
                   </div>
                 )}
