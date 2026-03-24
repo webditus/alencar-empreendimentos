@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Quote } from '../types';
 import { useQuotes } from '../contexts/QuoteContext';
 import { formatCurrency, formatDate, formatPhone } from '../utils/formatters';
-import { Eye, Trash2, Search, Pencil, FileText, CreditCard, CheckCircle, Copy, ExternalLink } from 'lucide-react';
+import { Eye, Trash2, Search, Pencil, FileText, CreditCard, CheckCircle, Copy, ExternalLink, FileDown } from 'lucide-react';
 import { createPaymentLink, validateAsaasConfig, diagnoseAsaasConfig } from '../services/asaasIntegration';
+import { generateQuotePDF } from '../services/pdfService';
 import ContractGenerationModal from './contracts/ContractGenerationModal';
 import { ContractSigningService } from '../services/contractSigningService';
 import { GeneratedContract } from '../types/contractSigning';
@@ -28,6 +29,7 @@ export const QuoteManagement: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingPayment, setIsGeneratingPayment] = useState(false);
+  const [pdfLoadingId, setPdfLoadingId] = useState<string | null>(null);
   const [showPaymentLinkNotification, setShowPaymentLinkNotification] = useState(false);
   const [paymentLinkData, setPaymentLinkData] = useState({ amount: '', customerName: '', link: '' });
   const [showContractModal, setShowContractModal] = useState(false);
@@ -192,6 +194,24 @@ export const QuoteManagement: React.FC = () => {
 
     if (contract.signingLink) {
       navigateToContractDetails(contract.signingLink);
+    }
+  };
+
+  const handleDownloadPDF = async (quote: Quote) => {
+    if (pdfLoadingId) return;
+    setPdfLoadingId(quote.id);
+    try {
+      await generateQuotePDF(quote);
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      setErrorMessage('Nao foi possivel gerar o PDF deste orcamento.');
+      setShowErrorMessage(true);
+      setTimeout(() => {
+        setShowErrorMessage(false);
+        setErrorMessage('');
+      }, 4000);
+    } finally {
+      setPdfLoadingId(null);
     }
   };
 
@@ -362,22 +382,22 @@ export const QuoteManagement: React.FC = () => {
             <table className="w-full table-fixed divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="w-[22%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-[21%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Cliente
                   </th>
-                  <th className="w-[18%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-[17%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="w-[13%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-[12%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Valor Total
                   </th>
-                  <th className="w-[18%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-[17%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Orçamento Final Aprovado
                   </th>
-                  <th className="w-[13%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-[12%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Data de Criação
                   </th>
-                  <th className="w-[16%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                  <th className="w-[21%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
                     Ações
                   </th>
                 </tr>
@@ -426,7 +446,7 @@ export const QuoteManagement: React.FC = () => {
                       {formatDate(quote.createdAt)}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-medium sticky right-0 bg-white group-hover:bg-gray-50 z-10 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
-                      <div className="flex space-x-2">
+                      <div className="flex gap-1.5">
                         <button
                           onClick={() => openQuoteDetails(quote)}
                           className="text-alencar-green hover:text-alencar-hover flex items-center"
@@ -440,6 +460,25 @@ export const QuoteManagement: React.FC = () => {
                           title="Editar informações comerciais"
                         >
                           <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadPDF(quote)}
+                          disabled={pdfLoadingId === quote.id}
+                          className={`flex items-center ${
+                            pdfLoadingId === quote.id
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-teal-600 hover:text-teal-900'
+                          }`}
+                          title="Baixar PDF do orçamento"
+                        >
+                          {pdfLoadingId === quote.id ? (
+                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : (
+                            <FileDown className="h-4 w-4" />
+                          )}
                         </button>
                         {quoteContracts.has(quote.id) ? (
                           <button
