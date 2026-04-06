@@ -50,12 +50,12 @@ export const BudgetBar: React.FC<BudgetBarProps> = ({
             isExpanded ? 'max-h-[70vh]' : 'max-h-0'
           }`}
         >
-          <div className="bg-[#b6ff28] border-t border-[#a3e824] max-h-[70vh] overflow-y-auto">
+          <div className="bg-[#0d1a14] border-t border-white/10 max-h-[70vh] overflow-y-auto">
             <div className="px-5 pt-5 pb-4 max-w-4xl mx-auto">
               <div className="flex items-center justify-end mb-2">
                 <button
                   onClick={() => setIsExpanded(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#245247]/20 text-[#245247] hover:bg-[#245247]/30 hover:text-[#060A13] transition-colors duration-200"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors duration-200"
                 >
                   <X size={16} />
                 </button>
@@ -72,7 +72,7 @@ export const BudgetBar: React.FC<BudgetBarProps> = ({
                     setIsExpanded(false);
                     onSimulate();
                   }}
-                  className="w-full mt-4 h-11 bg-[#060A13] text-[#b6ff28] font-semibold text-sm rounded-lg hover:bg-[#0f1a2e] active:bg-[#060A13] transition-colors duration-150"
+                  className="w-full mt-4 h-11 bg-[#245247] text-white font-semibold text-sm rounded-lg hover:bg-[#1d4038] active:bg-[#245247] transition-colors duration-150"
                 >
                   Simular orçamento
                 </button>
