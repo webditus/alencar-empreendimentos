@@ -83,21 +83,24 @@ export const BudgetBar: React.FC<BudgetBarProps> = ({
 
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="w-full h-16 bg-[#060A13] border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] px-5 flex items-center justify-between active:bg-white/5 transition-colors duration-150"
+          className="w-full h-16 bg-[#b6ff28] border-t border-[#a3e824] shadow-[0_-4px_20px_rgba(0,0,0,0.4)] px-5 flex items-center justify-between active:bg-[#a3e824] transition-colors duration-150"
         >
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-white/60 uppercase tracking-wide">Total</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-[#245247] uppercase tracking-wide">Total</span>
+            <span className="text-lg font-bold text-[#060A13]">{formatCurrency(totalPrice)}</span>
             {itemCount > 0 && (
-              <span className="text-[10px] font-medium text-alencar-green-light bg-alencar-green/20 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-medium text-[#060A13] bg-[#245247]/20 px-2 py-0.5 rounded-full">
                 {itemCount} {itemCount === 1 ? 'item' : 'itens'}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-lg font-bold text-white">{formatCurrency(totalPrice)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-[#245247]">
+              {isExpanded ? 'Fechar' : 'Expandir'}
+            </span>
             <ChevronUp
               size={18}
-              className={`text-white/50 transition-transform duration-300 ${
+              className={`text-[#245247] transition-transform duration-300 ${
                 isExpanded ? 'rotate-180' : ''
               }`}
             />
