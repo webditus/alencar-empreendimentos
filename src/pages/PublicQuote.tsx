@@ -264,6 +264,7 @@ export const PublicQuote: React.FC = () => {
                     basePrice={basePrice}
                     selectedItems={selectedItems}
                     totalPrice={totalPrice}
+                    lightText
                   />
                   <button
                     onClick={() => setCurrentStep(4)}
@@ -331,6 +332,7 @@ export const PublicQuote: React.FC = () => {
                       basePrice={basePrice}
                       selectedItems={selectedItems}
                       totalPrice={totalPrice}
+                      lightText
                     />
                   </div>
                 </div>
@@ -343,6 +345,7 @@ export const PublicQuote: React.FC = () => {
                     basePrice={basePrice}
                     selectedItems={selectedItems}
                     totalPrice={totalPrice}
+                    lightText
                   />
                   <button
                     onClick={() => {

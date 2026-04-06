@@ -9,6 +9,7 @@ interface BudgetSummaryContentProps {
   basePrice: number;
   selectedItems: Item[];
   totalPrice: number;
+  lightText?: boolean;
 }
 
 export const BudgetSummaryContent: React.FC<BudgetSummaryContentProps> = ({
@@ -16,33 +17,38 @@ export const BudgetSummaryContent: React.FC<BudgetSummaryContentProps> = ({
   basePrice,
   selectedItems,
   totalPrice,
+  lightText = false,
 }) => {
   const { isVenda } = useOperation();
 
   const resolvePrice = (item: Item): number =>
     isVenda ? (item.vendaPrice ?? 0) : (item.locacaoPrice ?? 0);
 
+  const labelColor = lightText ? 'text-white/70' : 'text-[#060a13]';
+  const valueColor = lightText ? 'text-white' : 'text-[#060A13]';
+  const titleColor = lightText ? 'text-white' : 'text-[#060A13]';
+
   return (
     <>
-      <h3 className="text-xl font-bold text-[#060A13] mb-4">Simulação do seu projeto</h3>
+      <h3 className={`text-xl font-bold ${titleColor} mb-4`}>Simulação do seu projeto</h3>
       <div className="space-y-2 mb-4">
         <div className="flex justify-between">
-          <span className="text-[#060a13]">Container base:</span>
-          <span className="font-semibold text-[#060A13]">
+          <span className={labelColor}>Container base:</span>
+          <span className={`font-semibold ${valueColor}`}>
             {selectedContainer ? formatCurrency(basePrice) : 'R$ 0,00'}
           </span>
         </div>
         {selectedItems.map((item) => (
           <div key={item.id} className="flex justify-between text-sm">
-            <span className="text-[#060a13]">{item.name}:</span>
-            <span className="font-semibold text-[#060A13]">{formatCurrency(resolvePrice(item))}</span>
+            <span className={labelColor}>{item.name}:</span>
+            <span className={`font-semibold ${valueColor}`}>{formatCurrency(resolvePrice(item))}</span>
           </div>
         ))}
       </div>
       <div className="border-t border-[#245247]/30 pt-3">
         <div className="flex justify-between items-end">
-          <span className="text-xs uppercase tracking-wide text-[#060a13]">Total:</span>
-          <span className="text-xl font-bold text-[#060A13]">{formatCurrency(totalPrice)}</span>
+          <span className={`text-xs uppercase tracking-wide ${labelColor}`}>Total:</span>
+          <span className={`text-xl font-bold ${valueColor}`}>{formatCurrency(totalPrice)}</span>
         </div>
       </div>
     </>
